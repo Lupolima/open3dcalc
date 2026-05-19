@@ -284,7 +284,6 @@ export function calculateInfillImpact(
   infillPercent: number,
   density: number,
   costPerKg: number,
-  _printTimeHours: number,
 ): { weight: number; cost: number; timeChange: number } {
   const infillVolume = (boundingBoxCm3 - volumeSolidCm3) * (infillPercent / 100)
   const totalVolume = volumeSolidCm3 + infillVolume

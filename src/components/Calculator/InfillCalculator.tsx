@@ -37,11 +37,10 @@ export function InfillCalculator() {
     parseFloat(infillPercent) || 0,
     mat.density,
     mat.costPerKg,
-    0,
   )
 
   const comparisons = [10, 15, 20, 30, 50, 80, 100].map(pct => {
-    const r = calculateInfillImpact(solidVolumeCm3, boundingBoxCm3, pct, mat.density, mat.costPerKg, 0)
+    const r = calculateInfillImpact(solidVolumeCm3, boundingBoxCm3, pct, mat.density, mat.costPerKg)
     return { infill: pct, weight: r.weight, cost: r.cost }
   })
 

@@ -123,9 +123,11 @@ export function Calculator() {
         const gcode = parseGcode(text)
         if (gcode.printTimeMinutes > 0) {
           const hours = gcode.printTimeMinutes / 60
-          isFDM
-            ? store.setFdmPrintParams({ ...store.fdmPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
-            : store.setResinPrintParams({ ...store.resinPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
+          if (isFDM) {
+            store.setFdmPrintParams({ ...store.fdmPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
+          } else {
+            store.setResinPrintParams({ ...store.resinPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
+          }
         }
         if (gcode.filamentUsedGrams > 0) {
           store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(gcode.filamentUsedGrams.toFixed(2)) })
