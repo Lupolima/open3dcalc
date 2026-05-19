@@ -29,25 +29,27 @@ export function Dashboard({ result }: DashboardProps) {
   }
 
   const chartData = [
-    { name: t('breakdown.material'), value: result.costs.material },
-    { name: t('breakdown.energy'), value: result.costs.energy },
-    { name: t('breakdown.depreciation'), value: result.costs.depreciation },
-    { name: t('breakdown.maintenance'), value: result.costs.maintenance },
-    { name: t('breakdown.labor'), value: result.costs.labor },
-    { name: t('breakdown.packaging'), value: result.costs.packaging },
-    { name: t('breakdown.finishing'), value: result.costs.finishing },
+    { name: t('breakdown.material'), value: result.materialCost },
+    { name: t('breakdown.energy'), value: result.energyCost },
+    { name: t('breakdown.depreciation'), value: result.machineCost },
+    { name: t('breakdown.maintenance'), value: result.consumablesCost },
+    { name: t('breakdown.labor'), value: result.laborCost },
+    { name: t('breakdown.packaging'), value: result.totalCost - result.subtotal - result.failureCost > 0 ? result.totalCost - result.subtotal - result.failureCost : 0 },
+    { name: t('breakdown.finishing'), value: result.postProcessingCost },
   ].filter(d => d.value > 0)
+
+  const roi = result.totalCost > 0 ? (result.profit / result.totalCost) * 100 : 0
 
   return (
     <section className="mb-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div className="glass rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.totalCost')}</p>
-          <p className="text-lg font-extrabold text-pink-400">{formatMoney(result.totalWithFailure)}</p>
+          <p className="text-lg font-extrabold text-pink-400">{formatMoney(result.totalCost)}</p>
         </div>
         <div className="glass rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.salePrice')}</p>
-          <p className="text-lg font-extrabold text-emerald-400">{formatMoney(result.finalPrice)}</p>
+          <p className="text-lg font-extrabold text-emerald-400">{formatMoney(result.sellPrice)}</p>
         </div>
         <div className="glass rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.profit')}</p>
@@ -57,8 +59,8 @@ export function Dashboard({ result }: DashboardProps) {
         </div>
         <div className="glass rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.roi')}</p>
-          <p className={`text-lg font-extrabold ${result.roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {result.roi.toFixed(0)}%
+          <p className={`text-lg font-extrabold ${roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            {roi.toFixed(0)}%
           </p>
         </div>
       </div>

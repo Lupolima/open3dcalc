@@ -1,140 +1,219 @@
-import type { CalculationInputs, CalculationResult, CostBreakdown } from '@/types'
+import type {
+  MaterialStateFDM, MaterialStateResin, PrintParameters,
+  MachineCosts, LaborCosts, AdditionalCosts, SalesParameters,
+  OperationalCosts, SoftwareCosts, FDMHardware, FDMFinishing,
+  PostProcessingResin, ResinHardware, CalculationResult,
+} from '@/types'
 
-export function calculateCosts(inputs: CalculationInputs): CalculationResult {
-  const timeHours = inputs.timeMinutes / 60
-  const qty = Math.max(1, inputs.quantity)
+export function calculateFDM(
+  mat: MaterialStateFDM,
+  print: PrintParameters,
+  machine: MachineCosts,
+  labor: LaborCosts,
+  extras: AdditionalCosts,
+  sales: SalesParameters,
+  ops: OperationalCosts,
+  soft: SoftwareCosts,
+  fdmHW: FDMHardware,
+  fdmFin: FDMFinishing,
+): CalculationResult {
+  const efficiencyFactor = mat.spoolEfficiency > 0 ? (100 / mat.spoolEfficiency) : 1
+  const totalWeightFDM = mat.weightUsed + mat.purgeWeight
+  const effectiveWeight = totalWeightFDM * efficiencyFactor
+  const matCost = (effectiveWeight / 1000) * mat.costPerKg
 
-  // 1. Material
-  const materialCost = (inputs.useVolume && inputs.volume > 0)
-    ? estimateMaterialFromVolume(inputs)
-    : (inputs.weight / 1000) * inputs.material.avgPrice
+  const printerEnergyCost = (print.printerPowerWatts / 1000) * print.printTimeHours * print.energyCostPerKwh
 
-  // 2. Energy
-  const energyCost = (inputs.printer.power / 1000) * timeHours * inputs.energyRate
-
-  // 3. Depreciation
-  const depreciation = inputs.printer.usefulLife > 0
-    ? (inputs.printer.value / inputs.printer.usefulLife) * timeHours
-    : 0
-
-  // 4. Maintenance
-  const maintenance = inputs.printer.maintenancePerHour * timeHours
-
-  // 5. Labor
-  const labor = inputs.laborRate * timeHours
-
-  // 6. Packaging
-  const packaging = inputs.packagingCost * qty
-
-  // 7. Finishing
-  const finishing = inputs.finishingCost * qty
-
-  // 8. Shipping
-  const shipping = inputs.shippingCost * qty
-
-  const costs: CostBreakdown = {
-    material: materialCost,
-    energy: energyCost,
-    depreciation,
-    maintenance,
-    labor,
-    packaging,
-    finishing,
-    failureCost: 0,
-    shipping,
-    tax: 0,
-    cardFee: 0,
+  let postProcessingTotal = 0
+  if (fdmFin.enabled) {
+    postProcessingTotal += fdmFin.suppliesCost
   }
 
-  const subtotal = materialCost + energyCost + depreciation + maintenance + labor + packaging + finishing + shipping
+  let machineTotal = 0
+  if (machine.enabled) {
+    const totalLifeHours = machine.depreciationMonths * machine.hoursPerMonth
+    const hourlyDepreciation = totalLifeHours > 0 ? machine.machineCost / totalLifeHours : 0
+    let hourlyMaintenance = 0
+    if (machine.maintenanceEnabled) {
+      hourlyMaintenance = machine.hoursPerMonth > 0 ? machine.maintenanceCost / machine.hoursPerMonth : 0
+    }
+    machineTotal = (hourlyDepreciation + hourlyMaintenance) * print.printTimeHours
+  }
 
-  // 9. Failure rate
-  const failureCost = subtotal * (inputs.failureRate / 100)
-  costs.failureCost = failureCost
+  let hardwareTotal = 0
+  if (fdmHW.enabled) {
+    let nozzleDepreciation = 0
+    if (fdmHW.nozzleEnabled) {
+      nozzleDepreciation = fdmHW.nozzleLifespanKg > 0
+        ? (totalWeightFDM / 1000) / fdmHW.nozzleLifespanKg * fdmHW.nozzleCost
+        : 0
+    }
+    let bedCost = 0
+    if (fdmHW.bedEnabled) {
+      bedCost = fdmHW.bedAdhesionCost
+    }
+    hardwareTotal = nozzleDepreciation + bedCost
+  }
 
-  const totalWithFailure = subtotal + failureCost
-  const unitCost = totalWithFailure / qty
+  const ppeCost = ops.enabled ? ops.ppeCostPerPrint : 0
 
-  // 10. Markup base price
-  const basePrice = unitCost * (1 + inputs.markup / 100)
+  let laborTotal = 0
+  if (labor.enabled) {
+    const totalMinutes = labor.setupTimeMinutes + labor.postProcessingTimeMinutes
+    laborTotal = (totalMinutes / 60) * labor.hourlyRate
+  }
 
-  // 11. Marketplace fee
-  const feePercent = inputs.marketplace.feePercent
-  const marketplaceFee = feePercent > 0
-    ? (basePrice + inputs.marketplace.feeFixed) / (1 - feePercent / 100) * (feePercent / 100) + inputs.marketplace.feeFixed
-    : 0
+  let softwareTotal = 0
+  if (soft.enabled) {
+    const softwareHourly = machine.hoursPerMonth > 0 ? soft.slicerMonthlyCost / machine.hoursPerMonth : 0
+    softwareTotal = (softwareHourly * print.printTimeHours) + soft.modelFileCost
+  }
 
-  // 12. Final price (includes marketplace fee)
-  const priceWithMarketplace = feePercent > 0
-    ? (basePrice + inputs.marketplace.feeFixed) / (1 - feePercent / 100)
-    : basePrice
+  const producitonCost = matCost + printerEnergyCost + machineTotal + hardwareTotal + ppeCost + laborTotal + softwareTotal + postProcessingTotal + extras.extrasCost
 
-  // 13. Taxes + card fee on final price
-  const tax = priceWithMarketplace * (inputs.taxRate / 100)
-  const cardFee = priceWithMarketplace * (inputs.cardFeePercent / 100)
+  let failureCost = 0
+  if (print.failureMode === 'percent') {
+    const adjustedPercent = print.failureValue * (print.riskMultiplier || 1)
+    failureCost = producitonCost * (adjustedPercent / 100)
+  } else if (print.failureMode === 'fixed') {
+    failureCost = print.failureValue
+  }
 
-  costs.tax = tax
-  costs.cardFee = cardFee
+  const totalBaseCost = producitonCost + failureCost + sales.packagingCost + sales.shippingCost
 
-  const finalPrice = priceWithMarketplace + tax + cardFee
-  const marketplaceFeeTotal = marketplaceFee
-  const profit = finalPrice - unitCost - marketplaceFeeTotal - tax - cardFee
-  const profitMargin = finalPrice > 0 ? (profit / finalPrice) * 100 : 0
-  const roi = unitCost > 0 ? (profit / unitCost) * 100 : 0
+  const profitAmountRaw = totalBaseCost * (sales.profitMarginPercent / 100)
+  const priceBeforeFees = totalBaseCost + profitAmountRaw
+
+  const totalFeePercent = (sales.taxPercent + sales.marketplaceFeePercent) / 100
+
+  const sellPrice = totalFeePercent < 1
+    ? priceBeforeFees / (1 - totalFeePercent)
+    : priceBeforeFees * 2
+
+  const taxAmount = sellPrice * (sales.taxPercent / 100)
+  const marketplaceFee = sellPrice * (sales.marketplaceFeePercent / 100)
+  const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
 
   return {
-    inputs,
-    costs,
-    subtotal,
-    totalWithFailure,
-    unitCost,
-    marketplaceFee: marketplaceFeeTotal,
-    marketplaceFeePercent: feePercent,
-    finalPrice,
-    profit,
-    profitMargin,
-    roi,
+    materialCost: matCost,
+    energyCost: printerEnergyCost,
+    postProcessingCost: postProcessingTotal,
+    machineCost: machineTotal,
+    hardwareCost: hardwareTotal,
+    consumablesCost: ppeCost,
+    softwareCost: softwareTotal,
+    laborCost: laborTotal,
+    failureCost,
+    extrasCost: extras.extrasCost,
+    subtotal: producitonCost,
+    totalCost: totalBaseCost,
+    sellPrice,
+    profit: totalProfit,
+    marketplaceFee,
+    taxAmount,
   }
 }
 
-function estimateMaterialFromVolume(inputs: CalculationInputs): number {
-  const infillRatio = inputs.infillPercent / 100
-  const purgeRatio = inputs.purgePercent / 100
-  const effectiveVolume = inputs.volume * (0.2 + 0.8 * infillRatio)
-  const weight = effectiveVolume * inputs.material.density
-  const waste = weight * purgeRatio
-  return ((weight + waste) / 1000) * inputs.material.avgPrice
-}
+export function calculateResin(
+  mat: MaterialStateResin,
+  print: PrintParameters,
+  machine: MachineCosts,
+  labor: LaborCosts,
+  extras: AdditionalCosts,
+  sales: SalesParameters,
+  ops: OperationalCosts,
+  soft: SoftwareCosts,
+  resinPP: PostProcessingResin,
+  resinHW: ResinHardware,
+): CalculationResult {
+  const volumeWithWaste = mat.volumeUsedMl * (1 + (mat.wasteMarginPercent / 100))
+  const matCost = (volumeWithWaste / 1000) * mat.costPerLiter
 
-export function createDefaultInputs(): CalculationInputs {
+  const printerEnergyCost = (print.printerPowerWatts / 1000) * print.printTimeHours * print.energyCostPerKwh
+
+  let postProcessingTotal = 0
+  if (resinPP.washingEnabled) {
+    postProcessingTotal += resinPP.alcoholVolumeLiters * resinPP.alcoholCostPerLiter
+  }
+  if (resinPP.curingEnabled) {
+    const curingKwh = (resinPP.curingPowerWatts / 1000) * (resinPP.curingTimeMinutes / 60)
+    postProcessingTotal += curingKwh * print.energyCostPerKwh
+  }
+
+  let machineTotal = 0
+  if (machine.enabled) {
+    const totalLifeHours = machine.depreciationMonths * machine.hoursPerMonth
+    const hourlyDepreciation = totalLifeHours > 0 ? machine.machineCost / totalLifeHours : 0
+    let hourlyMaintenance = 0
+    if (machine.maintenanceEnabled) {
+      hourlyMaintenance = machine.hoursPerMonth > 0 ? machine.maintenanceCost / machine.hoursPerMonth : 0
+    }
+    machineTotal = (hourlyDepreciation + hourlyMaintenance) * print.printTimeHours
+  }
+
+  let hardwareTotal = 0
+  if (resinHW.enabled) {
+    const lcdHourly = resinHW.lcdLifespanHours > 0 ? resinHW.lcdCost / resinHW.lcdLifespanHours : 0
+    const lcdCost = lcdHourly * print.printTimeHours
+    const fepPerPrint = resinHW.fepLifespanPrints > 0 ? resinHW.fepCost / resinHW.fepLifespanPrints : 0
+    hardwareTotal = lcdCost + fepPerPrint
+  }
+
+  const ppeCost = ops.enabled ? ops.ppeCostPerPrint : 0
+
+  let laborTotal = 0
+  if (labor.enabled) {
+    const totalMinutes = labor.setupTimeMinutes + labor.postProcessingTimeMinutes
+    laborTotal = (totalMinutes / 60) * labor.hourlyRate
+  }
+
+  let softwareTotal = 0
+  if (soft.enabled) {
+    const softwareHourly = machine.hoursPerMonth > 0 ? soft.slicerMonthlyCost / machine.hoursPerMonth : 0
+    softwareTotal = (softwareHourly * print.printTimeHours) + soft.modelFileCost
+  }
+
+  const producitonCost = matCost + printerEnergyCost + machineTotal + hardwareTotal + ppeCost + laborTotal + softwareTotal + postProcessingTotal + extras.extrasCost
+
+  let failureCost = 0
+  if (print.failureMode === 'percent') {
+    const adjustedPercent = print.failureValue * (print.riskMultiplier || 1)
+    failureCost = producitonCost * (adjustedPercent / 100)
+  } else if (print.failureMode === 'fixed') {
+    failureCost = print.failureValue
+  }
+
+  const totalBaseCost = producitonCost + failureCost + sales.packagingCost + sales.shippingCost
+
+  const profitAmountRaw = totalBaseCost * (sales.profitMarginPercent / 100)
+  const priceBeforeFees = totalBaseCost + profitAmountRaw
+
+  const totalFeePercent = (sales.taxPercent + sales.marketplaceFeePercent) / 100
+
+  const sellPrice = totalFeePercent < 1
+    ? priceBeforeFees / (1 - totalFeePercent)
+    : priceBeforeFees * 2
+
+  const taxAmount = sellPrice * (sales.taxPercent / 100)
+  const marketplaceFee = sellPrice * (sales.marketplaceFeePercent / 100)
+  const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
+
   return {
-    productName: '',
-    material: { id: 'pla', name: 'PLA', density: 1.24, avgPrice: 90, type: 'fdm' },
-    weight: 0,
-    volume: 0,
-    useVolume: false,
-    timeMinutes: 0,
-    printer: {
-      id: 'ender_3',
-      name: 'Creality Ender 3',
-      brand: 'Creality',
-      power: 120,
-      value: 1200,
-      usefulLife: 2000,
-      maintenancePerHour: 0.15,
-    },
-    energyRate: 0,
-    laborRate: 0,
-    packagingCost: 0,
-    finishingCost: 0,
-    failureRate: 0,
-    markup: 0,
-    marketplace: { id: 'direct', name: 'Venda Direta', feePercent: 0, feeFixed: 0, hasFreeShipping: false },
-    quantity: 1,
-    infillPercent: 20,
-    purgePercent: 10,
-    shippingCost: 0,
-    taxRate: 0,
-    cardFeePercent: 0,
+    materialCost: matCost,
+    energyCost: printerEnergyCost,
+    postProcessingCost: postProcessingTotal,
+    machineCost: machineTotal,
+    hardwareCost: hardwareTotal,
+    consumablesCost: ppeCost,
+    softwareCost: softwareTotal,
+    laborCost: laborTotal,
+    failureCost,
+    extrasCost: extras.extrasCost,
+    subtotal: producitonCost,
+    totalCost: totalBaseCost,
+    sellPrice,
+    profit: totalProfit,
+    marketplaceFee,
+    taxAmount,
   }
 }

@@ -1,5 +1,7 @@
 import type { Marketplace } from '@/types'
 
+export type { Marketplace }
+
 export const marketplaces: Marketplace[] = [
   { id: 'direct', name: 'Venda Direta', feePercent: 0, feeFixed: 0, hasFreeShipping: false },
   { id: 'shopee', name: 'Shopee', feePercent: 14, feeFixed: 4, hasFreeShipping: true, shippingFeePercent: 0 },

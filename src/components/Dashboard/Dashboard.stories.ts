@@ -12,29 +12,22 @@ export default meta
 type Story = StoryObj<typeof Dashboard>
 
 const mockResult: CalculationResult = {
-  inputs: {} as unknown as CalculationResult['inputs'],
-  costs: {
-    material: 25,
-    energy: 3.5,
-    depreciation: 2.5,
-    maintenance: 1.2,
-    labor: 15,
-    packaging: 2,
-    finishing: 0,
-    failureCost: 4.92,
-    shipping: 8,
-    tax: 5.8,
-    cardFee: 2.17,
-  },
+  materialCost: 25,
+  energyCost: 3.5,
+  machineCost: 2.5,
+  hardwareCost: 1.2,
+  consumablesCost: 0.5,
+  laborCost: 15,
+  softwareCost: 0,
+  failureCost: 4.92,
+  extrasCost: 0,
+  postProcessingCost: 0,
   subtotal: 49.2,
-  totalWithFailure: 54.12,
-  unitCost: 54.12,
-  marketplaceFee: 8.12,
-  marketplaceFeePercent: 14,
-  finalPrice: 72.50,
+  totalCost: 54.12,
+  sellPrice: 72.50,
   profit: 18.38,
-  profitMargin: 25.3,
-  roi: 33.9,
+  marketplaceFee: 8.12,
+  taxAmount: 5.8,
 }
 
 export const WithData: Story = {

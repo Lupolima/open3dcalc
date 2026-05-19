@@ -29,23 +29,18 @@ function DetailModal({ product, onClose }: DetailModalProps) {
         </div>
 
         <div className="space-y-2 text-sm">
-          <Row label="💰 Preço Final" value={formatMoney(d.finalPrice)} bold />
-          <Row label="🧵 Material" value={formatMoney(d.costs.material)} />
-          <Row label="⚡ Energia" value={formatMoney(d.costs.energy)} />
-          <Row label="🖨️ Depreciação" value={formatMoney(d.costs.depreciation)} />
-          <Row label="🔧 Manutenção" value={formatMoney(d.costs.maintenance)} />
-          <Row label="👷 Mão de Obra" value={formatMoney(d.costs.labor)} />
-          <Row label="📦 Embalagem" value={formatMoney(d.costs.packaging)} />
-          <Row label="✨ Acabamento" value={formatMoney(d.costs.finishing)} />
-          <Row label="📬 Frete" value={formatMoney(d.costs.shipping)} />
-          <Row label="💸 Custo Total" value={formatMoney(d.totalWithFailure)} bold />
-          <Row label="🏪 Taxa Marketplace" value={`${d.marketplaceFeePercent}%`} />
-          <Row label="💰 Impostos" value={formatMoney(d.costs.tax)} />
-          <Row label="💳 Taxa Cartão" value={formatMoney(d.costs.cardFee)} />
+          <Row label="💰 Preço Final" value={formatMoney(d.sellPrice)} bold />
+          <Row label="🧵 Material" value={formatMoney(d.materialCost)} />
+          <Row label="⚡ Energia" value={formatMoney(d.energyCost)} />
+          <Row label="🖨️ Máquina" value={formatMoney(d.machineCost)} />
+          <Row label="🔧 Hardware" value={formatMoney(d.hardwareCost)} />
+          <Row label="👷 Mão de Obra" value={formatMoney(d.laborCost)} />
+          <Row label="💻 Software" value={formatMoney(d.softwareCost)} />
+          <Row label="🎨 Acabamento" value={formatMoney(d.postProcessingCost)} />
+          <Row label="💸 Custo Total" value={formatMoney(d.totalCost)} bold />
+          <Row label="🏪 Taxa Marketplace" value={formatMoney(d.marketplaceFee)} />
+          <Row label="💰 Impostos" value={formatMoney(d.taxAmount)} />
           <Row label="📈 Lucro Líquido" value={formatMoney(d.profit)} bold />
-          <Row label="📊 Margem" value={`${d.profitMargin.toFixed(1)}%`} />
-          <Row label="🎯 ROI" value={`${d.roi.toFixed(1)}%`} />
-          <Row label="⏱️ Tempo" value={`${(d.inputs.timeMinutes / 60).toFixed(1)}h`} />
         </div>
       </div>
     </div>
@@ -109,7 +104,7 @@ export function HistoryTab() {
                 <p className="text-xs text-gray-500">{p.date}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-emerald-400">{formatMoney(p.result.finalPrice)}</span>
+                <span className="text-sm font-bold text-emerald-400">{formatMoney(p.result.sellPrice)}</span>
                 <button onClick={() => setSelectedProduct(p)} className="px-3 py-1.5 text-xs rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors">
                   {t('history.details')}
                 </button>

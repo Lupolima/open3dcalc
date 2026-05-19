@@ -1,94 +1,138 @@
 import { describe, it, expect } from 'vitest'
-import { calculateCosts, createDefaultInputs } from '@/lib/calculator'
+import { calculateFDM, calculateResin } from '@/lib/calculator'
 
-function zeroedInputs() {
-  const inputs = createDefaultInputs()
-  inputs.printer = { ...inputs.printer, value: 0, power: 0, maintenancePerHour: 0 }
-  inputs.energyRate = 0
-  inputs.laborRate = 0
-  inputs.packagingCost = 0
-  inputs.finishingCost = 0
-  inputs.failureRate = 0
-  return inputs
+function defaultFDM() {
+  return {
+    mat: { type: 'PLA', weightUsed: 50, purgeWeight: 0, costPerKg: 125, density: 1.24, spoolEfficiency: 98 },
+    print: { printTimeHours: 5, printerPowerWatts: 250, energyCostPerKwh: 0.80, failureMode: 'percent' as 'none' | 'percent' | 'fixed', failureValue: 10, riskMultiplier: 1 },
+    machine: { enabled: false, machineCost: 3000, depreciationMonths: 36, hoursPerMonth: 200, maintenanceEnabled: false, maintenanceCost: 0 },
+    labor: { enabled: false, setupTimeMinutes: 15, postProcessingTimeMinutes: 20, hourlyRate: 25 },
+    extras: { extrasCost: 0 },
+    sales: { packagingCost: 0, shippingCost: 0, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 0 },
+    ops: { enabled: false, ppeCostPerPrint: 0 },
+    soft: { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 },
+    hw: { enabled: false, nozzleEnabled: true, nozzleCost: 25, nozzleLifespanKg: 5, bedEnabled: true, bedAdhesionCost: 0.20 },
+    fin: { enabled: false, suppliesCost: 5 },
+  }
 }
 
-describe('calculateCosts', () => {
-  it('returns zero for empty inputs', () => {
-    const inputs = zeroedInputs()
-    const result = calculateCosts(inputs)
-    expect(result.totalWithFailure).toBe(0)
-    expect(result.finalPrice).toBe(0)
+describe('calculateFDM', () => {
+  it('returns zero for minimal inputs', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 0
+    d.mat.costPerKg = 0
+    d.mat.purgeWeight = 0
+    d.print.printerPowerWatts = 0
+    d.print.energyCostPerKwh = 0
+    d.print.printTimeHours = 0
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.totalCost).toBe(0)
+    expect(r.sellPrice).toBe(0)
   })
 
-  it('calculates material cost correctly', () => {
-    const inputs = zeroedInputs()
-    inputs.weight = 100
-    inputs.material.avgPrice = 100
-    inputs.timeMinutes = 60
-    inputs.markup = 0
+  it('calculates material cost correctly with spool efficiency', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 100
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.mat.purgeWeight = 0
+    d.print.printTimeHours = 0
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.materialCost).toBe(10)
+  })
 
-    const result = calculateCosts(inputs)
-    expect(result.costs.material).toBe(10)
-    expect(result.subtotal).toBe(10)
+  it('accounts for purge weight', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 50
+    d.mat.purgeWeight = 50
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.print.printTimeHours = 0
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.materialCost).toBe(10)
   })
 
   it('calculates energy cost correctly', () => {
-    const inputs = zeroedInputs()
-    inputs.timeMinutes = 120
-    inputs.printer.power = 200
-    inputs.energyRate = 0.5
-
-    const result = calculateCosts(inputs)
-    expect(result.costs.energy).toBeCloseTo(0.20, 2)
+    const d = defaultFDM()
+    d.print.printTimeHours = 2
+    d.print.printerPowerWatts = 200
+    d.print.energyCostPerKwh = 0.50
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.energyCost).toBeCloseTo(0.20, 2)
   })
 
   it('applies failure rate correctly', () => {
-    const inputs = zeroedInputs()
-    inputs.weight = 100
-    inputs.material.avgPrice = 100
-    inputs.timeMinutes = 60
-    inputs.failureRate = 50
-
-    const result = calculateCosts(inputs)
-    expect(result.costs.material).toBe(10)
-    expect(result.costs.failureCost).toBe(5)
-    expect(result.totalWithFailure).toBe(15)
+    const d = defaultFDM()
+    d.mat.weightUsed = 100
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.print.printTimeHours = 0
+    d.print.failureMode = 'percent'
+    d.print.failureValue = 50
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.materialCost).toBe(10)
+    expect(r.failureCost).toBe(5)
+    expect(r.totalCost).toBe(15)
   })
 
-  it('calculates final price with direct sale', () => {
-    const inputs = zeroedInputs()
-    inputs.weight = 100
-    inputs.material.avgPrice = 100
-    inputs.timeMinutes = 60
-    inputs.markup = 100
-
-    const result = calculateCosts(inputs)
-    expect(result.unitCost).toBe(10)
-    expect(result.finalPrice).toBe(20)
-    expect(result.profit).toBe(10)
+  it('calculates sell price with margin', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 100
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.print.printTimeHours = 0
+    d.print.failureMode = 'none'
+    d.sales.profitMarginPercent = 100
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.totalCost).toBe(10)
+    expect(r.sellPrice).toBe(20)
+    expect(r.profit).toBe(10)
   })
 
-  it('calculates correctly with Shopee marketplace fee', () => {
-    const inputs = zeroedInputs()
-    inputs.weight = 100
-    inputs.material.avgPrice = 100
-    inputs.timeMinutes = 60
-    inputs.markup = 100
-    inputs.marketplace = { id: 'shopee', name: 'Shopee', feePercent: 14, feeFixed: 4, hasFreeShipping: true }
-
-    const result = calculateCosts(inputs)
-    expect(result.unitCost).toBe(10)
-    expect(result.finalPrice).toBeCloseTo(27.91, 1)
-    expect(result.marketplaceFeePercent).toBe(14)
+  it('calculates with marketplace fee and taxes', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 100
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.print.printTimeHours = 0
+    d.print.failureMode = 'none'
+    d.sales.profitMarginPercent = 100
+    d.sales.marketplaceFeePercent = 14
+    d.sales.taxPercent = 8
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.totalCost).toBe(10)
+    expect(r.sellPrice).toBeGreaterThan(20)
+    expect(r.marketplaceFee).toBeGreaterThan(0)
+    expect(r.taxAmount).toBeGreaterThan(0)
   })
 
-  it('calculates depreciation correctly', () => {
-    const inputs = zeroedInputs()
-    inputs.timeMinutes = 120
-    inputs.printer.value = 5000
-    inputs.printer.usefulLife = 2000
+  it('calculates machine depreciation', () => {
+    const d = defaultFDM()
+    d.print.printTimeHours = 2
+    d.machine.enabled = true
+    d.machine.machineCost = 5000
+    d.machine.depreciationMonths = 36
+    d.machine.hoursPerMonth = 200
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.machineCost).toBeCloseTo(5000 / (36 * 200) * 2, 5)
+  })
+})
 
-    const result = calculateCosts(inputs)
-    expect(result.costs.depreciation).toBe(5) // (5000/2000) * 2 = 5
+describe('calculateResin', () => {
+  it('calculates resin material cost with waste margin', () => {
+    const mat = { type: 'Standard', volumeUsedMl: 50, costPerLiter: 180, density: 1.10, wasteMarginPercent: 10 }
+    const print = { printTimeHours: 0, printerPowerWatts: 0, energyCostPerKwh: 0, failureMode: 'none' as const, failureValue: 0, riskMultiplier: 1 }
+    const machine = { enabled: false, machineCost: 3500, depreciationMonths: 36, hoursPerMonth: 200, maintenanceEnabled: false, maintenanceCost: 0 }
+    const labor = { enabled: false, setupTimeMinutes: 10, postProcessingTimeMinutes: 15, hourlyRate: 25 }
+    const extras = { extrasCost: 0 }
+    const sales = { packagingCost: 0, shippingCost: 0, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 0 }
+    const ops = { enabled: false, ppeCostPerPrint: 0 }
+    const soft = { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 }
+    const pp = { washingEnabled: false, alcoholCostPerLiter: 25, alcoholVolumeLiters: 0, curingEnabled: false, curingTimeMinutes: 10, curingPowerWatts: 36 }
+    const hw = { enabled: false, lcdCost: 400, lcdLifespanHours: 2000, fepCost: 80, fepLifespanPrints: 50 }
+
+    const r = calculateResin(mat, print, machine, labor, extras, sales, ops, soft, pp, hw)
+    const expectedVolume = 50 * 1.10
+    expect(r.materialCost).toBeCloseTo((expectedVolume / 1000) * 180, 2)
   })
 })
