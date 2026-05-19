@@ -12,7 +12,7 @@ export default meta
 type Story = StoryObj<typeof Dashboard>
 
 const mockResult: CalculationResult = {
-  inputs: {} as any,
+  inputs: {} as unknown as CalculationResult['inputs'],
   costs: {
     material: 25,
     energy: 3.5,
