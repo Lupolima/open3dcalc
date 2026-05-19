@@ -73,7 +73,7 @@ export function calculateFDM(
 
   let failureCost = 0
   if (print.failureMode === 'percent') {
-    const adjustedPercent = print.failureValue * (print.riskMultiplier || 1)
+    const adjustedPercent = print.failureValue * (print.riskMultiplier ?? 1)
     failureCost = producitonCost * (adjustedPercent / 100)
   } else if (print.failureMode === 'fixed') {
     failureCost = print.failureValue
@@ -177,7 +177,7 @@ export function calculateResin(
 
   let failureCost = 0
   if (print.failureMode === 'percent') {
-    const adjustedPercent = print.failureValue * (print.riskMultiplier || 1)
+    const adjustedPercent = print.failureValue * (print.riskMultiplier ?? 1)
     failureCost = producitonCost * (adjustedPercent / 100)
   } else if (print.failureMode === 'fixed') {
     failureCost = print.failureValue

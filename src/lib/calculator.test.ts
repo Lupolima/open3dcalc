@@ -75,6 +75,27 @@ describe('calculateFDM', () => {
     expect(r.totalCost).toBe(15)
   })
 
+  it('uses fixed failure cost verbatim', () => {
+    const d = defaultFDM()
+    d.print.failureMode = 'fixed'
+    d.print.failureValue = 12.5
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.failureCost).toBe(12.5)
+  })
+
+  it('allows risk multiplier zero without forcing 1', () => {
+    const d = defaultFDM()
+    d.mat.weightUsed = 100
+    d.mat.costPerKg = 100
+    d.mat.spoolEfficiency = 100
+    d.print.printTimeHours = 0
+    d.print.failureMode = 'percent'
+    d.print.failureValue = 50
+    d.print.riskMultiplier = 0
+    const r = calculateFDM(d.mat, d.print, d.machine, d.labor, d.extras, d.sales, d.ops, d.soft, d.hw, d.fin)
+    expect(r.failureCost).toBe(0)
+  })
+
   it('calculates sell price with margin', () => {
     const d = defaultFDM()
     d.mat.weightUsed = 100
@@ -134,5 +155,21 @@ describe('calculateResin', () => {
     const r = calculateResin(mat, print, machine, labor, extras, sales, ops, soft, pp, hw)
     const expectedVolume = 50 * 1.10
     expect(r.materialCost).toBeCloseTo((expectedVolume / 1000) * 180, 2)
+  })
+
+  it('includes resin washing and curing costs', () => {
+    const mat = { type: 'Standard', volumeUsedMl: 50, costPerLiter: 180, density: 1.10, wasteMarginPercent: 0 }
+    const print = { printTimeHours: 1, printerPowerWatts: 50, energyCostPerKwh: 1, failureMode: 'none' as const, failureValue: 0, riskMultiplier: 1 }
+    const machine = { enabled: false, machineCost: 3500, depreciationMonths: 36, hoursPerMonth: 200, maintenanceEnabled: false, maintenanceCost: 0 }
+    const labor = { enabled: false, setupTimeMinutes: 10, postProcessingTimeMinutes: 15, hourlyRate: 25 }
+    const extras = { extrasCost: 0 }
+    const sales = { packagingCost: 0, shippingCost: 0, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 0 }
+    const ops = { enabled: false, ppeCostPerPrint: 0 }
+    const soft = { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 }
+    const pp = { washingEnabled: true, alcoholCostPerLiter: 25, alcoholVolumeLiters: 0.2, curingEnabled: true, curingTimeMinutes: 10, curingPowerWatts: 60 }
+    const hw = { enabled: false, lcdCost: 400, lcdLifespanHours: 2000, fepCost: 80, fepLifespanPrints: 50 }
+
+    const r = calculateResin(mat, print, machine, labor, extras, sales, ops, soft, pp, hw)
+    expect(r.postProcessingCost).toBeCloseTo(0.2 * 25 + (60 / 1000) * (10 / 60) * 1, 4)
   })
 })
