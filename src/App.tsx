@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/Header/Header'
 import { Calculator } from '@/components/Calculator/Calculator'
+import { CatalogTab } from '@/components/Catalog/CatalogTab'
 import { HistoryTab } from '@/components/Calculator/HistoryTab/HistoryTab'
-import { Calculator as CalculatorIcon, Clock } from 'lucide-react'
+import { Calculator as CalculatorIcon, Clock, Settings2 } from 'lucide-react'
 
-type Tab = 'calculator' | 'history'
+type Tab = 'calculator' | 'history' | 'catalog'
 
 function App() {
   const { t } = useTranslation()
@@ -30,6 +31,18 @@ function App() {
             <CalculatorIcon className="w-4 h-4" /> {t('nav.calculator')}
           </button>
           <button
+            onClick={() => setActiveTab('catalog')}
+            role="tab"
+            aria-selected={activeTab === 'catalog'}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+              activeTab === 'catalog'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
+            }`}
+          >
+            <Settings2 className="w-4 h-4" /> {t('nav.catalog')}
+          </button>
+          <button
             onClick={() => setActiveTab('history')}
             role="tab"
             aria-selected={activeTab === 'history'}
@@ -44,7 +57,9 @@ function App() {
         </nav>
 
         <div className="tab-content">
-          {activeTab === 'calculator' ? <Calculator /> : <HistoryTab />}
+          {activeTab === 'calculator' && <Calculator />}
+          {activeTab === 'catalog' && <CatalogTab />}
+          {activeTab === 'history' && <HistoryTab />}
         </div>
       </main>
 

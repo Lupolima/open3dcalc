@@ -5,6 +5,7 @@
   },
   "nav": {
     "calculator": "Calculadora",
+    "catalog": "Cadastros",
     "history": "Histórico"
   },
   "calc": {
@@ -93,6 +94,25 @@
     "quickMode": "Modo Rápido",
     "productName": "Nome do Produto",
     "productNamePlaceholder": "Ex: Vaso Decorativo"
+  },
+  "catalog": {
+    "title": "Cadastros e Presets",
+    "subtitle": "Gerencie impressoras, materiais e marketplaces usados pela calculadora.",
+    "printers": "Impressoras",
+    "materials": "Materiais",
+    "marketplaces": "Marketplaces",
+    "addPrinter": "Nova impressora",
+    "printerName": "Nome",
+    "printerBrand": "Marca",
+    "power": "Potência",
+    "value": "Valor",
+    "addMaterial": "Novo material",
+    "materialName": "Nome do material",
+    "materialType": "Tipo",
+    "density": "Densidade",
+    "avgPrice": "Preço médio",
+    "save": "Salvar",
+    "remove": "Remover"
   },
   "product": {
     "title": "Dados da Peça",

@@ -7,6 +7,7 @@ import type {
 } from '@/types'
 import { marketplaces } from '@/lib/marketplace'
 import { printers } from '@/lib/printers'
+import { useCatalogStore } from '@/stores/catalogStore'
 
 type Marketplace = (typeof marketplaces)[number]
 type PrinterProfile = (typeof printers)[number]
@@ -224,3 +225,11 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
   },
 }))
+
+// Sync default selections with catalog overrides when available.
+if (typeof window !== 'undefined') {
+  const catalog = useCatalogStore.getState()
+  const state = useCalculatorStore.getState()
+  const printer = catalog.printers.find(p => p.id === state.selectedPrinter.id)
+  if (printer) useCalculatorStore.setState({ selectedPrinter: printer as PrinterProfile })
+}

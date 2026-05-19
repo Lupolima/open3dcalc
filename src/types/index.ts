@@ -7,7 +7,7 @@ export type MaterialType =
   | 'pla_metal' | 'hips' | 'pva' | 'pp' | 'peek' | 'peek_cf' | 'ultem'
 
 export interface Material {
-  id: MaterialType
+  id: string
   name: string
   density: number
   avgPrice: number

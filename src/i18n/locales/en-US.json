@@ -5,6 +5,7 @@
   },
   "nav": {
     "calculator": "Calculator",
+    "catalog": "Catalog",
     "history": "History"
   },
   "calc": {
@@ -93,6 +94,25 @@
     "quickMode": "Quick Mode",
     "productName": "Product Name",
     "productNamePlaceholder": "E.g.: Decorative Vase"
+  },
+  "catalog": {
+    "title": "Catalogs & Presets",
+    "subtitle": "Manage printers, materials and marketplaces used by the calculator.",
+    "printers": "Printers",
+    "materials": "Materials",
+    "marketplaces": "Marketplaces",
+    "addPrinter": "New printer",
+    "printerName": "Name",
+    "printerBrand": "Brand",
+    "power": "Power",
+    "value": "Value",
+    "addMaterial": "New material",
+    "materialName": "Material name",
+    "materialType": "Type",
+    "density": "Density",
+    "avgPrice": "Avg. price",
+    "save": "Save",
+    "remove": "Remove"
   },
   "product": {
     "title": "Part Data",
