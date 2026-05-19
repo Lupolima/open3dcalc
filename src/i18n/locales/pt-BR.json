@@ -88,7 +88,11 @@
     "exportPdf": "Exportar PDF",
     "noCosts": "Sem custos para exibir",
     "history": "Últimos Cálculos",
-    "clearHistory": "Limpar"
+    "clearHistory": "Limpar",
+    "clearConfirm": "Tem certeza? Isso apagará todo o histórico.",
+    "quickMode": "Modo Rápido",
+    "productName": "Nome do Produto",
+    "productNamePlaceholder": "Ex: Vaso Decorativo"
   },
   "product": {
     "title": "Dados da Peça",

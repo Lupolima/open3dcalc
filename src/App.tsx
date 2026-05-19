@@ -15,11 +15,13 @@ function App() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-4">
-        <nav className="glass rounded-xl flex p-1 mb-5">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-4 pb-20 md:pb-4">
+        <nav className="glass rounded-xl flex p-1 mb-5" role="tablist">
           <button
             onClick={() => setActiveTab('calculator')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${
+            role="tab"
+            aria-selected={activeTab === 'calculator'}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
               activeTab === 'calculator'
                 ? 'bg-white/10 text-white shadow-md'
                 : 'text-gray-400 hover:text-gray-200'
@@ -29,7 +31,9 @@ function App() {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
               activeTab === 'history'
                 ? 'bg-white/10 text-white shadow-md'
                 : 'text-gray-400 hover:text-gray-200'
@@ -45,7 +49,9 @@ function App() {
       </main>
 
       <footer className="text-center text-xs text-gray-500 py-4">
-        Open3DCalc — Open Source • MIT License
+        <a href="https://github.com/ils15/open3dcalc" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
+          Open3DCalc — Open Source • MIT License
+        </a>
       </footer>
     </div>
   )

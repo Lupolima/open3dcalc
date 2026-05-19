@@ -88,7 +88,11 @@
     "exportPdf": "Export PDF",
     "noCosts": "No costs to display",
     "history": "Recent Calculations",
-    "clearHistory": "Clear"
+    "clearHistory": "Clear",
+    "clearConfirm": "Are you sure? This will delete all history.",
+    "quickMode": "Quick Mode",
+    "productName": "Product Name",
+    "productNamePlaceholder": "E.g.: Decorative Vase"
   },
   "product": {
     "title": "Part Data",

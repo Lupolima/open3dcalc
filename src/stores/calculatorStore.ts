@@ -94,6 +94,10 @@ interface CalculatorState {
   selectedMarketplace: Marketplace
   setSelectedMarketplace: (m: Marketplace) => void
 
+  productName: string
+  setProductName: (name: string) => void
+  quickMode: boolean
+  setQuickMode: (v: boolean) => void
   results: CalculationResult | null
   history: SavedCalculation[]
   addToHistory: () => void
@@ -170,6 +174,11 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   selectedMarketplace: marketplaces[0],
   setSelectedMarketplace: (selectedMarketplace) => set({ selectedMarketplace }),
 
+  productName: '',
+  setProductName: (productName) => set({ productName }),
+  quickMode: false,
+  setQuickMode: (quickMode) => set({ quickMode }),
+
   results: null,
   history: loadHistory(),
 
@@ -177,13 +186,14 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     const s = get()
     const r = s.results
     if (!r) return
+    const summary = s.productName.trim() || (s.activeTab === 'fdm'
+      ? `${s.fdmMaterial.type} - ${s.fdmMaterial.weightUsed}g`
+      : `${s.resinMaterial.type} - ${s.resinMaterial.volumeUsedMl}ml`)
     const item: SavedCalculation = {
       id: Date.now().toString(),
       timestamp: Date.now(),
       type: s.activeTab,
-      summary: s.activeTab === 'fdm'
-        ? `${s.fdmMaterial.type} - ${s.fdmMaterial.weightUsed}g`
-        : `${s.resinMaterial.type} - ${s.resinMaterial.volumeUsedMl}ml`,
+      summary,
       totalCost: r.totalCost,
       sellPrice: r.sellPrice,
       profit: r.profit,

@@ -12,7 +12,7 @@ export function ToggleSwitch({ enabled, onToggle, title, showLabels = false }: T
     return (
       <button
         onClick={() => onToggle(!enabled)}
-        className={`flex h-9 w-28 items-center justify-center rounded-lg text-[10px] font-bold tracking-wider transition-all duration-300 ${
+        className={`flex h-11 w-28 items-center justify-center rounded-lg text-xs font-bold tracking-wider transition-all duration-300 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
           enabled
             ? 'bg-purple-600 text-white shadow-lg'
             : 'bg-white/5 text-gray-500 shadow-inner opacity-70 hover:opacity-100'
@@ -30,13 +30,14 @@ export function ToggleSwitch({ enabled, onToggle, title, showLabels = false }: T
   return (
     <button
       onClick={() => onToggle(!enabled)}
-      className={`group relative flex h-7 w-12 items-center rounded-full p-0.5 transition-colors duration-300 focus:outline-none ${
+      className={`group relative flex h-11 w-14 items-center rounded-full p-1 transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
         enabled ? 'bg-purple-600' : 'bg-white/10'
       }`}
       title={title || (enabled ? 'Desativar' : 'Ativar')}
+      aria-pressed={enabled}
     >
-      <div className={`h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 group-active:w-6 ${
-        enabled ? 'translate-x-6' : 'translate-x-0'
+      <div className={`h-6 w-6 rounded-full bg-white shadow-lg transition-all duration-300 group-active:w-7 ${
+        enabled ? 'translate-x-7' : 'translate-x-0'
       }`} />
     </button>
   )

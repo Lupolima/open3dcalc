@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProductStore } from '@/stores/productStore'
 import type { SavedProduct } from '@/types'
@@ -13,19 +13,29 @@ interface DetailModalProps {
 }
 
 function DetailModal({ product, onClose }: DetailModalProps) {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }, [onClose])
+
+  useEffect(() => {
+    if (product) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [product, handleKeyDown])
 
   if (!product) return null
 
   const d = product.result
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label="Detalhes do produto">
       <div
         className="glass rounded-2xl p-6 w-[90%] max-w-md max-h-[80vh] overflow-y-auto animate-fade-in"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold gradient-text">{product.name}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none" aria-label="Fechar">&times;</button>
         </div>
 
         <div className="space-y-2 text-sm">

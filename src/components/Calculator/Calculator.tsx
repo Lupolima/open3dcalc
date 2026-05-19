@@ -116,18 +116,33 @@ export function Calculator() {
       {/* FDM / Resin Tabs */}
       <div className="glass rounded-xl flex p-1">
         <button onClick={() => store.setActiveTab('fdm')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+          className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
           🖨️ {t('calc.fdm')}
         </button>
         <button onClick={() => store.setActiveTab('resin')}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${!isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+          className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${!isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
           🧪 {t('calc.resin')}
+        </button>
+      </div>
+
+      {/* Quick Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400">{t('calc.quickMode')}</span>
+        <button onClick={() => store.setQuickMode(!store.quickMode)}
+          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${store.quickMode ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-400 hover:text-white'}`}>
+          {store.quickMode ? '✅ ON' : '⚡ OFF'}
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN */}
         <div className="lg:col-span-2 space-y-5">
+          {/* Product Name */}
+          <div className="glass rounded-2xl px-5 py-4">
+            <InputGroup label={t('calc.productName')} value={store.productName}
+              onChange={v => store.setProductName(v)}
+              type="text" placeholder={t('calc.productNamePlaceholder')} />
+          </div>
 
           <ToggleCard title={t('calc.material')} icon="🧵" enabled={materialToggled} onToggle={setMaterialToggled} theme={isFDM ? 'sky' : 'purple'}>
             {isFDM ? (
@@ -546,7 +561,7 @@ export function Calculator() {
                 </div>
               </div>
 
-              <button onClick={() => store.addToHistory()} className="w-full mt-3 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium transition-colors flex items-center justify-center gap-2">
+              <button onClick={() => store.addToHistory()} className="w-full mt-3 py-3 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium transition-colors flex items-center justify-center gap-2">
                 📁 {t('calc.addHistory')}
               </button>
             </div>
@@ -556,7 +571,7 @@ export function Calculator() {
             <div className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-gray-300">{t('calc.history')} ({store.history.length})</span>
-                <button onClick={store.clearHistory} className="text-[10px] text-red-400 hover:text-red-300">🗑️ {t('calc.clearHistory')}</button>
+                <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }} className="text-[10px] text-red-400 hover:text-red-300">🗑️ {t('calc.clearHistory')}</button>
               </div>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {store.history.map(item => (
@@ -586,6 +601,16 @@ export function Calculator() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Sticky Mobile Results Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 md:hidden px-4 py-2 flex items-center justify-between text-xs">
+        <div className="flex gap-4">
+          <span className="text-green-400 font-semibold">{t('calc.totalCost')}: <span className="text-sm">{fmtCurrency(results.totalCost)}</span></span>
+          <span className="text-emerald-400 font-bold">{t('calc.sellPrice')}: <span className="text-sm">{fmtCurrency(results.sellPrice)}</span></span>
+          <span className="text-orange-400 font-semibold">{t('calc.profit')}: <span className="text-sm">{fmtCurrency(results.profit)}</span></span>
+        </div>
+        <button onClick={() => store.addToHistory()} className="px-3 py-2 rounded-lg bg-purple-600 text-white text-[10px] font-bold">📁</button>
       </div>
     </div>
   )
