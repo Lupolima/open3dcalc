@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "Open3DCalc",
+    "subtitle": "Free & Open-Source 3D Calculator"
+  },
+  "nav": {
+    "product": "Part",
+    "machine": "Machine",
+    "pricing": "Pricing",
+    "history": "Saved"
+  },
+  "dashboard": {
+    "totalCost": "Total Cost",
+    "salePrice": "Sale Price",
+    "profit": "Estimated Profit",
+    "unitCost": "Unit Cost",
+    "roi": "ROI"
+  },
+  "product": {
+    "title": "Part Details",
+    "name": "Product Name",
+    "namePlaceholder": "E.g., Decorative Vase",
+    "weight": "Weight (g)",
+    "weightPlaceholder": "100",
+    "volume": "Volume (cm³)",
+    "material": "Material",
+    "filamentPrice": "Filament Price (R$/kg)",
+    "time": "Print Time (min)",
+    "timePlaceholder": "180",
+    "quantity": "Quantity (units)",
+    "infill": "Infill (%)",
+    "purge": "Purge/Waste (%)",
+    "uploadStl": "Drag & drop an STL file or click to analyze",
+    "stlSupported": "Supported formats: STL (binary/ASCII)",
+    "stlInfo": "Upload an STL to extract volume automatically",
+    "manualEntry": "Or enter data manually"
+  },
+  "machine": {
+    "title": "Machine Costs",
+    "printer": "Printer",
+    "printerValue": "Printer Value (R$)",
+    "printerValuePlaceholder": "3500",
+    "usefulLife": "Useful Life (hours)",
+    "usefulLifeHelper": "Typically 2000-5000h for FDM",
+    "power": "Power (W)",
+    "powerPlaceholder": "300",
+    "energyRate": "Energy Rate (R$/kWh)",
+    "laborRate": "Labor (R$/h)",
+    "packaging": "Packaging (R$/unit)",
+    "finishing": "Finishing (R$/unit)",
+    "failureRate": "Failure Rate (%)",
+    "customPrinter": "Custom Printer"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "markup": "Profit Margin (%)",
+    "marketplace": "Marketplace",
+    "directSale": "Direct Sale (No Fees)",
+    "shopee": "Shopee (14% + R$4)",
+    "mercadolivre": "Mercado Livre (16% + R$6)",
+    "amazon": "Amazon (15%)",
+    "etsy": "Etsy (6.5% + $3)",
+    "calculate": "Calculate Costs",
+    "save": "Save Product",
+    "saveSuccess": "Product saved successfully!",
+    "export": "Export Report",
+    "exportPdf": "Export PDF",
+    "saveFirst": "Save a product first"
+  },
+  "history": {
+    "title": "Your Products",
+    "empty": "No saved products.",
+    "search": "Search products...",
+    "filter": "Filter",
+    "details": "Details",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this product?",
+    "exportJson": "Export Data (JSON)",
+    "noResults": "No results found"
+  },
+  "breakdown": {
+    "title": "Cost Breakdown",
+    "material": "Material",
+    "energy": "Energy",
+    "depreciation": "Depreciation",
+    "maintenance": "Maintenance",
+    "labor": "Labor",
+    "packaging": "Packaging",
+    "finishing": "Finishing",
+    "failure": "Failure Rate",
+    "marketplaceFee": "Marketplace Fee"
+  },
+  "stl": {
+    "loading": "Analyzing 3D model...",
+    "success": "Model analyzed successfully!",
+    "error": "Error analyzing STL",
+    "volume": "Volume",
+    "faces": "Faces",
+    "vertices": "Vertices",
+    "estimatedWeight": "Estimated Weight",
+    "invalidFile": "Invalid file. Please upload an STL or OBJ.",
+    "notManifold": "The mesh is not manifold (may not be watertight)"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "grams": "g",
+    "reais": "R$",
+    "hours": "h",
+    "minutes": "min",
+    "watt": "W",
+    "noData": "No data available"
+  }
+}

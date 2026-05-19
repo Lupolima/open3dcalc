@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "Open3DCalc",
+    "subtitle": "Calculadora 3D Livre & Open-Source"
+  },
+  "nav": {
+    "product": "Peça",
+    "machine": "Máquina",
+    "pricing": "Precificação",
+    "history": "Salvos"
+  },
+  "dashboard": {
+    "totalCost": "Custo Total",
+    "salePrice": "Preço de Venda",
+    "profit": "Lucro Estimado",
+    "unitCost": "Custo Unitário",
+    "roi": "ROI"
+  },
+  "product": {
+    "title": "Dados da Peça",
+    "name": "Nome do Produto",
+    "namePlaceholder": "Ex: Vaso Decorativo",
+    "weight": "Peso (g)",
+    "weightPlaceholder": "100",
+    "volume": "Volume (cm³)",
+    "material": "Material",
+    "filamentPrice": "Preço Filamento (R$/kg)",
+    "time": "Tempo de Impressão (min)",
+    "timePlaceholder": "180",
+    "quantity": "Quantidade (unidades)",
+    "infill": "Preenchimento (Infill %)",
+    "purge": "Purga/Desperdício (%)",
+    "uploadStl": "Arraste um arquivo STL ou clique para analisar",
+    "stlSupported": "Formatos suportados: STL (binário/ASCII)",
+    "stlInfo": "Faça upload de um STL para extrair volume automaticamente",
+    "manualEntry": "Ou insira os dados manualmente"
+  },
+  "machine": {
+    "title": "Custos da Máquina",
+    "printer": "Impressora",
+    "printerValue": "Valor da Impressora (R$)",
+    "printerValuePlaceholder": "3500",
+    "usefulLife": "Vida Útil (horas)",
+    "usefulLifeHelper": "Geralmente 2000-5000h para FDM",
+    "power": "Potência (W)",
+    "powerPlaceholder": "300",
+    "energyRate": "Tarifa Energia (R$/kWh)",
+    "laborRate": "Mão de Obra (R$/h)",
+    "packaging": "Embalagem (R$/un)",
+    "finishing": "Acabamento (R$/un)",
+    "failureRate": "Taxa de Falhas (%)",
+    "customPrinter": "Impressora Personalizada"
+  },
+  "pricing": {
+    "title": "Precificação",
+    "markup": "Margem de Lucro (%)",
+    "marketplace": "Marketplace",
+    "directSale": "Venda Direta (Sem Taxas)",
+    "shopee": "Shopee (14% + R$4)",
+    "mercadolivre": "Mercado Livre (16% + R$6)",
+    "amazon": "Amazon (15%)",
+    "etsy": "Etsy (6.5% + R$3)",
+    "calculate": "Calcular Custos",
+    "save": "Salvar Produto",
+    "saveSuccess": "Produto salvo com sucesso!",
+    "export": "Exportar Relatório",
+    "exportPdf": "Exportar PDF",
+    "saveFirst": "Salve um produto primeiro"
+  },
+  "history": {
+    "title": "Seus Produtos",
+    "empty": "Nenhum produto salvo.",
+    "search": "Buscar produtos...",
+    "filter": "Filtrar",
+    "details": "Detalhes",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir este produto?",
+    "exportJson": "Exportar Dados (JSON)",
+    "noResults": "Nenhum resultado encontrado"
+  },
+  "breakdown": {
+    "title": "Detalhamento de Custos",
+    "material": "Material",
+    "energy": "Energia",
+    "depreciation": "Depreciação",
+    "maintenance": "Manutenção",
+    "labor": "Mão de Obra",
+    "packaging": "Embalagem",
+    "finishing": "Acabamento",
+    "failure": "Taxa de Falhas",
+    "marketplaceFee": "Taxa Marketplace"
+  },
+  "stl": {
+    "loading": "Analisando modelo 3D...",
+    "success": "Modelo analisado com sucesso!",
+    "error": "Erro ao analisar STL",
+    "volume": "Volume",
+    "faces": "Faces",
+    "vertices": "Vértices",
+    "estimatedWeight": "Peso Estimado",
+    "invalidFile": "Arquivo inválido. Envie um STL ou OBJ.",
+    "notManifold": "A malha não é manifold (pode não ser hermética)"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "grams": "g",
+    "reais": "R$",
+    "hours": "h",
+    "minutes": "min",
+    "watt": "W",
+    "noData": "Nenhum dado disponível"
+  }
+}
