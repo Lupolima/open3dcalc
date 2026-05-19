@@ -105,6 +105,8 @@ interface CalculatorState {
   setInfillPercent: (v: number) => void
   targetMarginMode: boolean
   setTargetMarginMode: (v: boolean) => void
+  enabledSections: Record<string, boolean>
+  toggleSection: (section: string) => void
   results: CalculationResult | null
   history: SavedCalculation[]
   addToHistory: () => void
@@ -191,6 +193,17 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   setInfillPercent: (infillPercent) => set({ infillPercent }),
   targetMarginMode: false,
   setTargetMarginMode: (targetMarginMode) => set({ targetMarginMode }),
+  enabledSections: loadStr('enabledSections', {
+    material: true, energy: true, machine: true, hardware: true,
+    consumables: true, labor: true, software: true, failure: true,
+    extras: true, postProcessing: true, packaging: true, shipping: true,
+  }),
+  toggleSection: (section) => {
+    const s = get()
+    const next = { ...s.enabledSections, [section]: !s.enabledSections[section] }
+    localStorage.setItem('open3dcalc_sections', JSON.stringify(next))
+    set({ enabledSections: next })
+  },
 
   results: null,
   history: loadHistory(),

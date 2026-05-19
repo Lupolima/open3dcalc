@@ -9,6 +9,12 @@
     "history": "Histórico",
     "dashboard": "Dashboard"
   },
+  "dashboard": {
+    "totalCost": "Custo Total",
+    "salePrice": "Preço de Venda",
+    "profit": "Lucro Líquido",
+    "roi": "ROI"
+  },
   "calc": {
     "fdm": "Impressão FDM",
     "resin": "Impressão em Resina",
@@ -117,7 +123,9 @@
     "gcodeParsed": "G-code parseado com sucesso!",
     "gcodeError": "Erro ao parsear G-code",
     "parse3mf": "Parse 3MF",
-    "markupPresets": "Presets de Markup"
+    "markupPresets": "Presets de Markup",
+    "annualProfit": "Lucro Anual",
+    "cheaper": "Mais Barato"
   },
   "catalog": {
     "title": "Cadastros e Presets",

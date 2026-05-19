@@ -26,50 +26,79 @@ const SECTIONS = [
 
 function buildResults(s: ReturnType<typeof useCalculatorStore.getState>): CalculationResult {
   const qty = s.quantity > 0 ? s.quantity : 1
+  const es = s.enabledSections
   if (s.activeTab === 'fdm') {
     const result = calculateFDM(
       s.fdmMaterial, s.fdmPrintParams, s.fdmMachine,
       s.fdmLabor, s.fdmExtras, s.fdmSales, s.fdmOps, s.fdmSoft,
       s.fdmHardware, s.fdmFinishing,
     )
-    if (qty > 1) {
-      const laborPerUnit = s.fdmLabor.enabled
-        ? ((s.fdmLabor.setupTimeMinutes + s.fdmLabor.postProcessingTimeMinutes) / 60) * s.fdmLabor.hourlyRate
-        : 0
-      const setupCost = laborPerUnit
-      const perUnitCost = result.totalCost - setupCost + (setupCost / qty)
-      const perUnitSellPrice = result.sellPrice - setupCost + (setupCost / qty)
-      return {
-        ...result,
-        totalCost: perUnitCost,
-        sellPrice: perUnitSellPrice,
-        profit: perUnitSellPrice - perUnitCost - result.marketplaceFee - result.taxAmount,
-        costPerUnit: perUnitCost,
-      }
+    const filtered = {
+      ...result,
+      materialCost: es.material ? result.materialCost : 0,
+      energyCost: es.energy ? result.energyCost : 0,
+      machineCost: es.machine ? result.machineCost : 0,
+      hardwareCost: es.hardware ? result.hardwareCost : 0,
+      consumablesCost: es.consumables ? result.consumablesCost : 0,
+      laborCost: es.labor ? result.laborCost : 0,
+      softwareCost: es.software ? result.softwareCost : 0,
+      failureCost: es.failure ? result.failureCost : 0,
+      extrasCost: es.extras ? result.extrasCost : 0,
+      postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
     }
-    return result
+    const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.fdmSales.packagingCost : 0) + (es.shipping ? s.fdmSales.shippingCost : 0)
+    const profitAmountRaw = totalBaseCost * (s.fdmSales.profitMarginPercent / 100)
+    const priceBeforeFees = totalBaseCost + profitAmountRaw
+    const totalFeePercent = (s.fdmSales.taxPercent + s.fdmSales.marketplaceFeePercent) / 100
+    const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
+    const taxAmount = sellPrice * (s.fdmSales.taxPercent / 100)
+    const marketplaceFee = sellPrice * (s.fdmSales.marketplaceFeePercent / 100)
+    const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
+    const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
+    if (qty > 1) {
+      const laborPerUnit = s.fdmLabor.enabled ? ((s.fdmLabor.setupTimeMinutes + s.fdmLabor.postProcessingTimeMinutes) / 60) * s.fdmLabor.hourlyRate : 0
+      const setupCost = laborPerUnit
+      const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
+      const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
+      return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
+    }
+    return r
   }
   const result = calculateResin(
     s.resinMaterial, s.resinPrintParams, s.resinMachine,
     s.resinLabor, s.resinExtras, s.resinSales, s.resinOps, s.resinSoft,
     s.resinPostProcess, s.resinHardware,
   )
-  if (qty > 1) {
-    const laborPerUnit = s.resinLabor.enabled
-      ? ((s.resinLabor.setupTimeMinutes + s.resinLabor.postProcessingTimeMinutes) / 60) * s.resinLabor.hourlyRate
-      : 0
-    const setupCost = laborPerUnit
-    const perUnitCost = result.totalCost - setupCost + (setupCost / qty)
-    const perUnitSellPrice = result.sellPrice - setupCost + (setupCost / qty)
-    return {
-      ...result,
-      totalCost: perUnitCost,
-      sellPrice: perUnitSellPrice,
-      profit: perUnitSellPrice - perUnitCost - result.marketplaceFee - result.taxAmount,
-      costPerUnit: perUnitCost,
-    }
+  const filtered = {
+    ...result,
+    materialCost: es.material ? result.materialCost : 0,
+    energyCost: es.energy ? result.energyCost : 0,
+    machineCost: es.machine ? result.machineCost : 0,
+    hardwareCost: es.hardware ? result.hardwareCost : 0,
+    consumablesCost: es.consumables ? result.consumablesCost : 0,
+    laborCost: es.labor ? result.laborCost : 0,
+    softwareCost: es.software ? result.softwareCost : 0,
+    failureCost: es.failure ? result.failureCost : 0,
+    extrasCost: es.extras ? result.extrasCost : 0,
+    postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
   }
-  return result
+  const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.resinSales.packagingCost : 0) + (es.shipping ? s.resinSales.shippingCost : 0)
+  const profitAmountRaw = totalBaseCost * (s.resinSales.profitMarginPercent / 100)
+  const priceBeforeFees = totalBaseCost + profitAmountRaw
+  const totalFeePercent = (s.resinSales.taxPercent + s.resinSales.marketplaceFeePercent) / 100
+  const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
+  const taxAmount = sellPrice * (s.resinSales.taxPercent / 100)
+  const marketplaceFee = sellPrice * (s.resinSales.marketplaceFeePercent / 100)
+  const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
+  const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
+  if (qty > 1) {
+    const laborPerUnit = s.resinLabor.enabled ? ((s.resinLabor.setupTimeMinutes + s.resinLabor.postProcessingTimeMinutes) / 60) * s.resinLabor.hourlyRate : 0
+    const setupCost = laborPerUnit
+    const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
+    const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
+    return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
+  }
+  return r
 }
 
 export function Calculator() {
@@ -890,6 +919,42 @@ export function Calculator() {
               className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
               <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-6' : 'left-0.5'}`} />
             </button>
+          </div>
+
+          {/* Cost Sections Toggle */}
+          <div className="glass rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-white">Seções do Cálculo</span>
+              <span className="text-[10px] text-gray-500">Marque/desmarque para personalizar</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { key: 'material', label: 'Material', icon: '🧵' },
+                { key: 'energy', label: 'Energia', icon: '⚡' },
+                { key: 'machine', label: 'Máquina', icon: '🖨️' },
+                { key: 'hardware', label: 'Hardware', icon: '🔧' },
+                { key: 'consumables', label: 'Consumíveis', icon: '🛡️' },
+                { key: 'labor', label: 'Mão de Obra', icon: '👷' },
+                { key: 'software', label: 'Software', icon: '💻' },
+                { key: 'failure', label: 'Falhas', icon: '⚠️' },
+                { key: 'extras', label: 'Extras', icon: '📦' },
+                { key: 'postProcessing', label: 'Acabamento', icon: '🎨' },
+                { key: 'packaging', label: 'Embalagem', icon: '📋' },
+                { key: 'shipping', label: 'Frete', icon: '🚚' },
+              ].map(s => (
+                <button key={s.key}
+                  onClick={() => store.toggleSection(s.key)}
+                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all ${
+                    store.enabledSections[s.key]
+                      ? 'bg-purple-600/30 text-white border border-purple-500/50'
+                      : 'bg-white/5 text-gray-500 border border-transparent'
+                  }`}>
+                  <span className="text-base">{s.icon}</span>
+                  <span>{s.label}</span>
+                  <span className={`w-2 h-2 rounded-full ${store.enabledSections[s.key] ? 'bg-green-400' : 'bg-gray-600'}`} />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Product Name */}

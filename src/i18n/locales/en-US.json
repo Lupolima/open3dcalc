@@ -9,6 +9,12 @@
     "history": "History",
     "dashboard": "Dashboard"
   },
+  "dashboard": {
+    "totalCost": "Total Cost",
+    "salePrice": "Sale Price",
+    "profit": "Net Profit",
+    "roi": "ROI"
+  },
   "calc": {
     "fdm": "FDM Printing",
     "resin": "Resin Printing",
@@ -117,7 +123,9 @@
     "gcodeParsed": "G-code parsed successfully!",
     "gcodeError": "Error parsing G-code",
     "parse3mf": "Parse 3MF",
-    "markupPresets": "Markup Presets"
+    "markupPresets": "Markup Presets",
+    "annualProfit": "Annual Profit",
+    "cheaper": "Cheaper"
   },
   "catalog": {
     "title": "Catalogs & Presets",

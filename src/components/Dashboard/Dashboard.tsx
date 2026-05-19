@@ -157,7 +157,7 @@ export function Dashboard() {
               </p>
             </div>
             <div className="glass rounded-xl p-3 text-center">
-              <p className="text-[10px] text-gray-500">Lucro Anual</p>
+              <p className="text-[10px] text-gray-500">{t('calc.annualProfit')}</p>
               <p className={`text-sm font-bold ${monthlyProjection && monthlyProjection.annualProfit >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
                 {monthlyProjection ? formatMoney(monthlyProjection.annualProfit) : '---'}
               </p>
@@ -199,7 +199,7 @@ export function Dashboard() {
           {printVsBuy && (
             <div className="grid grid-cols-2 gap-3">
               <div className="glass rounded-xl p-3 text-center">
-                <p className="text-[10px] text-gray-500">Mais Barato</p>
+                <p className="text-[10px] text-gray-500">{t('calc.cheaper')}</p>
                 <p className="text-sm font-bold text-cyan-400">
                   {printVsBuy.cheaper === 'print' ? t('calc.printCheaper') : t('calc.buyCheaper')}
                 </p>
