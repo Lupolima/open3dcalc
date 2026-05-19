@@ -6,7 +6,6 @@ import { printers } from '@/lib/printers'
 import { marketplaces } from '@/lib/marketplace'
 import { calculateFDM, calculateResin } from '@/lib/calculator'
 import { InputGroup, SelectGroup } from '@/components/ui/InputGroup'
-import { SummaryRow, SummarySectionHeader } from '@/components/ui/SummaryRow'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import type { BufferGeometry } from 'three'
 import type { CalculationResult } from '@/types'
@@ -14,14 +13,14 @@ import type { CalculationResult } from '@/types'
 const StlPreview = lazy(() => import('@/components/StlPreview/StlPreview').then(m => ({ default: m.StlPreview })))
 
 const SECTIONS = [
-  { id: 'material', icon: '🧵', label: 'calc.material' },
-  { id: 'print', icon: '⚙️', label: 'calc.printParams' },
-  { id: 'hardware', icon: '🔧', label: 'calc.fdmHardware' },
-  { id: 'machine', icon: '🖨️', label: 'calc.machine' },
-  { id: 'labor', icon: '👷', label: 'calc.labor' },
-  { id: 'ops', icon: '🛡️', label: 'calc.opsSoftware' },
-  { id: 'sales', icon: '💰', label: 'calc.sales' },
-  { id: 'results', icon: '📊', label: 'calc.results' },
+  { id: 'material', icon: '🧵', label: 'calc.material', short: 'Material' },
+  { id: 'print', icon: '⚙️', label: 'calc.printParams', short: 'Parâmetros' },
+  { id: 'hardware', icon: '🔧', label: 'calc.fdmHardware', short: 'Hardware' },
+  { id: 'machine', icon: '🖨️', label: 'calc.machine', short: 'Máquina' },
+  { id: 'labor', icon: '👷', label: 'calc.labor', short: 'Mão de Obra' },
+  { id: 'ops', icon: '🛡️', label: 'calc.opsSoftware', short: 'EPI / Soft' },
+  { id: 'sales', icon: '💰', label: 'calc.sales', short: 'Vendas' },
+  { id: 'results', icon: '📊', label: 'calc.results', short: 'Resultados' },
 ]
 
 function buildResults(s: ReturnType<typeof useCalculatorStore.getState>): CalculationResult {
@@ -51,7 +50,6 @@ export function Calculator() {
   const [activeSection, setActiveSection] = useState('material')
 
   const isFDM = store.activeTab === 'fdm'
-  const themeText = isFDM ? 'text-sky-400' : 'text-purple-400'
   const themeBg = isFDM ? 'bg-sky-600' : 'bg-purple-600'
 
   const results = useMemo(() => buildResults(store), [store])
@@ -73,7 +71,6 @@ export function Calculator() {
   }, [results, isFDM])
 
   const fmtCurrency = (val: number) => (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const calcPct = (val: number) => results.totalCost > 0 ? ((val / results.totalCost) * 100).toFixed(1) + '%' : '0%'
 
   const handleFileDrop = useCallback(async (file: File) => {
     if (!file.name.match(/\.(stl|obj|3mf)$/i)) {
@@ -116,12 +113,24 @@ export function Calculator() {
     setter(value === '' ? 0 : parseFloat(value) || 0)
   }, [])
 
+  function renderSectionHeader(icon: string, title: string, subtitle?: string) {
+    return (
+      <div className="flex items-center gap-3 mb-6 pb-5 border-b border-white/10">
+        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-white leading-tight">{title}</h3>
+          {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        </div>
+      </div>
+    )
+  }
+
   function renderMaterialSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>🧵</span> {t('calc.material')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('🧵', t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SelectGroup label={t('calc.filamentType')} value={store.fdmMaterial.type}
@@ -200,10 +209,8 @@ export function Calculator() {
 
   function renderPrintSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>⚙️</span> {t('calc.printParams')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('⚙️', t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
@@ -277,10 +284,8 @@ export function Calculator() {
 
   function renderHardwareSection() {
     return (
-      <div className="glass rounded-2xl p-5 space-y-6">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>🔧</span> {t('calc.fdmHardware')}
-        </h3>
+      <div className="glass rounded-2xl p-6 space-y-6">
+        {renderSectionHeader('🔧', t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
         {isFDM && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -379,10 +384,8 @@ export function Calculator() {
 
   function renderMachineSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>🖨️</span> {t('calc.machine')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('🖨️', t('calc.machine'), 'Depreciação e manutenção')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
@@ -412,10 +415,8 @@ export function Calculator() {
 
   function renderLaborSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>👷</span> {t('calc.labor')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('👷', t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
@@ -433,10 +434,8 @@ export function Calculator() {
 
   function renderOpsSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>🛡️</span> {t('calc.opsSoftware')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('🛡️', t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
@@ -474,10 +473,8 @@ export function Calculator() {
 
   function renderSalesSection() {
     return (
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <span>💰</span> {t('calc.sales')}
-        </h3>
+      <div className="glass rounded-2xl p-6">
+        {renderSectionHeader('💰', t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
@@ -511,98 +508,94 @@ export function Calculator() {
   function renderRightSidebar() {
     return (
       <>
-        <div className="glass rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/10 flex items-center gap-2">
-            <span className={`text-base ${themeText}`}>📊</span>
-            <h3 className="font-semibold text-sm text-white">{t('calc.costDistribution')}</h3>
+        {/* Hero — Sell Price */}
+        <div className="rounded-2xl p-6 bg-gradient-to-br from-emerald-900/60 via-emerald-900/40 to-emerald-800/20 border border-emerald-700/30 text-center">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
+          <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
+          {results.taxAmount > 0 && (
+            <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
+          )}
+        </div>
+
+        {/* Cost + Profit */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.totalCost')}</div>
+            <div className="text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
           </div>
-          <div className="p-4 h-64 w-full">
-            {chartData.length > 0 ? (
+          <div className="rounded-xl p-4 bg-orange-900/20 border border-orange-800/30 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400/70 mb-1">{t('calc.profit')}</div>
+            <div className="text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
+          </div>
+        </div>
+
+        {/* Cost Breakdown — progress bars */}
+        {chartData.length > 0 && (
+          <div className="glass rounded-2xl p-5">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
+            <div className="space-y-3">
+              {chartData.map(item => (
+                <div key={item.name}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-400">{item.name}</span>
+                    <span className="text-xs font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Pie chart compact */}
+            <div className="mt-4 h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value">
+                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={48} outerRadius={68} paddingAngle={3} dataKey="value">
                     {chartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.2)" />
+                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => fmtCurrency(value)}
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0' }}
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
                     itemStyle={{ color: '#e2e8f0' }} />
                   <Legend layout="vertical" verticalAlign="middle" align="right"
-                    iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '40%' }} />
+                    iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '42%' }} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500 text-xs">{t('calc.noCosts')}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/10 flex items-center gap-2">
-            <span className={`text-base ${themeText}`}>📋</span>
-            <h3 className="font-semibold text-sm text-white">{t('calc.summary')}</h3>
-          </div>
-          <div className="px-5 py-4 space-y-1">
-            <SummarySectionHeader title={t('calc.directProduction')} />
-            <SummaryRow label={`Material (${calcPct(results.materialCost)})`} icon="🧵" value={fmtCurrency(results.materialCost)} colorClass={themeText} />
-            <SummaryRow label={`Energia (${calcPct(results.energyCost)})`} icon="⚡" value={fmtCurrency(results.energyCost)} colorClass="text-yellow-400" />
-            {results.postProcessingCost > 0 && <SummaryRow label={`${isFDM ? 'Acabamento' : 'Pós-Processamento'} (${calcPct(results.postProcessingCost)})`} icon="🎨" value={fmtCurrency(results.postProcessingCost)} colorClass="text-cyan-400" />}
-
-            {(results.hardwareCost > 0 || results.machineCost > 0) && <SummarySectionHeader title={t('calc.equipment')} />}
-            <SummaryRow label={`Máquina (${calcPct(results.machineCost)})`} icon="🖨️" value={fmtCurrency(results.machineCost)} colorClass="text-gray-400" />
-            {results.hardwareCost > 0 && <SummaryRow label={`${isFDM ? 'Bico/Mesa' : 'LCD/FEP'} (${calcPct(results.hardwareCost)})`} icon="🔧" value={fmtCurrency(results.hardwareCost)} colorClass="text-orange-400" />}
-
-            {(results.consumablesCost > 0 || results.softwareCost > 0 || results.laborCost > 0) && <SummarySectionHeader title={t('calc.operational')} />}
-            {results.consumablesCost > 0 && <SummaryRow label={`EPI (${calcPct(results.consumablesCost)})`} icon="🛡️" value={fmtCurrency(results.consumablesCost)} colorClass="text-cyan-400" />}
-            {results.softwareCost > 0 && <SummaryRow label={`Software (${calcPct(results.softwareCost)})`} icon="💻" value={fmtCurrency(results.softwareCost)} colorClass="text-indigo-400" />}
-            {results.laborCost > 0 && <SummaryRow label={`Mão de Obra (${calcPct(results.laborCost)})`} icon="👷" value={fmtCurrency(results.laborCost)} colorClass="text-pink-400" />}
-
-            {(results.failureCost > 0 || results.extrasCost > 0) && <SummarySectionHeader title={t('calc.riskExtras')} />}
-            {results.failureCost > 0 && <SummaryRow label={`Falha (${calcPct(results.failureCost)})`} icon="⚠️" value={fmtCurrency(results.failureCost)} colorClass="text-red-400" />}
-            {results.extrasCost > 0 && <SummaryRow label={`Extras (${calcPct(results.extrasCost)})`} icon="📦" value={fmtCurrency(results.extrasCost)} colorClass="text-gray-400" />}
-
-            <div className="mt-4 space-y-3 pt-4 border-t border-white/10">
-              <div className="bg-white/5 rounded-xl p-3 border border-green-900/50 flex justify-between items-center">
-                <span className="text-green-400 font-semibold text-xs">{t('calc.totalCost')}</span>
-                <span className="text-lg font-bold text-green-400">{fmtCurrency(results.totalCost)}</span>
-              </div>
-              <div className="bg-emerald-900/20 rounded-xl p-4 border border-emerald-800/50">
-                <div className="flex justify-between items-center">
-                  <span className="text-emerald-400 font-bold text-xs">{t('calc.sellPrice')}</span>
-                  <span className="text-xl font-bold text-emerald-400">{fmtCurrency(results.sellPrice)}</span>
-                </div>
-                {results.taxAmount > 0 && <div className="text-right text-[10px] text-emerald-600 mt-1">c/ taxas</div>}
-              </div>
-              <div className="bg-orange-900/20 rounded-xl p-3 border border-orange-800/50 flex justify-between items-center">
-                <span className="text-orange-400 font-semibold text-xs">{t('calc.profit')}</span>
-                <span className="text-lg font-bold text-orange-400">{fmtCurrency(results.profit)}</span>
-              </div>
             </div>
-
-            <button onClick={() => store.addToHistory()} className="w-full mt-3 py-3 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium transition-colors flex items-center justify-center gap-2">
-              📁 {t('calc.addHistory')}
-            </button>
           </div>
-        </div>
+        )}
 
+        {/* Add to History */}
+        <button onClick={() => store.addToHistory()}
+          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">
+          📁 {t('calc.addHistory')}
+        </button>
+
+        {/* History */}
         {store.history.length > 0 && (
           <div className="glass rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-300">{t('calc.history')} ({store.history.length})</span>
-              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }} className="text-[10px] text-red-400 hover:text-red-300">🗑️ {t('calc.clearHistory')}</button>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({store.history.length})</span>
+              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }}
+                className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">
+                {t('calc.clearHistory')}
+              </button>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1">
               {store.history.map(item => (
-                <div key={item.id} className="text-xs border-b border-white/5 pb-2 last:border-0 last:pb-0">
-                  <div className="flex justify-between text-[10px] text-gray-500 mb-0.5">
+                <div key={item.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex justify-between text-[10px] text-gray-500 mb-1">
                     <span>{new Date(item.timestamp).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="uppercase font-bold">{item.type}</span>
+                    <span className="uppercase font-bold tracking-wider">{item.type}</span>
                   </div>
-                  <div className="font-medium text-gray-300 truncate">{item.summary}</div>
-                  <div className="flex justify-between mt-0.5">
-                    <span className="text-orange-400 font-mono">{fmtCurrency(item.profit)}</span>
-                    <span className="text-emerald-400 font-bold font-mono">{fmtCurrency(item.sellPrice)}</span>
+                  <div className="font-medium text-gray-200 text-xs truncate mb-1">{item.summary}</div>
+                  <div className="flex justify-between">
+                    <span className="text-orange-400 font-mono text-xs">{fmtCurrency(item.profit)}</span>
+                    <span className="text-emerald-400 font-mono font-bold text-xs">{fmtCurrency(item.sellPrice)}</span>
                   </div>
                 </div>
               ))}
@@ -610,12 +603,14 @@ export function Calculator() {
           </div>
         )}
 
-        <div className="glass rounded-2xl p-5 space-y-3">
+        {/* Actions */}
+        <div className="grid grid-cols-2 gap-3">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
+            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
             {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
           </button>
-          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }} className="w-full py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-500 transition-all">
+          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
+            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
             📄 {t('calc.exportPdf')}
           </button>
         </div>
@@ -625,99 +620,82 @@ export function Calculator() {
 
   function renderResultsSection() {
     return (
-      <div className="space-y-5">
-        <div className="glass rounded-2xl overflow-hidden lg:hidden">
-          <div className="px-5 py-4 border-b border-white/10 flex items-center gap-2">
-            <span className={`text-base ${themeText}`}>📊</span>
-            <h3 className="font-semibold text-sm text-white">{t('calc.costDistribution')}</h3>
+      <div className="space-y-4 lg:hidden">
+        {/* Hero sell price */}
+        <div className="rounded-2xl p-6 bg-gradient-to-br from-emerald-900/60 via-emerald-900/40 to-emerald-800/20 border border-emerald-700/30 text-center">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
+          <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
+          {results.taxAmount > 0 && <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas</div>}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.totalCost')}</div>
+            <div className="text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
           </div>
-          <div className="p-4 h-64 w-full">
-            {chartData.length > 0 ? (
+          <div className="rounded-xl p-4 bg-orange-900/20 border border-orange-800/30 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400/70 mb-1">{t('calc.profit')}</div>
+            <div className="text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
+          </div>
+        </div>
+
+        {/* Cost breakdown bars */}
+        {chartData.length > 0 && (
+          <div className="glass rounded-2xl p-5">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
+            <div className="space-y-3 mb-4">
+              {chartData.map(item => (
+                <div key={item.name}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-400">{item.name}</span>
+                    <span className="text-xs font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value">
-                    {chartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.2)" />
-                    ))}
+                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={52} outerRadius={72} paddingAngle={3} dataKey="value">
+                    {chartData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />)}
                   </Pie>
                   <Tooltip formatter={(value: number) => fmtCurrency(value)}
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0' }}
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
                     itemStyle={{ color: '#e2e8f0' }} />
-                  <Legend layout="vertical" verticalAlign="middle" align="right"
-                    iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '40%' }} />
+                  <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '42%' }} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500 text-xs">{t('calc.noCosts')}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl overflow-hidden lg:hidden">
-          <div className="px-5 py-4 border-b border-white/10 flex items-center gap-2">
-            <span className={`text-base ${themeText}`}>📋</span>
-            <h3 className="font-semibold text-sm text-white">{t('calc.summary')}</h3>
-          </div>
-          <div className="px-5 py-4 space-y-1">
-            <SummarySectionHeader title={t('calc.directProduction')} />
-            <SummaryRow label={`Material (${calcPct(results.materialCost)})`} icon="🧵" value={fmtCurrency(results.materialCost)} colorClass={themeText} />
-            <SummaryRow label={`Energia (${calcPct(results.energyCost)})`} icon="⚡" value={fmtCurrency(results.energyCost)} colorClass="text-yellow-400" />
-            {results.postProcessingCost > 0 && <SummaryRow label={`${isFDM ? 'Acabamento' : 'Pós-Processamento'} (${calcPct(results.postProcessingCost)})`} icon="🎨" value={fmtCurrency(results.postProcessingCost)} colorClass="text-cyan-400" />}
-
-            {(results.hardwareCost > 0 || results.machineCost > 0) && <SummarySectionHeader title={t('calc.equipment')} />}
-            <SummaryRow label={`Máquina (${calcPct(results.machineCost)})`} icon="🖨️" value={fmtCurrency(results.machineCost)} colorClass="text-gray-400" />
-            {results.hardwareCost > 0 && <SummaryRow label={`${isFDM ? 'Bico/Mesa' : 'LCD/FEP'} (${calcPct(results.hardwareCost)})`} icon="🔧" value={fmtCurrency(results.hardwareCost)} colorClass="text-orange-400" />}
-
-            {(results.consumablesCost > 0 || results.softwareCost > 0 || results.laborCost > 0) && <SummarySectionHeader title={t('calc.operational')} />}
-            {results.consumablesCost > 0 && <SummaryRow label={`EPI (${calcPct(results.consumablesCost)})`} icon="🛡️" value={fmtCurrency(results.consumablesCost)} colorClass="text-cyan-400" />}
-            {results.softwareCost > 0 && <SummaryRow label={`Software (${calcPct(results.softwareCost)})`} icon="💻" value={fmtCurrency(results.softwareCost)} colorClass="text-indigo-400" />}
-            {results.laborCost > 0 && <SummaryRow label={`Mão de Obra (${calcPct(results.laborCost)})`} icon="👷" value={fmtCurrency(results.laborCost)} colorClass="text-pink-400" />}
-
-            {(results.failureCost > 0 || results.extrasCost > 0) && <SummarySectionHeader title={t('calc.riskExtras')} />}
-            {results.failureCost > 0 && <SummaryRow label={`Falha (${calcPct(results.failureCost)})`} icon="⚠️" value={fmtCurrency(results.failureCost)} colorClass="text-red-400" />}
-            {results.extrasCost > 0 && <SummaryRow label={`Extras (${calcPct(results.extrasCost)})`} icon="📦" value={fmtCurrency(results.extrasCost)} colorClass="text-gray-400" />}
-
-            <div className="mt-4 space-y-3 pt-4 border-t border-white/10">
-              <div className="bg-white/5 rounded-xl p-3 border border-green-900/50 flex justify-between items-center">
-                <span className="text-green-400 font-semibold text-xs">{t('calc.totalCost')}</span>
-                <span className="text-lg font-bold text-green-400">{fmtCurrency(results.totalCost)}</span>
-              </div>
-              <div className="bg-emerald-900/20 rounded-xl p-4 border border-emerald-800/50">
-                <div className="flex justify-between items-center">
-                  <span className="text-emerald-400 font-bold text-xs">{t('calc.sellPrice')}</span>
-                  <span className="text-xl font-bold text-emerald-400">{fmtCurrency(results.sellPrice)}</span>
-                </div>
-                {results.taxAmount > 0 && <div className="text-right text-[10px] text-emerald-600 mt-1">c/ taxas</div>}
-              </div>
-              <div className="bg-orange-900/20 rounded-xl p-3 border border-orange-800/50 flex justify-between items-center">
-                <span className="text-orange-400 font-semibold text-xs">{t('calc.profit')}</span>
-                <span className="text-lg font-bold text-orange-400">{fmtCurrency(results.profit)}</span>
-              </div>
             </div>
-
-            <button onClick={() => store.addToHistory()} className="w-full mt-3 py-3 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium transition-colors flex items-center justify-center gap-2">
-              📁 {t('calc.addHistory')}
-            </button>
           </div>
-        </div>
+        )}
+
+        <button onClick={() => store.addToHistory()}
+          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+          📁 {t('calc.addHistory')}
+        </button>
 
         {store.history.length > 0 && (
-          <div className="glass rounded-2xl p-5 lg:hidden">
+          <div className="glass rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-300">{t('calc.history')} ({store.history.length})</span>
-              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }} className="text-[10px] text-red-400 hover:text-red-300">🗑️ {t('calc.clearHistory')}</button>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({store.history.length})</span>
+              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }}
+                className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">{t('calc.clearHistory')}</button>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2.5 max-h-52 overflow-y-auto">
               {store.history.map(item => (
-                <div key={item.id} className="text-xs border-b border-white/5 pb-2 last:border-0 last:pb-0">
-                  <div className="flex justify-between text-[10px] text-gray-500 mb-0.5">
+                <div key={item.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex justify-between text-[10px] text-gray-500 mb-1">
                     <span>{new Date(item.timestamp).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="uppercase font-bold">{item.type}</span>
+                    <span className="uppercase font-bold tracking-wider">{item.type}</span>
                   </div>
-                  <div className="font-medium text-gray-300 truncate">{item.summary}</div>
-                  <div className="flex justify-between mt-0.5">
-                    <span className="text-orange-400 font-mono">{fmtCurrency(item.profit)}</span>
-                    <span className="text-emerald-400 font-bold font-mono">{fmtCurrency(item.sellPrice)}</span>
+                  <div className="font-medium text-gray-200 text-xs truncate mb-1">{item.summary}</div>
+                  <div className="flex justify-between">
+                    <span className="text-orange-400 font-mono text-xs">{fmtCurrency(item.profit)}</span>
+                    <span className="text-emerald-400 font-mono font-bold text-xs">{fmtCurrency(item.sellPrice)}</span>
                   </div>
                 </div>
               ))}
@@ -725,12 +703,13 @@ export function Calculator() {
           </div>
         )}
 
-        <div className="glass rounded-2xl p-5 space-y-3 lg:hidden">
+        <div className="grid grid-cols-2 gap-3">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
+            className={`py-3 rounded-xl text-xs font-bold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
             {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
           </button>
-          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }} className="w-full py-2.5 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-500 transition-all">
+          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
+            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all">
             📄 {t('calc.exportPdf')}
           </button>
         </div>
@@ -741,39 +720,54 @@ export function Calculator() {
   return (
     <>
       <div className="flex gap-6 pb-20 lg:pb-0">
-        {/* Desktop sidebar */}
-        <nav className="hidden lg:flex flex-col gap-1 w-16 shrink-0 sticky top-24 h-fit">
+        {/* Desktop sidebar — icon + label */}
+        <nav className="hidden lg:flex flex-col gap-1 w-[120px] shrink-0 sticky top-24 h-fit">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`w-14 h-14 rounded-xl text-xl flex items-center justify-center transition-all ${
-                activeSection === s.id ? 'bg-purple-600 text-white shadow-lg' : 'glass text-gray-400 hover:text-white'
+              className={`w-full py-3 px-2 rounded-xl flex flex-col items-center gap-1.5 transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
+                activeSection === s.id
+                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40'
+                  : 'glass text-gray-400 hover:text-white hover:bg-white/10'
               }`}
               title={t(s.label)}>
-              {s.icon}
+              <span className="text-xl leading-none">{s.icon}</span>
+              <span className="text-[10px] font-medium leading-tight text-center">{s.short}</span>
             </button>
           ))}
         </nav>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 space-y-5">
+        <div className="flex-1 min-w-0 space-y-4">
           {/* FDM / Resin Tabs */}
-          <div className="glass rounded-xl flex p-1">
+          <div className="glass rounded-2xl flex p-1.5 gap-1.5">
             <button onClick={() => store.setActiveTab('fdm')}
-              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+              className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none flex items-center justify-center gap-2 ${
+                isFDM
+                  ? 'bg-gradient-to-r from-sky-700 to-blue-700 text-white shadow-lg shadow-blue-900/40'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+              }`}>
               🖨️ {t('calc.fdm')}
             </button>
             <button onClick={() => store.setActiveTab('resin')}
-              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${!isFDM ? 'bg-white/10 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+              className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none flex items-center justify-center gap-2 ${
+                !isFDM
+                  ? 'bg-gradient-to-r from-purple-700 to-violet-700 text-white shadow-lg shadow-purple-900/40'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+              }`}>
               🧪 {t('calc.resin')}
             </button>
           </div>
 
           {/* Quick Mode Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">{t('calc.quickMode')}</span>
+          <div className="flex items-center justify-between glass rounded-xl px-4 py-3">
+            <div>
+              <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
+              <p className="text-xs text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
+            </div>
             <button onClick={() => store.setQuickMode(!store.quickMode)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${store.quickMode ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-400 hover:text-white'}`}>
-              {store.quickMode ? '✅ ON' : '⚡ OFF'}
+              aria-pressed={store.quickMode}
+              className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
+              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-6' : 'left-0.5'}`} />
             </button>
           </div>
 
@@ -796,34 +790,34 @@ export function Calculator() {
         </div>
 
         {/* Desktop right sidebar — always visible */}
-        <div className="hidden lg:block w-80 shrink-0 space-y-5">
+        <div className="hidden lg:flex flex-col gap-4 w-[380px] shrink-0">
           {renderRightSidebar()}
         </div>
       </div>
 
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/10 lg:hidden">
-        <div className="flex overflow-x-auto">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/10 lg:hidden h-16">
+        <div className="flex h-full overflow-x-auto">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex flex-col items-center gap-0.5 py-2 px-3 text-[10px] min-w-0 transition-all ${
-                activeSection === s.id ? 'text-purple-400' : 'text-gray-500'
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[60px] text-[9px] font-medium transition-all focus-visible:outline-none ${
+                activeSection === s.id ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300'
               }`}>
-              <span className="text-lg">{s.icon}</span>
-              <span className="truncate">{t(s.label)}</span>
+              <span className={`text-xl leading-none ${activeSection === s.id ? 'drop-shadow-[0_0_6px_rgba(167,139,250,0.6)]' : ''}`}>{s.icon}</span>
+              <span className="truncate max-w-[64px] leading-tight">{s.short}</span>
             </button>
           ))}
         </div>
       </nav>
 
       {/* Sticky Mobile Results Bar — above bottom nav */}
-      <div className="fixed bottom-16 left-0 right-0 z-50 glass border-t border-white/10 md:hidden px-4 py-2 flex items-center justify-between text-xs">
-        <div className="flex gap-4">
-          <span className="text-green-400 font-semibold">{t('calc.totalCost')}: <span className="text-sm">{fmtCurrency(results.totalCost)}</span></span>
-          <span className="text-emerald-400 font-bold">{t('calc.sellPrice')}: <span className="text-sm">{fmtCurrency(results.sellPrice)}</span></span>
-          <span className="text-orange-400 font-semibold">{t('calc.profit')}: <span className="text-sm">{fmtCurrency(results.profit)}</span></span>
+      <div className="fixed bottom-16 left-0 right-0 z-50 glass border-t border-white/10 md:hidden px-4 py-2 flex items-center justify-between">
+        <div className="flex gap-3 text-xs">
+          <span className="text-green-400"><span className="text-gray-500">Custo </span>{fmtCurrency(results.totalCost)}</span>
+          <span className="text-emerald-400 font-bold"><span className="text-gray-500">Venda </span>{fmtCurrency(results.sellPrice)}</span>
+          <span className="text-orange-400"><span className="text-gray-500">Lucro </span>{fmtCurrency(results.profit)}</span>
         </div>
-        <button onClick={() => store.addToHistory()} className="px-3 py-2 rounded-lg bg-purple-600 text-white text-[10px] font-bold">📁</button>
+        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[10px] font-bold shrink-0">📁</button>
       </div>
     </>
   )
