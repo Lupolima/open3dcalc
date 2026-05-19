@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCatalogStore } from '@/stores/catalogStore'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
+import { printers } from '@/lib/printers'
 
 type Section = 'printers' | 'materials' | 'marketplaces'
 
@@ -66,6 +67,16 @@ function PrinterManager() {
     <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
       <div className="glass rounded-2xl p-5 space-y-3">
         <div className="text-sm font-semibold text-white">{t('catalog.addPrinter')}</div>
+        <Select label={t('catalog.selectPrinter')} value="" onChange={id => {
+          const p = printers.find(pr => pr.id === id)
+          if (p) { setName(p.name); setBrand(p.brand); setPower(String(p.power)); setValue(String(p.value)) }
+        }}
+          options={[{ label: t('catalog.customPrinter'), value: '' }, ...printers.map(p => ({ label: p.name, value: p.id, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))]}
+          groups search />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+          <div className="relative flex justify-center text-xs text-gray-500"><span className="bg-[#0f0f13] px-2">{t('catalog.orManual')}</span></div>
+        </div>
         <InputGroup label={t('catalog.printerName')} value={name} onChange={setName} />
         <InputGroup label={t('catalog.printerBrand')} value={brand} onChange={setBrand} />
         <div className="grid grid-cols-2 gap-3">
