@@ -4,6 +4,8 @@ import { useCatalogStore } from '@/stores/catalogStore'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import { printers } from '@/lib/printers'
+import { materials } from '@/lib/materials'
+import { marketplaces } from '@/lib/marketplace'
 
 type Section = 'printers' | 'materials' | 'marketplaces'
 
@@ -123,6 +125,16 @@ function MaterialManager() {
     <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
       <div className="glass rounded-2xl p-5 space-y-3">
         <div className="text-sm font-semibold text-white">{t('catalog.addMaterial')}</div>
+        <Select label={t('catalog.selectMaterial')} value="" onChange={id => {
+          const m = materials.find(mat => mat.id === id)
+          if (m) { setName(m.name); setType(m.type); setDensity(String(m.density)); setPrice(String(m.avgPrice)) }
+        }}
+          options={[{ label: t('catalog.customMaterial'), value: '' }, ...materials.map(m => ({ label: m.name, value: m.id, subtitle: `${m.density}g/cm³ · R$ ${m.avgPrice}`, group: t(m.type === 'fdm' ? 'catalog.fdm' : 'catalog.resin') }))]}
+          groups search />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+          <div className="relative flex justify-center text-xs text-gray-500"><span className="bg-[#0f0f13] px-2">{t('catalog.orManual')}</span></div>
+        </div>
         <InputGroup label={t('catalog.materialName')} value={name} onChange={setName} />
         <Select label={t('catalog.materialType')} value={type} onChange={v => setType(v as 'fdm' | 'resin')}
           options={[{ label: 'FDM', value: 'fdm' }, { label: 'Resin', value: 'resin' }]} search={false} />
@@ -155,16 +167,57 @@ function MaterialManager() {
 function MarketplaceManager() {
   const store = useCatalogStore()
   const { t } = useTranslation()
+  const [name, setName] = useState('')
+  const [feePercent, setFeePercent] = useState('')
+  const [feeFixed, setFeeFixed] = useState('')
+  const [hasFreeShipping, setHasFreeShipping] = useState(false)
+
+  const add = () => {
+    if (!name.trim()) return
+    store.addMarketplace({ id: uid(), name, feePercent: Number(feePercent) || 0, feeFixed: Number(feeFixed) || 0, hasFreeShipping, custom: true })
+    setName(''); setFeePercent(''); setFeeFixed(''); setHasFreeShipping(false)
+  }
+
   return (
-    <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
-      {store.marketplaces.map(m => (
-        <div key={m.id} className="glass rounded-2xl p-4 space-y-2">
-          <div className="font-semibold text-white">{m.name}</div>
-          <div className="text-xs text-gray-400">Fee: {m.feePercent}% + R$ {m.feeFixed}</div>
-          <div className="text-xs text-gray-400">{m.hasFreeShipping ? 'Frete grátis' : 'Sem frete grátis'}</div>
-          {m.custom && <button className="text-xs text-red-400 hover:text-red-300">{t('catalog.remove')}</button>}
+    <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+      <div className="glass rounded-2xl p-5 space-y-3">
+        <div className="text-sm font-semibold text-white">{t('catalog.addMarketplace')}</div>
+        <Select label={t('catalog.selectMarketplace')} value="" onChange={id => {
+          const m = marketplaces.find(mp => mp.id === id)
+          if (m) { setName(m.name); setFeePercent(String(m.feePercent)); setFeeFixed(String(m.feeFixed)); setHasFreeShipping(m.hasFreeShipping) }
+        }}
+          options={[{ label: t('catalog.customMarketplace'), value: '' }, ...marketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$${m.feeFixed}` }))]}
+          search />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+          <div className="relative flex justify-center text-xs text-gray-500"><span className="bg-[#0f0f13] px-2">{t('catalog.orManual')}</span></div>
         </div>
-      ))}
+        <InputGroup label={t('catalog.marketplaceName')} value={name} onChange={setName} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputGroup label={t('catalog.feePercent')} value={feePercent} onChange={setFeePercent} type="number" unit="%" />
+          <InputGroup label={t('catalog.feeFixed')} value={feeFixed} onChange={setFeeFixed} type="number" prefix="R$" />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+          <input type="checkbox" checked={hasFreeShipping} onChange={e => setHasFreeShipping(e.target.checked)} className="rounded bg-white/10 border-white/20" />
+          {t('catalog.freeShipping')}
+        </label>
+        <button onClick={add} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold">{t('catalog.save')}</button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+        {store.marketplaces.map(m => (
+          <div key={m.id} className="glass rounded-2xl p-4 space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold text-white">{m.name}</div>
+              </div>
+              {m.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-purple-600/20 text-purple-300">Custom</span>}
+            </div>
+            <div className="text-xs text-gray-400">{t('catalog.fee')}: {m.feePercent}% + R$ {m.feeFixed}</div>
+            <div className="text-xs text-gray-400">{m.hasFreeShipping ? t('catalog.hasFreeShipping') : t('catalog.noFreeShipping')}</div>
+            {m.custom && <button onClick={() => store.removeMarketplace(m.id)} className="text-xs text-red-400 hover:text-red-300">{t('catalog.remove')}</button>}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
