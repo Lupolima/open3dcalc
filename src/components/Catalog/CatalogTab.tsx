@@ -12,7 +12,7 @@ export function CatalogTab() {
   const store = useCatalogStore()
   const [section, setSection] = useState<Section>('printers')
 
-  useEffect(() => { store.load() }, [store])
+  useEffect(() => { store.load() }, [])
 
   const stats = useMemo(() => ({
     printers: store.printers.length,
