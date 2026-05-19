@@ -28,6 +28,12 @@ const mockResult: CalculationResult = {
   profit: 18.38,
   marketplaceFee: 8.12,
   taxAmount: 5.8,
+  costPerGram: 0.50,
+  costPerUnit: 54.12,
+  unitWeight: 50,
+  estimatedPrintTime: 5,
+  targetMarginPercent: 50,
+  breakEvenPrice: 54.12,
 }
 
 export const WithData: Story = {

@@ -110,6 +110,10 @@ function analyzeGeometry(geometry: THREE.BufferGeometry): MeshAnalysis {
 export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.BufferGeometry; analysis: MeshAnalysis }> {
   const ext = file.name.split('.').pop()?.toLowerCase()
 
+  if (ext === '3mf') {
+    return parse3mf(file)
+  }
+
   if (ext === 'stl') {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -156,7 +160,188 @@ export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.Buf
     })
   }
 
-  throw new Error(`Formato não suportado: ${ext}. Use STL ou OBJ.`)
+  throw new Error(`Formato não suportado: ${ext}. Use STL, OBJ ou 3MF.`)
+}
+
+async function parse3mf(file: File): Promise<{ geometry: THREE.BufferGeometry; analysis: MeshAnalysis }> {
+  const THREE = await import('three')
+  const buffer = await file.arrayBuffer()
+  const uint8 = new Uint8Array(buffer)
+
+  // Minimal ZIP parser for 3MF (3MF is a ZIP archive containing XML)
+  // Find the End of Central Directory record
+  let eocdOffset = -1
+  for (let i = uint8.length - 22; i >= 0; i--) {
+    if (uint8[i] === 0x50 && uint8[i + 1] === 0x4b && uint8[i + 2] === 0x05 && uint8[i + 3] === 0x06) {
+      eocdOffset = i
+      break
+    }
+  }
+  if (eocdOffset === -1) throw new Error('Arquivo 3MF inválido: não é um ZIP válido')
+
+  // Read central directory offset
+  const cdOffset = uint8[eocdOffset + 16] | (uint8[eocdOffset + 17] << 8) | (uint8[eocdOffset + 18] << 16) | (uint8[eocdOffset + 19] << 24)
+  const numEntries = uint8[eocdOffset + 10] | (uint8[eocdOffset + 11] << 8)
+
+  // Find the 3D/3DModel.model file
+  let offset = cdOffset
+  for (let i = 0; i < numEntries; i++) {
+    if (uint8[offset] !== 0x50 || uint8[offset + 1] !== 0x4b) break
+
+    const fileNameLen = uint8[offset + 28] | (uint8[offset + 29] << 8)
+    const extraLen = uint8[offset + 30] | (uint8[offset + 31] << 8)
+    const commentLen = uint8[offset + 32] | (uint8[offset + 33] << 8)
+    const localHeaderOffset = uint8[offset + 42] | (uint8[offset + 43] << 8) | (uint8[offset + 44] << 16) | (uint8[offset + 45] << 24)
+    const compressedSize = uint8[offset + 20] | (uint8[offset + 21] << 8) | (uint8[offset + 22] << 16) | (uint8[offset + 23] << 24)
+    const uncompressedSize = uint8[offset + 24] | (uint8[offset + 25] << 8) | (uint8[offset + 26] << 16) | (uint8[offset + 27] << 24)
+    const compressionMethod = uint8[offset + 10] | (uint8[offset + 11] << 8)
+
+    const fileName = new TextDecoder().decode(uint8.slice(offset + 46, offset + 46 + fileNameLen))
+
+    if (fileName === '3D/3DModel.model' || fileName.endsWith('.model')) {
+      // Extract the file data
+      const localHeaderStart = localHeaderOffset
+      const localFileNameLen = uint8[localHeaderStart + 26] | (uint8[localHeaderStart + 27] << 8)
+      const localExtraLen = uint8[localHeaderStart + 28] | (uint8[localHeaderStart + 29] << 8)
+      const dataStart = localHeaderStart + 30 + localFileNameLen + localExtraLen
+
+      if (compressionMethod === 0) {
+        // Stored (no compression)
+        const xmlData = new TextDecoder().decode(uint8.slice(dataStart, dataStart + uncompressedSize))
+        return parse3mfXml(xmlData, THREE)
+      } else if (compressionMethod === 8) {
+        // Deflate - use DecompressionStream
+        const compressed = uint8.slice(dataStart, dataStart + compressedSize)
+        const ds = new DecompressionStream('deflate-raw')
+        const writer = ds.writable.getWriter()
+        writer.write(compressed)
+        writer.close()
+        const reader = ds.readable.getReader()
+        const chunks: Uint8Array[] = []
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          chunks.push(value)
+        }
+        const totalLen = chunks.reduce((sum, c) => sum + c.length, 0)
+        const decompressed = new Uint8Array(totalLen)
+        let pos = 0
+        for (const chunk of chunks) {
+          decompressed.set(chunk, pos)
+          pos += chunk.length
+        }
+        const xmlData = new TextDecoder().decode(decompressed)
+        return parse3mfXml(xmlData, THREE)
+      } else {
+        throw new Error(`Método de compressão não suportado: ${compressionMethod}`)
+      }
+    }
+
+    offset += 46 + fileNameLen + extraLen + commentLen
+  }
+
+  throw new Error('Arquivo 3MF não contém modelo 3D válido')
+}
+
+function parse3mfXml(xmlData: string, THREE: typeof import('three')): { geometry: THREE.BufferGeometry; analysis: MeshAnalysis } {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(xmlData, 'text/xml')
+
+  const error = doc.querySelector('parsererror')
+  if (error) throw new Error('Erro ao parsear XML do 3MF')
+
+  const objects = doc.querySelectorAll('object')
+  const allPositions: number[] = []
+  const allNormals: number[] = []
+
+  for (const obj of Array.from(objects)) {
+    const mesh = obj.querySelector('mesh')
+    if (!mesh) continue
+
+    // Parse vertices
+    const vertices = mesh.querySelectorAll('vertex')
+    const vertexCoords: [number, number, number][] = []
+    for (const v of Array.from(vertices)) {
+      const x = parseFloat(v.getAttribute('x') || '0')
+      const y = parseFloat(v.getAttribute('y') || '0')
+      const z = parseFloat(v.getAttribute('z') || '0')
+      vertexCoords.push([x, y, z])
+    }
+
+    // Parse triangles
+    const triangles = mesh.querySelectorAll('triangle')
+    for (const t of Array.from(triangles)) {
+      const v1 = parseInt(t.getAttribute('v1') || '0')
+      const v2 = parseInt(t.getAttribute('v2') || '0')
+      const v3 = parseInt(t.getAttribute('v3') || '0')
+
+      if (v1 < vertexCoords.length && v2 < vertexCoords.length && v3 < vertexCoords.length) {
+        const [x1, y1, z1] = vertexCoords[v1]
+        const [x2, y2, z2] = vertexCoords[v2]
+        const [x3, y3, z3] = vertexCoords[v3]
+
+        allPositions.push(x1, y1, z1, x2, y2, z2, x3, y3, z3)
+
+        // Calculate normal
+        const ax = x2 - x1, ay = y2 - y1, az = z2 - z1
+        const bx = x3 - x1, by = y3 - y1, bz = z3 - z1
+        let nx = ay * bz - az * by
+        let ny = az * bx - ax * bz
+        let nz = ax * by - ay * bx
+        const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1
+        nx /= len; ny /= len; nz /= len
+
+        for (let i = 0; i < 3; i++) {
+          allNormals.push(nx, ny, nz)
+        }
+      }
+    }
+  }
+
+  if (allPositions.length === 0) throw new Error('Nenhum triângulo encontrado no arquivo 3MF')
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(allPositions, 3))
+  if (allNormals.length > 0) {
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(allNormals, 3))
+  }
+  geometry.computeBoundingBox()
+
+  const volume = calcVolumeFromPositions(allPositions)
+  const box = geometry.boundingBox!
+  const analysis: MeshAnalysis = {
+    volume,
+    triangleCount: allPositions.length / 9,
+    vertexCount: allPositions.length / 3,
+    dimensions: { x: box.max.x - box.min.x, y: box.max.y - box.min.y, z: box.max.z - box.min.z },
+    surfaceArea: 0,
+    boundingBox: { min: { x: box.min.x, y: box.min.y, z: box.min.z }, max: { x: box.max.x, y: box.max.y, z: box.max.z } },
+    integrity: { valid: true, issues: [] },
+  }
+
+  return { geometry, analysis }
+}
+
+function calcVolumeFromPositions(positions: number[]): number {
+  let volume = 0
+  const v1 = new (typeof Float32Array !== 'undefined' ? Float32Array : Array)(3)
+  const v2 = new (typeof Float32Array !== 'undefined' ? Float32Array : Array)(3)
+  const v3 = new (typeof Float32Array !== 'undefined' ? Float32Array : Array)(3)
+  const normal = new (typeof Float32Array !== 'undefined' ? Float32Array : Array)(3)
+
+  for (let i = 0; i < positions.length; i += 9) {
+    v1[0] = positions[i]; v1[1] = positions[i + 1]; v1[2] = positions[i + 2]
+    v2[0] = positions[i + 3]; v2[1] = positions[i + 4]; v2[2] = positions[i + 5]
+    v3[0] = positions[i + 6]; v3[1] = positions[i + 7]; v3[2] = positions[i + 8]
+
+    normal[0] = (v2[1] - v1[1]) * (v3[2] - v1[2]) - (v2[2] - v1[2]) * (v3[1] - v1[1])
+    normal[1] = (v2[2] - v1[2]) * (v3[0] - v1[0]) - (v2[0] - v1[0]) * (v3[2] - v1[2])
+    normal[2] = (v2[0] - v1[0]) * (v3[1] - v1[1]) - (v2[1] - v1[1]) * (v3[0] - v1[0])
+
+    volume += (normal[0] * (v1[0] + v2[0] + v3[0]) + normal[1] * (v1[1] + v2[1] + v3[1]) + normal[2] * (v1[2] + v2[2] + v3[2])) / 6
+  }
+
+  return Math.abs(volume) / 1000
 }
 
 function mergeGeometries(geometries: THREE.BufferGeometry[]): THREE.BufferGeometry {

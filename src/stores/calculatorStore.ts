@@ -99,6 +99,12 @@ interface CalculatorState {
   setProductName: (name: string) => void
   quickMode: boolean
   setQuickMode: (v: boolean) => void
+  quantity: number
+  setQuantity: (v: number) => void
+  infillPercent: number
+  setInfillPercent: (v: number) => void
+  targetMarginMode: boolean
+  setTargetMarginMode: (v: boolean) => void
   results: CalculationResult | null
   history: SavedCalculation[]
   addToHistory: () => void
@@ -179,6 +185,12 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   setProductName: (productName) => set({ productName }),
   quickMode: false,
   setQuickMode: (quickMode) => set({ quickMode }),
+  quantity: loadStr('quantity', 1),
+  setQuantity: (quantity) => set({ quantity }),
+  infillPercent: loadStr('infillPercent', 20),
+  setInfillPercent: (infillPercent) => set({ infillPercent }),
+  targetMarginMode: false,
+  setTargetMarginMode: (targetMarginMode) => set({ targetMarginMode }),
 
   results: null,
   history: loadHistory(),
@@ -221,6 +233,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
       resinHardware: s.resinHardware, resinLabor: s.resinLabor,
       resinExtras: s.resinExtras, resinSales: s.resinSales,
       resinOps: s.resinOps, resinSoft: s.resinSoft,
+      quantity: s.quantity, infillPercent: s.infillPercent,
     }
     localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
   },

@@ -4,13 +4,16 @@ import { Header } from '@/components/Header/Header'
 import { Calculator } from '@/components/Calculator/Calculator'
 import { CatalogTab } from '@/components/Catalog/CatalogTab'
 import { HistoryTab } from '@/components/Calculator/HistoryTab/HistoryTab'
-import { Calculator as CalculatorIcon, Clock, Settings2 } from 'lucide-react'
+import { Dashboard } from '@/components/Dashboard/Dashboard'
+import { Calculator as CalculatorIcon, Clock, Settings2, BarChart3 } from 'lucide-react'
+import { useCalculatorStore } from '@/stores/calculatorStore'
 
-type Tab = 'calculator' | 'history' | 'catalog'
+type Tab = 'calculator' | 'history' | 'catalog' | 'dashboard'
 
 function App() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('calculator')
+  const results = useCalculatorStore(s => s.results)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,6 +32,18 @@ function App() {
             }`}
           >
             <CalculatorIcon className="w-4 h-4" /> {t('nav.calculator')}
+          </button>
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            role="tab"
+            aria-selected={activeTab === 'dashboard'}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+              activeTab === 'dashboard'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" /> {t('nav.dashboard')}
           </button>
           <button
             onClick={() => setActiveTab('catalog')}
@@ -58,6 +73,7 @@ function App() {
 
         <div className="tab-content">
           {activeTab === 'calculator' && <Calculator />}
+          {activeTab === 'dashboard' && <Dashboard result={results} />}
           {activeTab === 'catalog' && <CatalogTab />}
           {activeTab === 'history' && <HistoryTab />}
         </div>

@@ -74,7 +74,7 @@ export function Calculator() {
   const fmtCurrency = (val: number) => (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   const handleFileDrop = useCallback(async (file: File) => {
-    if (!file.name.match(/\.(stl|obj|3mf)$/i)) {
+    if (!file.name.match(/\.(stl|obj|3mf|gcode)$/i)) {
       alert(t('stl.invalidFile'))
       return
     }
@@ -84,23 +84,39 @@ export function Calculator() {
     }
     setStlLoading(true)
     try {
-      const { analyzeMeshFile, volumeToCm3, estimateWeight } = await import('@/lib/stlParser')
-      const { geometry, analysis } = await analyzeMeshFile(file)
-      if (analysis.triangleCount > 2_000_000) {
-        alert('Malha muito complexa. Limite: 2 milhões de triângulos.')
-        setStlLoading(false)
-        return
+      if (file.name.match(/\.gcode$/i)) {
+        const { parseGcode } = await import('@/lib/gcodeParser')
+        const text = await file.text()
+        const gcode = parseGcode(text)
+        if (gcode.printTimeMinutes > 0) {
+          const hours = gcode.printTimeMinutes / 60
+          isFDM
+            ? store.setFdmPrintParams({ ...store.fdmPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
+            : store.setResinPrintParams({ ...store.resinPrintParams, printTimeHours: parseFloat(hours.toFixed(2)) })
+        }
+        if (gcode.filamentUsedGrams > 0) {
+          store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(gcode.filamentUsedGrams.toFixed(2)) })
+        }
+        setStlInfo({ volume: 0, faces: 0, vertices: 0 })
+      } else {
+        const { analyzeMeshFile, volumeToCm3, estimateWeight } = await import('@/lib/stlParser')
+        const { geometry, analysis } = await analyzeMeshFile(file)
+        if (analysis.triangleCount > 2_000_000) {
+          alert('Malha muito complexa. Limite: 2 milhões de triângulos.')
+          setStlLoading(false)
+          return
+        }
+        setStlGeometry(geometry)
+        const volume = volumeToCm3(analysis.volume)
+        setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount })
+        const weight = estimateWeight(volume, store.fdmMaterial.density, 20, 10)
+        store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(weight.toFixed(2)) })
       }
-      setStlGeometry(geometry)
-      const volume = volumeToCm3(analysis.volume)
-      setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount })
-      const weight = estimateWeight(volume, store.fdmMaterial.density, 20, 10)
-      store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(weight.toFixed(2)) })
     } catch {
       alert(t('stl.error'))
     }
     setStlLoading(false)
-  }, [store, t])
+  }, [store, t, isFDM])
 
   const handlePrinterSelect = (id: string) => {
     const p = printers.find(p => p.id === id)
@@ -156,7 +172,7 @@ export function Calculator() {
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500/50 transition-colors"
               >
-                <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
+                <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
                 <p className="text-xs text-gray-400">{t('product.uploadStl')}</p>
                 {stlLoading && <p className="text-xs text-purple-400 mt-1">{t('stl.loading')}</p>}
               </div>
@@ -507,6 +523,25 @@ export function Calculator() {
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, taxPercent: val }) : store.setResinSales({ ...store.resinSales, taxPercent: val }))} type="number" unit="%" />
           </div>
           <div className="glass rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-400">{t('calc.markupPresets')}</span>
+              <div className="flex gap-1.5">
+                {[100, 150, 200, 250, 300, 500].map(pct => (
+                  <button key={pct}
+                    onClick={() => isFDM
+                      ? store.setFdmSales({ ...store.fdmSales, profitMarginPercent: pct })
+                      : store.setResinSales({ ...store.resinSales, profitMarginPercent: pct })
+                    }
+                    className={`px-2 py-1 text-[10px] rounded-md transition-all ${
+                      (isFDM ? store.fdmSales.profitMarginPercent : store.resinSales.profitMarginPercent) === pct
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white/5 text-gray-400 hover:text-white'
+                    }`}>
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+            </div>
             <InputGroup label={t('calc.profitMargin')}
               value={isFDM ? store.fdmSales.profitMarginPercent : store.resinSales.profitMarginPercent}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, profitMarginPercent: val }) : store.setResinSales({ ...store.resinSales, profitMarginPercent: val }))} type="number" unit="%" />
@@ -526,6 +561,18 @@ export function Calculator() {
           {results.taxAmount > 0 && (
             <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
           )}
+        </div>
+
+        {/* Cost per Gram + Failure Cost */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.costPerGram')}</div>
+            <div className="text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
+          </div>
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('breakdown.failure')}</div>
+            <div className="text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
+          </div>
         </div>
 
         {/* Cost + Profit */}
@@ -615,7 +662,7 @@ export function Calculator() {
         )}
 
         {/* Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
             className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
             {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
@@ -623,6 +670,10 @@ export function Calculator() {
           <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
             className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
             📄 {t('calc.exportPdf')}
+          </button>
+          <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
+            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none">
+            📊 {t('calc.exportCsv')}
           </button>
         </div>
       </>
@@ -637,6 +688,18 @@ export function Calculator() {
           <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
           <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
           {results.taxAmount > 0 && <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas</div>}
+        </div>
+
+        {/* Cost per Gram + Failure */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.costPerGram')}</div>
+            <div className="text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
+          </div>
+          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('breakdown.failure')}</div>
+            <div className="text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -714,7 +777,7 @@ export function Calculator() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
             className={`py-3 rounded-xl text-xs font-bold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
             {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
@@ -722,6 +785,10 @@ export function Calculator() {
           <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
             className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all">
             📄 {t('calc.exportPdf')}
+          </button>
+          <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
+            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all">
+            📊 CSV
           </button>
         </div>
       </div>

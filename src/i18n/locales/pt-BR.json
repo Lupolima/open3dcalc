@@ -6,7 +6,8 @@
   "nav": {
     "calculator": "Calculadora",
     "catalog": "Cadastros",
-    "history": "Histórico"
+    "history": "Histórico",
+    "dashboard": "Dashboard"
   },
   "calc": {
     "fdm": "Impressão FDM",
@@ -93,7 +94,30 @@
     "clearConfirm": "Tem certeza? Isso apagará todo o histórico.",
     "quickMode": "Modo Rápido",
     "productName": "Nome do Produto",
-    "productNamePlaceholder": "Ex: Vaso Decorativo"
+    "productNamePlaceholder": "Ex: Vaso Decorativo",
+    "costPerGram": "Custo por Grama",
+    "quantity": "Quantidade",
+    "infillPercent": "Preenchimento (Infill)",
+    "targetMarginMode": "Modo Margem Alvo",
+    "targetMarginDesc": "Defina o preço de venda e calcule a margem",
+    "sellPriceTarget": "Preço de Venda Desejado",
+    "actualMargin": "Margem Real",
+    "monthlyProjection": "Projeção Mensal",
+    "printsPerMonth": "Prints por Mês",
+    "monthlyRevenue": "Receita Mensal",
+    "monthlyCost": "Custo Mensal",
+    "monthlyProfit": "Lucro Mensal",
+    "printVsBuy": "Imprimir vs Comprar",
+    "buyPrice": "Preço de Compra",
+    "savings": "Economia",
+    "printCheaper": "Imprimir é mais barato",
+    "buyCheaper": "Comprar é mais barato",
+    "exportCsv": "Exportar CSV",
+    "gcodeUpload": "Upload G-code",
+    "gcodeParsed": "G-code parseado com sucesso!",
+    "gcodeError": "Erro ao parsear G-code",
+    "parse3mf": "Parse 3MF",
+    "markupPresets": "Presets de Markup"
   },
   "catalog": {
     "title": "Cadastros e Presets",

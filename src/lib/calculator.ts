@@ -111,6 +111,12 @@ export function calculateFDM(
     profit: totalProfit,
     marketplaceFee,
     taxAmount,
+    costPerGram: effectiveWeight > 0 ? matCost / effectiveWeight : 0,
+    costPerUnit: totalBaseCost,
+    unitWeight: effectiveWeight,
+    estimatedPrintTime: print.printTimeHours,
+    targetMarginPercent: sales.profitMarginPercent,
+    breakEvenPrice: totalBaseCost,
   }
 }
 
@@ -215,5 +221,11 @@ export function calculateResin(
     profit: totalProfit,
     marketplaceFee,
     taxAmount,
+    costPerGram: matCost > 0 && volumeWithWaste > 0 ? matCost / (volumeWithWaste * mat.density) : 0,
+    costPerUnit: totalBaseCost,
+    unitWeight: volumeWithWaste * mat.density,
+    estimatedPrintTime: print.printTimeHours,
+    targetMarginPercent: sales.profitMarginPercent,
+    breakEvenPrice: totalBaseCost,
   }
 }

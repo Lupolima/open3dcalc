@@ -147,6 +147,12 @@ export interface CalculationResult {
   profit: number
   marketplaceFee: number
   taxAmount: number
+  costPerGram: number
+  costPerUnit: number
+  unitWeight: number
+  estimatedPrintTime: number
+  targetMarginPercent: number
+  breakEvenPrice: number
 }
 
 export interface HistoryItem {
