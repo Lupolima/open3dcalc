@@ -25,18 +25,51 @@ const SECTIONS = [
 ]
 
 function buildResults(s: ReturnType<typeof useCalculatorStore.getState>): CalculationResult {
+  const qty = s.quantity > 0 ? s.quantity : 1
   if (s.activeTab === 'fdm') {
-    return calculateFDM(
+    const result = calculateFDM(
       s.fdmMaterial, s.fdmPrintParams, s.fdmMachine,
       s.fdmLabor, s.fdmExtras, s.fdmSales, s.fdmOps, s.fdmSoft,
       s.fdmHardware, s.fdmFinishing,
     )
+    if (qty > 1) {
+      const laborPerUnit = s.fdmLabor.enabled
+        ? ((s.fdmLabor.setupTimeMinutes + s.fdmLabor.postProcessingTimeMinutes) / 60) * s.fdmLabor.hourlyRate
+        : 0
+      const setupCost = laborPerUnit
+      const perUnitCost = result.totalCost - setupCost + (setupCost / qty)
+      const perUnitSellPrice = result.sellPrice - setupCost + (setupCost / qty)
+      return {
+        ...result,
+        totalCost: perUnitCost,
+        sellPrice: perUnitSellPrice,
+        profit: perUnitSellPrice - perUnitCost - result.marketplaceFee - result.taxAmount,
+        costPerUnit: perUnitCost,
+      }
+    }
+    return result
   }
-  return calculateResin(
+  const result = calculateResin(
     s.resinMaterial, s.resinPrintParams, s.resinMachine,
     s.resinLabor, s.resinExtras, s.resinSales, s.resinOps, s.resinSoft,
     s.resinPostProcess, s.resinHardware,
   )
+  if (qty > 1) {
+    const laborPerUnit = s.resinLabor.enabled
+      ? ((s.resinLabor.setupTimeMinutes + s.resinLabor.postProcessingTimeMinutes) / 60) * s.resinLabor.hourlyRate
+      : 0
+    const setupCost = laborPerUnit
+    const perUnitCost = result.totalCost - setupCost + (setupCost / qty)
+    const perUnitSellPrice = result.sellPrice - setupCost + (setupCost / qty)
+    return {
+      ...result,
+      totalCost: perUnitCost,
+      sellPrice: perUnitSellPrice,
+      profit: perUnitSellPrice - perUnitCost - result.marketplaceFee - result.taxAmount,
+      costPerUnit: perUnitCost,
+    }
+  }
+  return result
 }
 
 export function Calculator() {
@@ -503,6 +536,14 @@ export function Calculator() {
       <div className="glass rounded-2xl p-6">
         {renderSectionHeader('💰', t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <InputGroup label={t('calc.quantity')}
+              value={store.quantity}
+              onChange={v => handleInput(v, val => store.setQuantity(val > 0 ? val : 1))} type="number" unit="un" />
+            <InputGroup label={t('calc.infillPercent')}
+              value={store.infillPercent}
+              onChange={v => handleInput(v, val => store.setInfillPercent(val))} type="number" unit="%" />
+          </div>
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix="R$" />
