@@ -5,7 +5,8 @@ import { fdmMaterials, resinMaterials } from '@/lib/materials'
 import { printers } from '@/lib/printers'
 import { marketplaces } from '@/lib/marketplace'
 import { calculateFDM, calculateResin } from '@/lib/calculator'
-import { InputGroup, SelectGroup } from '@/components/ui/InputGroup'
+import { InputGroup } from '@/components/ui/InputGroup'
+import { Select } from '@/components/ui/Select'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import type { BufferGeometry } from 'three'
 import type { CalculationResult } from '@/types'
@@ -77,10 +78,19 @@ export function Calculator() {
       alert(t('stl.invalidFile'))
       return
     }
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Arquivo muito grande. Limite: 50MB.')
+      return
+    }
     setStlLoading(true)
     try {
       const { analyzeMeshFile, volumeToCm3, estimateWeight } = await import('@/lib/stlParser')
       const { geometry, analysis } = await analyzeMeshFile(file)
+      if (analysis.triangleCount > 2_000_000) {
+        alert('Malha muito complexa. Limite: 2 milhões de triângulos.')
+        setStlLoading(false)
+        return
+      }
       setStlGeometry(geometry)
       const volume = volumeToCm3(analysis.volume)
       setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount })
@@ -133,7 +143,7 @@ export function Calculator() {
         {renderSectionHeader('🧵', t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectGroup label={t('calc.filamentType')} value={store.fdmMaterial.type}
+            <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
               onChange={v => store.setFdmMaterial({ ...store.fdmMaterial, type: v })}
               options={fdmMaterials.map(m => ({ label: m.name, value: m.name }))} />
             <InputGroup label={t('calc.costPerKg')} value={store.fdmMaterial.costPerKg}
@@ -189,7 +199,7 @@ export function Calculator() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectGroup label={t('calc.resinType')} value={store.resinMaterial.type}
+            <Select label={t('calc.resinType')} value={store.resinMaterial.type}
               onChange={v => store.setResinMaterial({ ...store.resinMaterial, type: v })}
               options={resinMaterials.map(m => ({ label: m.name, value: m.name }))} />
             <InputGroup label={t('calc.costPerLiter')} value={store.resinMaterial.costPerLiter}
@@ -231,9 +241,10 @@ export function Calculator() {
               : store.setResinPrintParams({ ...store.resinPrintParams, energyCostPerKwh: val })
             )} type="number" unit="R$/kWh" step="0.01" />
           {isFDM && (
-            <SelectGroup label={t('calc.printer')} value={store.selectedPrinter.id}
-              onChange={handlePrinterSelect}
-              options={printers.map(p => ({ label: `${p.brand} — ${p.name}`, value: p.id }))} />
+            <Select label={t('calc.printer')} value={store.selectedPrinter.id}
+              onChange={handlePrinterSelect} portal
+              options={printers.map(p => ({ label: p.name, value: p.id, image: p.image, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))}
+              groups search />
           )}
           <div className="md:col-span-2 glass rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -488,9 +499,9 @@ export function Calculator() {
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix="R$" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectGroup label={t('calc.marketplace')} value={store.selectedMarketplace.id}
+            <Select label={t('calc.marketplace')} value={store.selectedMarketplace.id}
               onChange={handleMarketplaceChange}
-              options={marketplaces.map(m => ({ label: m.name, value: m.id }))} />
+              options={marketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$ ${m.feeFixed}` }))} />
             <InputGroup label={t('calc.taxPercent')}
               value={isFDM ? store.fdmSales.taxPercent : store.resinSales.taxPercent}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, taxPercent: val }) : store.setResinSales({ ...store.resinSales, taxPercent: val }))} type="number" unit="%" />

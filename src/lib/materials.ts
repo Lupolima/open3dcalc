@@ -43,11 +43,4 @@ export function getMaterial(id: string): Material {
   return materials.find(m => m.id === id) ?? materials[0]
 }
 
-export function estimateWeight(volumeCm3: number, density: number, infill: number, purge: number): number {
-  const infillRatio = infill / 100
-  const purgeRatio = purge / 100
-  const effectiveVolume = volumeCm3 * (0.2 + 0.8 * infillRatio)
-  const weight = effectiveVolume * density
-  const waste = weight * purgeRatio
-  return weight + waste
-}
+

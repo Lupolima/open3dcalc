@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCatalogStore } from '@/stores/catalogStore'
-import { InputGroup, SelectGroup } from '@/components/ui/InputGroup'
+import { InputGroup } from '@/components/ui/InputGroup'
+import { Select } from '@/components/ui/Select'
 
 type Section = 'printers' | 'materials' | 'marketplaces'
 
@@ -112,7 +113,8 @@ function MaterialManager() {
       <div className="glass rounded-2xl p-5 space-y-3">
         <div className="text-sm font-semibold text-white">{t('catalog.addMaterial')}</div>
         <InputGroup label={t('catalog.materialName')} value={name} onChange={setName} />
-        <SelectGroup label={t('catalog.materialType')} value={type} onChange={v => setType(v as 'fdm' | 'resin')} options={[{ label: 'FDM', value: 'fdm' }, { label: 'Resin', value: 'resin' }]} />
+        <Select label={t('catalog.materialType')} value={type} onChange={v => setType(v as 'fdm' | 'resin')}
+          options={[{ label: 'FDM', value: 'fdm' }, { label: 'Resin', value: 'resin' }]} search={false} />
         <div className="grid grid-cols-2 gap-3">
           <InputGroup label={t('catalog.density')} value={density} onChange={setDensity} type="number" />
           <InputGroup label={t('catalog.avgPrice')} value={price} onChange={setPrice} type="number" prefix="R$" />
