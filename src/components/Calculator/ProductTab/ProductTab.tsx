@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BufferGeometry } from 'three'
 import { useCalculatorStore } from '@/stores/calculatorStore'
-import { materials, estimateWeight } from '@/lib/materials'
-import { parseStlFile, volumeToCm3 } from '@/lib/stlParser'
+import { materials } from '@/lib/materials'
+import { analyzeMeshFile, volumeToCm3, estimateWeight } from '@/lib/stlParser'
 import { StlPreview } from '@/components/StlPreview/StlPreview'
 
 export function ProductTab() {
@@ -21,14 +21,17 @@ export function ProductTab() {
     }
     setStlLoading(true)
     try {
-      const { geometry, info } = await parseStlFile(file)
+      const { geometry, analysis } = await analyzeMeshFile(file)
       setStlGeometry(geometry)
-      const volumeCm3 = volumeToCm3(info.volume)
-      setStlInfo({ volume: volumeCm3, faces: info.faces, vertices: info.vertices })
+      const volumeCm3 = volumeToCm3(analysis.volume)
+      setStlInfo({ volume: volumeCm3, faces: analysis.triangleCount, vertices: analysis.vertexCount })
       setInput('volume', parseFloat(volumeCm3.toFixed(2)))
       setInput('useVolume', true)
       const weight = estimateWeight(volumeCm3, inputs.material.density, inputs.infillPercent, inputs.purgePercent)
       setInput('weight', parseFloat(weight.toFixed(2)))
+      if (!analysis.integrity.valid) {
+        console.warn('Mesh issues:', analysis.integrity.issues)
+      }
     } catch {
       alert(t('stl.error'))
     }

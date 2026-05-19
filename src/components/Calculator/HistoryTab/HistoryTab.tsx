@@ -37,8 +37,11 @@ function DetailModal({ product, onClose }: DetailModalProps) {
           <Row label="👷 Mão de Obra" value={formatMoney(d.costs.labor)} />
           <Row label="📦 Embalagem" value={formatMoney(d.costs.packaging)} />
           <Row label="✨ Acabamento" value={formatMoney(d.costs.finishing)} />
+          <Row label="📬 Frete" value={formatMoney(d.costs.shipping)} />
           <Row label="💸 Custo Total" value={formatMoney(d.totalWithFailure)} bold />
           <Row label="🏪 Taxa Marketplace" value={`${d.marketplaceFeePercent}%`} />
+          <Row label="💰 Impostos" value={formatMoney(d.costs.tax)} />
+          <Row label="💳 Taxa Cartão" value={formatMoney(d.costs.cardFee)} />
           <Row label="📈 Lucro Líquido" value={formatMoney(d.profit)} bold />
           <Row label="📊 Margem" value={`${d.profitMargin.toFixed(1)}%`} />
           <Row label="🎯 ROI" value={`${d.roi.toFixed(1)}%`} />

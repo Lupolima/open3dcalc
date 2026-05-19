@@ -7,8 +7,8 @@ export type MaterialType =
 export interface Material {
   id: MaterialType
   name: string
-  density: number // g/cm³
-  avgPrice: number // R$/kg
+  density: number
+  avgPrice: number
   type: 'fdm' | 'resin'
 }
 
@@ -16,10 +16,10 @@ export interface PrinterProfile {
   id: string
   name: string
   brand: string
-  power: number // watts
-  value: number // R$
-  usefulLife: number // hours
-  maintenancePerHour: number // R$/h
+  power: number
+  value: number
+  usefulLife: number
+  maintenancePerHour: number
   image?: string
 }
 
@@ -27,7 +27,7 @@ export interface Marketplace {
   id: string
   name: string
   feePercent: number
-  feeFixed: number // R$
+  feeFixed: number
   hasFreeShipping: boolean
   shippingFeePercent?: number
 }
@@ -35,21 +35,24 @@ export interface Marketplace {
 export interface CalculationInputs {
   productName: string
   material: Material
-  weight: number // grams
-  volume: number // cm³
+  weight: number
+  volume: number
   useVolume: boolean
   timeMinutes: number
   printer: PrinterProfile
-  energyRate: number // R$/kWh
-  laborRate: number // R$/h
+  energyRate: number
+  laborRate: number
   packagingCost: number
   finishingCost: number
-  failureRate: number // %
-  markup: number // %
+  failureRate: number
+  markup: number
   marketplace: Marketplace
   quantity: number
   infillPercent: number
   purgePercent: number
+  shippingCost: number
+  taxRate: number
+  cardFeePercent: number
 }
 
 export interface CostBreakdown {
@@ -61,6 +64,9 @@ export interface CostBreakdown {
   packaging: number
   finishing: number
   failureCost: number
+  shipping: number
+  tax: number
+  cardFee: number
 }
 
 export interface CalculationResult {

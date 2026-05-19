@@ -49,6 +49,7 @@
     "packaging": "Embalagem (R$/un)",
     "finishing": "Acabamento (R$/un)",
     "failureRate": "Taxa de Falhas (%)",
+    "shipping": "Frete (R$/un)",
     "customPrinter": "Impressora Personalizada"
   },
   "pricing": {
@@ -60,6 +61,8 @@
     "mercadolivre": "Mercado Livre (16% + R$6)",
     "amazon": "Amazon (15%)",
     "etsy": "Etsy (6.5% + R$3)",
+    "taxRate": "Impostos (%)",
+    "cardFee": "Taxa Cartão (%)",
     "calculate": "Calcular Custos",
     "save": "Salvar Produto",
     "saveSuccess": "Produto salvo com sucesso!",
@@ -88,7 +91,10 @@
     "packaging": "Embalagem",
     "finishing": "Acabamento",
     "failure": "Taxa de Falhas",
-    "marketplaceFee": "Taxa Marketplace"
+    "marketplaceFee": "Taxa Marketplace",
+    "shipping": "Frete",
+    "tax": "Impostos",
+    "cardFee": "Taxa Cartão"
   },
   "stl": {
     "loading": "Analisando modelo 3D...",

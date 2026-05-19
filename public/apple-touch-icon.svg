@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- iOS-style rounded background -->
+  <rect width="180" height="180" fill="#3b82f6" rx="40"/>
+  
+  <!-- 3D Printer Icon -->
+  <g transform="translate(45, 45)">
+    <!-- Printer Frame -->
+    <rect x="8" y="12" width="74" height="60" fill="none" stroke="#ffffff" stroke-width="2.5" rx="2"/>
+    
+    <!-- Build Plate -->
+    <rect x="12" y="45" width="66" height="22" fill="#60a5fa" stroke="#ffffff" stroke-width="1.5" rx="1.5"/>
+    
+    <!-- Nozzle -->
+    <circle cx="45" cy="36" r="3.5" fill="#fbbf24"/>
+    <line x1="45" y1="40" x2="45" y2="45" stroke="#fbbf24" stroke-width="1.5"/>
+    
+    <!-- Z-axis -->
+    <line x1="22" y1="8" x2="22" y2="72" stroke="#ffffff" stroke-width="1.8"/>
+    <line x1="68" y1="8" x2="68" y2="72" stroke="#ffffff" stroke-width="1.8"/>
+    
+    <!-- Control Panel -->
+    <rect x="12" y="72" width="66" height="7" fill="#60a5fa" stroke="#ffffff" stroke-width="1" rx="0.5"/>
+  </g>
+  
+  <!-- Shine effect (Apple style) -->
+  <defs>
+    <radialGradient id="shine" cx="35%" cy="35%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:white;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <rect width="180" height="180" fill="url(#shine)" rx="40"/>
+</svg>

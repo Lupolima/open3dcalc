@@ -49,6 +49,31 @@ export function PricingTab({ onCalculate, onSave }: PricingTabProps) {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">{t('pricing.taxRate')}</label>
+            <input
+              type="number"
+              step="0.5"
+              value={inputs.taxRate || ''}
+              onChange={e => setInput('taxRate', parseFloat(e.target.value) || 0)}
+              placeholder="8"
+              className="w-full px-4 py-2.5 rounded-xl text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">{t('pricing.cardFee')}</label>
+            <input
+              type="number"
+              step="0.1"
+              value={inputs.cardFeePercent || ''}
+              onChange={e => setInput('cardFeePercent', parseFloat(e.target.value) || 0)}
+              placeholder="3"
+              className="w-full px-4 py-2.5 rounded-xl text-sm"
+            />
+          </div>
+        </div>
+
         <button
           onClick={onCalculate}
           className="btn-primary w-full py-3.5 rounded-xl text-sm font-semibold text-white hover:brightness-110 active:scale-[0.98] transition-all"

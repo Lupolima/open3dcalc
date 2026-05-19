@@ -49,6 +49,7 @@
     "packaging": "Packaging (R$/unit)",
     "finishing": "Finishing (R$/unit)",
     "failureRate": "Failure Rate (%)",
+    "shipping": "Shipping (R$/unit)",
     "customPrinter": "Custom Printer"
   },
   "pricing": {
@@ -60,6 +61,8 @@
     "mercadolivre": "Mercado Livre (16% + R$6)",
     "amazon": "Amazon (15%)",
     "etsy": "Etsy (6.5% + $3)",
+    "taxRate": "Tax Rate (%)",
+    "cardFee": "Card Fee (%)",
     "calculate": "Calculate Costs",
     "save": "Save Product",
     "saveSuccess": "Product saved successfully!",
@@ -88,7 +91,10 @@
     "packaging": "Packaging",
     "finishing": "Finishing",
     "failure": "Failure Rate",
-    "marketplaceFee": "Marketplace Fee"
+    "marketplaceFee": "Marketplace Fee",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "cardFee": "Card Fee"
   },
   "stl": {
     "loading": "Analyzing 3D model...",

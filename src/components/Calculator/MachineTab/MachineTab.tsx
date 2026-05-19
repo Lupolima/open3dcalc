@@ -128,6 +128,18 @@ export function MachineTab() {
             />
           </div>
         </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">{t('machine.shipping')}</label>
+          <input
+            type="number"
+            step="0.5"
+            value={inputs.shippingCost || ''}
+            onChange={e => setInput('shippingCost', parseFloat(e.target.value) || 0)}
+            placeholder="15.00"
+            className="w-full px-4 py-2.5 rounded-xl text-sm"
+          />
+        </div>
       </div>
     </div>
   )
