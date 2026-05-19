@@ -153,6 +153,7 @@ export interface CalculationResult {
   estimatedPrintTime: number
   targetMarginPercent: number
   breakEvenPrice: number
+  actualMargin: number
 }
 
 export interface HistoryItem {

@@ -94,6 +94,11 @@ export function calculateFDM(
   const marketplaceFee = sellPrice * (sales.marketplaceFeePercent / 100)
   const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
 
+  const costPerGram = effectiveWeight > 0 ? matCost / effectiveWeight : 0
+  const unitWeight = effectiveWeight
+  const breakEvenPrice = totalBaseCost
+  const actualMargin = sellPrice > 0 ? ((sellPrice - totalBaseCost - taxAmount - marketplaceFee) / sellPrice) * 100 : 0
+
   return {
     materialCost: matCost,
     energyCost: printerEnergyCost,
@@ -111,12 +116,13 @@ export function calculateFDM(
     profit: totalProfit,
     marketplaceFee,
     taxAmount,
-    costPerGram: effectiveWeight > 0 ? matCost / effectiveWeight : 0,
+    costPerGram,
     costPerUnit: totalBaseCost,
-    unitWeight: effectiveWeight,
+    unitWeight,
     estimatedPrintTime: print.printTimeHours,
     targetMarginPercent: sales.profitMarginPercent,
-    breakEvenPrice: totalBaseCost,
+    breakEvenPrice,
+    actualMargin,
   }
 }
 
@@ -204,6 +210,11 @@ export function calculateResin(
   const marketplaceFee = sellPrice * (sales.marketplaceFeePercent / 100)
   const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
 
+  const resinWeight = volumeWithWaste * mat.density
+  const costPerGram = matCost > 0 && resinWeight > 0 ? matCost / resinWeight : 0
+  const breakEvenPrice = totalBaseCost
+  const actualMargin = sellPrice > 0 ? ((sellPrice - totalBaseCost - taxAmount - marketplaceFee) / sellPrice) * 100 : 0
+
   return {
     materialCost: matCost,
     energyCost: printerEnergyCost,
@@ -221,11 +232,64 @@ export function calculateResin(
     profit: totalProfit,
     marketplaceFee,
     taxAmount,
-    costPerGram: matCost > 0 && volumeWithWaste > 0 ? matCost / (volumeWithWaste * mat.density) : 0,
+    costPerGram,
     costPerUnit: totalBaseCost,
-    unitWeight: volumeWithWaste * mat.density,
+    unitWeight: resinWeight,
     estimatedPrintTime: print.printTimeHours,
     targetMarginPercent: sales.profitMarginPercent,
-    breakEvenPrice: totalBaseCost,
+    breakEvenPrice,
+    actualMargin,
   }
+}
+
+export function calculateReverseMargin(
+  totalBaseCost: number,
+  targetSellPrice: number,
+  taxPercent: number,
+  marketplaceFeePercent: number,
+): { actualMargin: number; profit: number; taxAmount: number; marketplaceFee: number } {
+  const taxAmount = targetSellPrice * (taxPercent / 100)
+  const marketplaceFee = targetSellPrice * (marketplaceFeePercent / 100)
+  const profit = targetSellPrice - totalBaseCost - taxAmount - marketplaceFee
+  const actualMargin = targetSellPrice > 0 ? (profit / targetSellPrice) * 100 : 0
+  return { actualMargin, profit, taxAmount, marketplaceFee }
+}
+
+export function calculateMonthlyProjection(
+  result: { totalCost: number; sellPrice: number; profit: number },
+  printsPerMonth: number,
+): { revenue: number; cost: number; profit: number; annualProfit: number } {
+  const revenue = result.sellPrice * printsPerMonth
+  const cost = result.totalCost * printsPerMonth
+  const profit = result.profit * printsPerMonth
+  return { revenue, cost, profit, annualProfit: profit * 12 }
+}
+
+export function calculatePrintVsBuy(
+  printCost: number,
+  buyPrice: number,
+): { cheaper: 'print' | 'buy'; savings: number; savingsPercent: number } {
+  const savings = Math.abs(buyPrice - printCost)
+  const savingsPercent = buyPrice > 0 ? (savings / buyPrice) * 100 : 0
+  return {
+    cheaper: printCost <= buyPrice ? 'print' : 'buy',
+    savings,
+    savingsPercent,
+  }
+}
+
+export function calculateInfillImpact(
+  volumeSolidCm3: number,
+  boundingBoxCm3: number,
+  infillPercent: number,
+  density: number,
+  costPerKg: number,
+  _printTimeHours: number,
+): { weight: number; cost: number; timeChange: number } {
+  const infillVolume = (boundingBoxCm3 - volumeSolidCm3) * (infillPercent / 100)
+  const totalVolume = volumeSolidCm3 + infillVolume
+  const weight = totalVolume * density
+  const cost = (weight / 1000) * costPerKg
+  const timeChange = infillPercent / 20
+  return { weight, cost, timeChange }
 }

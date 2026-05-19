@@ -34,6 +34,7 @@ const mockResult: CalculationResult = {
   estimatedPrintTime: 5,
   targetMarginPercent: 50,
   breakEvenPrice: 54.12,
+  actualMargin: 25.3,
 }
 
 export const WithData: Story = {

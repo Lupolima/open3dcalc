@@ -1,10 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCalculatorStore } from '@/stores/calculatorStore'
+import { InputGroup } from '@/components/ui/InputGroup'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import type { CalculationResult } from '@/types'
-
-interface DashboardProps {
-  result: CalculationResult | null
-}
 
 const COLORS = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#14b8a6']
 
@@ -12,52 +10,91 @@ function formatMoney(value: number) {
   return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export function Dashboard({ result }: DashboardProps) {
+export function Dashboard() {
   const { t } = useTranslation()
+  const store = useCalculatorStore()
+  const results = store.results
+  const [printsPerMonth, setPrintsPerMonth] = useState(30)
+  const [buyPrice, setBuyPrice] = useState('')
+  const [targetSellPrice, setTargetSellPrice] = useState('')
 
-  if (!result) {
+  const handleInput = (value: string, setter: (v: number) => void) => {
+    setter(value === '' ? 0 : parseFloat(value) || 0)
+  }
+
+  const monthlyProjection = results ? {
+    revenue: results.sellPrice * printsPerMonth,
+    cost: results.totalCost * printsPerMonth,
+    profit: results.profit * printsPerMonth,
+    annualProfit: results.profit * printsPerMonth * 12,
+  } : null
+
+  const printVsBuy = results && buyPrice ? {
+    printCost: results.totalCost,
+    buyPrice: parseFloat(buyPrice) || 0,
+    cheaper: results.totalCost <= (parseFloat(buyPrice) || 0) ? 'print' as const : 'buy' as const,
+    savings: Math.abs(results.totalCost - (parseFloat(buyPrice) || 0)),
+    savingsPercent: (parseFloat(buyPrice) || 0) > 0 ? (Math.abs(results.totalCost - (parseFloat(buyPrice) || 0)) / (parseFloat(buyPrice) || 0)) * 100 : 0,
+  } : null
+
+  const reverseMargin = results && targetSellPrice ? {
+    targetPrice: parseFloat(targetSellPrice) || 0,
+    actualMargin: results.totalCost > 0 && (parseFloat(targetSellPrice) || 0) > 0
+      ? (((parseFloat(targetSellPrice) || 0) - results.totalCost - results.taxAmount - results.marketplaceFee) / (parseFloat(targetSellPrice) || 0)) * 100
+      : 0,
+    profit: (parseFloat(targetSellPrice) || 0) - results.totalCost - results.taxAmount - results.marketplaceFee,
+  } : null
+
+  if (!results) {
     return (
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        {[t('dashboard.totalCost'), t('dashboard.salePrice'), t('dashboard.profit'), t('dashboard.roi')].map(label => (
-          <div key={label} className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
-            <p className="text-xs text-gray-400 mb-1">{label}</p>
-            <p className="text-lg font-extrabold text-gray-500">---</p>
-          </div>
-        ))}
-      </section>
+      <div className="space-y-5">
+        <div className="glass rounded-2xl p-5">
+          <h2 className="text-lg font-bold text-white">{t('nav.dashboard')}</h2>
+          <p className="text-xs text-gray-500 mt-1">{t('calc.noCosts')}</p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[t('dashboard.totalCost'), t('dashboard.salePrice'), t('dashboard.profit'), t('dashboard.roi')].map(label => (
+            <div key={label} className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
+              <p className="text-xs text-gray-400 mb-1">{label}</p>
+              <p className="text-lg font-extrabold text-gray-500">---</p>
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
   const chartData = [
-    { name: t('breakdown.material'), value: result.materialCost },
-    { name: t('breakdown.energy'), value: result.energyCost },
-    { name: t('breakdown.depreciation'), value: result.machineCost },
-    { name: t('breakdown.maintenance'), value: result.consumablesCost },
-    { name: t('breakdown.labor'), value: result.laborCost },
-    { name: t('breakdown.packaging'), value: result.totalCost - result.subtotal - result.failureCost > 0 ? result.totalCost - result.subtotal - result.failureCost : 0 },
-    { name: t('breakdown.finishing'), value: result.postProcessingCost },
+    { name: t('breakdown.material'), value: results.materialCost },
+    { name: t('breakdown.energy'), value: results.energyCost },
+    { name: t('breakdown.depreciation'), value: results.machineCost },
+    { name: t('breakdown.maintenance'), value: results.consumablesCost },
+    { name: t('breakdown.labor'), value: results.laborCost },
+    { name: t('breakdown.packaging'), value: results.totalCost - results.subtotal - results.failureCost > 0 ? results.totalCost - results.subtotal - results.failureCost : 0 },
+    { name: t('breakdown.finishing'), value: results.postProcessingCost },
   ].filter(d => d.value > 0)
 
-  const roi = result.totalCost > 0 ? (result.profit / result.totalCost) * 100 : 0
+  const roi = results.totalCost > 0 ? (results.profit / results.totalCost) * 100 : 0
 
   return (
-    <section className="mb-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="glass rounded-2xl p-4 text-center">
+    <div className="space-y-5">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.totalCost')}</p>
-          <p className="text-lg font-extrabold text-pink-400">{formatMoney(result.totalCost)}</p>
+          <p className="text-lg font-extrabold text-pink-400">{formatMoney(results.totalCost)}</p>
         </div>
-        <div className="glass rounded-2xl p-4 text-center">
+        <div className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.salePrice')}</p>
-          <p className="text-lg font-extrabold text-emerald-400">{formatMoney(result.sellPrice)}</p>
+          <p className="text-lg font-extrabold text-emerald-400">{formatMoney(results.sellPrice)}</p>
         </div>
-        <div className="glass rounded-2xl p-4 text-center">
+        <div className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.profit')}</p>
-          <p className={`text-lg font-extrabold ${result.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
-            {formatMoney(result.profit)}
+          <p className={`text-lg font-extrabold ${results.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+            {formatMoney(results.profit)}
           </p>
         </div>
-        <div className="glass rounded-2xl p-4 text-center">
+        <div className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.roi')}</p>
           <p className={`text-lg font-extrabold ${roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             {roi.toFixed(0)}%
@@ -65,6 +102,7 @@ export function Dashboard({ result }: DashboardProps) {
         </div>
       </div>
 
+      {/* Cost Breakdown Chart */}
       {chartData.length > 1 && (
         <div className="glass rounded-2xl p-4">
           <p className="text-sm font-semibold text-gray-300 mb-3">{t('breakdown.title')}</p>
@@ -96,6 +134,86 @@ export function Dashboard({ result }: DashboardProps) {
           </div>
         </div>
       )}
-    </section>
+
+      {/* Monthly Projection */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('calc.monthlyProjection')}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputGroup label={t('calc.printsPerMonth')} value={printsPerMonth}
+            onChange={v => handleInput(v, val => setPrintsPerMonth(val > 0 ? val : 1))} type="number" unit="un" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">{t('calc.monthlyRevenue')}</p>
+              <p className="text-sm font-bold text-emerald-400">{monthlyProjection ? formatMoney(monthlyProjection.revenue) : '---'}</p>
+            </div>
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">{t('calc.monthlyCost')}</p>
+              <p className="text-sm font-bold text-pink-400">{monthlyProjection ? formatMoney(monthlyProjection.cost) : '---'}</p>
+            </div>
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">{t('calc.monthlyProfit')}</p>
+              <p className={`text-sm font-bold ${monthlyProjection && monthlyProjection.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+                {monthlyProjection ? formatMoney(monthlyProjection.profit) : '---'}
+              </p>
+            </div>
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">Lucro Anual</p>
+              <p className={`text-sm font-bold ${monthlyProjection && monthlyProjection.annualProfit >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
+                {monthlyProjection ? formatMoney(monthlyProjection.annualProfit) : '---'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Target Margin Mode */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('calc.targetMarginMode')}</h3>
+        <p className="text-xs text-gray-500 mb-3">{t('calc.targetMarginDesc')}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputGroup label={t('calc.sellPriceTarget')} value={targetSellPrice}
+            onChange={v => setTargetSellPrice(v)} type="number" prefix="R$" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">{t('calc.actualMargin')}</p>
+              <p className={`text-sm font-bold ${reverseMargin && reverseMargin.actualMargin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {reverseMargin ? `${reverseMargin.actualMargin.toFixed(1)}%` : '---'}
+              </p>
+            </div>
+            <div className="glass rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-500">Lucro</p>
+              <p className={`text-sm font-bold ${reverseMargin && reverseMargin.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+                {reverseMargin ? formatMoney(reverseMargin.profit) : '---'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Print vs Buy */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('calc.printVsBuy')}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputGroup label={t('calc.buyPrice')} value={buyPrice}
+            onChange={v => setBuyPrice(v)} type="number" prefix="R$" />
+          {printVsBuy && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass rounded-xl p-3 text-center">
+                <p className="text-[10px] text-gray-500">Mais Barato</p>
+                <p className="text-sm font-bold text-cyan-400">
+                  {printVsBuy.cheaper === 'print' ? t('calc.printCheaper') : t('calc.buyCheaper')}
+                </p>
+              </div>
+              <div className="glass rounded-xl p-3 text-center">
+                <p className="text-[10px] text-gray-500">{t('calc.savings')}</p>
+                <p className="text-sm font-bold text-emerald-400">
+                  {formatMoney(printVsBuy.savings)} ({printVsBuy.savingsPercent.toFixed(0)}%)
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

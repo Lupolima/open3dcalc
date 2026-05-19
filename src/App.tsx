@@ -5,27 +5,27 @@ import { Calculator } from '@/components/Calculator/Calculator'
 import { CatalogTab } from '@/components/Catalog/CatalogTab'
 import { HistoryTab } from '@/components/Calculator/HistoryTab/HistoryTab'
 import { Dashboard } from '@/components/Dashboard/Dashboard'
-import { Calculator as CalculatorIcon, Clock, Settings2, BarChart3 } from 'lucide-react'
-import { useCalculatorStore } from '@/stores/calculatorStore'
+import { InfillCalculator } from '@/components/Calculator/InfillCalculator'
+import { FilamentInventory } from '@/components/Catalog/FilamentInventory'
+import { Calculator as CalculatorIcon, Clock, Settings2, BarChart3, Grid3x3, Spool } from 'lucide-react'
 
-type Tab = 'calculator' | 'history' | 'catalog' | 'dashboard'
+type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory'
 
 function App() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('calculator')
-  const results = useCalculatorStore(s => s.results)
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
-        <nav className="flex gap-1 mb-6 border-b border-white/10 pb-0" role="tablist">
+        <nav className="flex gap-1 mb-6 border-b border-white/10 pb-0 overflow-x-auto" role="tablist">
           <button
             onClick={() => setActiveTab('calculator')}
             role="tab"
             aria-selected={activeTab === 'calculator'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'calculator'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -37,7 +37,7 @@ function App() {
             onClick={() => setActiveTab('dashboard')}
             role="tab"
             aria-selected={activeTab === 'dashboard'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'dashboard'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -46,10 +46,34 @@ function App() {
             <BarChart3 className="w-4 h-4" /> {t('nav.dashboard')}
           </button>
           <button
+            onClick={() => setActiveTab('infill')}
+            role="tab"
+            aria-selected={activeTab === 'infill'}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+              activeTab === 'infill'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
+            }`}
+          >
+            <Grid3x3 className="w-4 h-4" /> Infill Calc
+          </button>
+          <button
+            onClick={() => setActiveTab('inventory')}
+            role="tab"
+            aria-selected={activeTab === 'inventory'}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+              activeTab === 'inventory'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
+            }`}
+          >
+            <Spool className="w-4 h-4" /> Filamentos
+          </button>
+          <button
             onClick={() => setActiveTab('catalog')}
             role="tab"
             aria-selected={activeTab === 'catalog'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'catalog'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -61,7 +85,7 @@ function App() {
             onClick={() => setActiveTab('history')}
             role="tab"
             aria-selected={activeTab === 'history'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'history'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -73,7 +97,9 @@ function App() {
 
         <div className="tab-content">
           {activeTab === 'calculator' && <Calculator />}
-          {activeTab === 'dashboard' && <Dashboard result={results} />}
+          {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'infill' && <InfillCalculator />}
+          {activeTab === 'inventory' && <FilamentInventory />}
           {activeTab === 'catalog' && <CatalogTab />}
           {activeTab === 'history' && <HistoryTab />}
         </div>
