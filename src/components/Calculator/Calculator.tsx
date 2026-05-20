@@ -8,18 +8,25 @@ import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import type { BufferGeometry } from 'three'
+import {
+  Layers, SlidersHorizontal, Wrench, Printer, HardHat, ShieldCheck,
+  DollarSign, BarChart3, Paintbrush, Zap, Monitor, Package, Truck,
+  ClipboardList, AlertTriangle, FolderOpen, Save, FileText,
+  FlaskConical, CheckCircle2, Upload, BarChart2,
+  type LucideIcon,
+} from 'lucide-react'
 
 const StlPreview = lazy(() => import('@/components/StlPreview/StlPreview').then(m => ({ default: m.StlPreview })))
 
-const SECTIONS = [
-  { id: 'material', icon: '🧵', label: 'calc.material', short: 'Material' },
-  { id: 'print', icon: '⚙️', label: 'calc.printParams', short: 'Parâmetros' },
-  { id: 'hardware', icon: '🔧', label: 'calc.fdmHardware', short: 'Hardware' },
-  { id: 'machine', icon: '🖨️', label: 'calc.machine', short: 'Máquina' },
-  { id: 'labor', icon: '👷', label: 'calc.labor', short: 'Mão de Obra' },
-  { id: 'ops', icon: '🛡️', label: 'calc.opsSoftware', short: 'EPI / Soft' },
-  { id: 'sales', icon: '💰', label: 'calc.sales', short: 'Vendas' },
-  { id: 'results', icon: '📊', label: 'calc.results', short: 'Resultados' },
+const SECTIONS: { id: string; Icon: LucideIcon; label: string; short: string }[] = [
+  { id: 'material', Icon: Layers,           label: 'calc.material',   short: 'Material' },
+  { id: 'print',    Icon: SlidersHorizontal, label: 'calc.printParams', short: 'Parâmetros' },
+  { id: 'hardware', Icon: Wrench,            label: 'calc.fdmHardware', short: 'Hardware' },
+  { id: 'machine',  Icon: Printer,           label: 'calc.machine',    short: 'Máquina' },
+  { id: 'labor',    Icon: HardHat,           label: 'calc.labor',      short: 'M.Obra' },
+  { id: 'ops',      Icon: ShieldCheck,       label: 'calc.opsSoftware', short: 'Ops' },
+  { id: 'sales',    Icon: DollarSign,        label: 'calc.sales',      short: 'Vendas' },
+  { id: 'results',  Icon: BarChart3,         label: 'calc.results',    short: 'Resultado' },
 ]
 
 export function Calculator() {
@@ -124,15 +131,15 @@ export function Calculator() {
     setter(value === '' ? 0 : parseFloat(value) || 0)
   }, [])
 
-  function renderSectionHeader(icon: string, title: string, subtitle?: string) {
+  function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string) {
     return (
-      <div className="flex items-center gap-3 mb-6 pb-5 border-b border-white/10">
-        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0">
-          {icon}
+      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.07]">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)' }}>
+          <Icon className="w-[18px] h-[18px] text-indigo-400" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-white leading-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+          <h3 className="text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
+          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
       </div>
     )
@@ -141,7 +148,7 @@ export function Calculator() {
   function renderMaterialSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('🧵', t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
+        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
@@ -156,11 +163,15 @@ export function Calculator() {
                 onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
                 onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileDrop(f) }}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500/50 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                className="w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex flex-col items-center gap-2"
+                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(79,70,229,0.4)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
               >
                 <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
-                <p className="text-xs text-gray-400">{t('product.uploadStl')}</p>
-                {stlLoading && <p className="text-xs text-purple-400 mt-1">{t('stl.loading')}</p>}
+                <Upload className="w-5 h-5 text-slate-500" />
+                <p className="text-xs text-slate-400">{t('product.uploadStl')}</p>
+                {stlLoading && <p className="text-xs text-indigo-400">{t('stl.loading')}</p>}
               </button>
               {stlGeometry && (
                 <div className="mt-2 h-48">
@@ -222,7 +233,7 @@ export function Calculator() {
   function renderPrintSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('⚙️', t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
+        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
@@ -298,7 +309,7 @@ export function Calculator() {
   function renderHardwareSection() {
     return (
       <div className="glass rounded-2xl p-6 space-y-6">
-        {renderSectionHeader('🔧', t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
+        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
         {isFDM && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -398,7 +409,7 @@ export function Calculator() {
   function renderMachineSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('🖨️', t('calc.machine'), 'Depreciação e manutenção')}
+        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
@@ -429,7 +440,7 @@ export function Calculator() {
   function renderLaborSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('👷', t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
+        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
@@ -448,7 +459,7 @@ export function Calculator() {
   function renderOpsSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('🛡️', t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
+        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
@@ -487,7 +498,7 @@ export function Calculator() {
   function renderSalesSection() {
     return (
       <div className="glass rounded-2xl p-6">
-        {renderSectionHeader('💰', t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
+        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <InputGroup label={t('calc.quantity')}
@@ -623,8 +634,13 @@ export function Calculator() {
 
         {/* Add to History */}
         <button onClick={() => store.addToHistory()}
-          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">
-          📁 {t('calc.addHistory')}
+          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e2e8f0' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+        >
+          <FolderOpen className="w-4 h-4" />
+          {t('calc.addHistory')}
         </button>
 
         {/* History */}
@@ -656,18 +672,23 @@ export function Calculator() {
         )}
 
         {/* Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
-            {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
+            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+              saveStatus === 'saved'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-indigo-600 text-white hover:bg-indigo-500'
+            }`}>
+            {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+            {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
           </button>
           <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
-            📄 {t('calc.exportPdf')}
+            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
           </button>
           <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none">
-            📊 {t('calc.exportCsv')}
+            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+            <BarChart2 className="w-3.5 h-3.5" /> CSV
           </button>
         </div>
       </>
@@ -742,8 +763,13 @@ export function Calculator() {
         )}
 
         <button onClick={() => store.addToHistory()}
-          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">
-          📁 {t('calc.addHistory')}
+          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e2e8f0' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+        >
+          <FolderOpen className="w-4 h-4" />
+          {t('calc.addHistory')}
         </button>
 
         {store.history.length > 0 && (
@@ -771,18 +797,23 @@ export function Calculator() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
-            {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
+            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+              saveStatus === 'saved'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-indigo-600 text-white hover:bg-indigo-500'
+            }`}>
+            {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+            {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
           </button>
           <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
-            📄 {t('calc.exportPdf')}
+            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
           </button>
           <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none">
-            📊 CSV
+            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+            <BarChart2 className="w-3.5 h-3.5" /> CSV
           </button>
         </div>
       </div>
@@ -793,17 +824,17 @@ export function Calculator() {
     <>
       <div className="flex gap-6 pb-20 lg:pb-0">
         {/* Desktop sidebar — icon + label */}
-        <nav className="hidden lg:flex flex-col gap-1 w-[120px] shrink-0 sticky top-24 h-fit">
+        <nav className="hidden lg:flex flex-col gap-1 w-[116px] shrink-0 sticky top-6 h-fit">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`w-full py-3 px-2 rounded-xl flex flex-col items-center gap-1.5 transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
+              className={`w-full py-2.5 px-3 rounded-xl flex items-center gap-2.5 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                 activeSection === s.id
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40'
-                  : 'glass text-gray-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent'
               }`}
               title={t(s.label)}>
-              <span className="text-xl leading-none">{s.icon}</span>
-              <span className="text-[10px] font-medium leading-tight text-center">{s.short}</span>
+              <s.Icon className={`w-4 h-4 shrink-0 ${activeSection === s.id ? 'text-indigo-400' : ''}`} />
+              <span className="text-[11px] font-medium leading-tight">{s.short}</span>
             </button>
           ))}
         </nav>
@@ -811,22 +842,16 @@ export function Calculator() {
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* FDM / Resin Tabs */}
-          <div className="glass rounded-2xl flex p-1.5 gap-1.5">
+          <div className="segmented-control">
             <button onClick={() => store.setActiveTab('fdm')}
-              className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none flex items-center justify-center gap-2 ${
-                isFDM
-                  ? 'bg-gradient-to-r from-sky-700 to-blue-700 text-white shadow-lg shadow-blue-900/40'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-              }`}>
-              🖨️ {t('calc.fdm')}
+              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
+              <Printer className="w-4 h-4" />
+              {t('calc.fdm')}
             </button>
             <button onClick={() => store.setActiveTab('resin')}
-              className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none flex items-center justify-center gap-2 ${
-                !isFDM
-                  ? 'bg-gradient-to-r from-purple-700 to-violet-700 text-white shadow-lg shadow-purple-900/40'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-              }`}>
-              🧪 {t('calc.resin')}
+              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none ${!isFDM ? 'active-resin' : ''}`}>
+              <FlaskConical className="w-4 h-4" />
+              {t('calc.resin')}
             </button>
           </div>
 
@@ -845,35 +870,34 @@ export function Calculator() {
 
           {/* Cost Sections Toggle */}
           <div className="glass rounded-xl px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-white">Seções do Cálculo</span>
-              <span className="text-[10px] text-gray-500">Marque/desmarque para personalizar</span>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-slate-200">Seções do Cálculo</span>
+              <span className="text-[10px] text-slate-500">Marque/desmarque para personalizar</span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { key: 'material', label: 'Material', icon: '🧵' },
-                { key: 'energy', label: 'Energia', icon: '⚡' },
-                { key: 'machine', label: 'Máquina', icon: '🖨️' },
-                { key: 'hardware', label: 'Hardware', icon: '🔧' },
-                { key: 'consumables', label: 'Consumíveis', icon: '🛡️' },
-                { key: 'labor', label: 'Mão de Obra', icon: '👷' },
-                { key: 'software', label: 'Software', icon: '💻' },
-                { key: 'failure', label: 'Falhas', icon: '⚠️' },
-                { key: 'extras', label: 'Extras', icon: '📦' },
-                { key: 'postProcessing', label: 'Acabamento', icon: '🎨' },
-                { key: 'packaging', label: 'Embalagem', icon: '📋' },
-                { key: 'shipping', label: 'Frete', icon: '🚚' },
-              ].map(s => (
+            <div className="grid grid-cols-3 gap-1.5">
+              {([
+                { key: 'material',      Icon: Layers,         label: 'Material' },
+                { key: 'energy',        Icon: Zap,            label: 'Energia' },
+                { key: 'machine',       Icon: Printer,        label: 'Máquina' },
+                { key: 'hardware',      Icon: Wrench,         label: 'Hardware' },
+                { key: 'consumables',   Icon: ShieldCheck,    label: 'Consumo' },
+                { key: 'labor',         Icon: HardHat,        label: 'M.Obra' },
+                { key: 'software',      Icon: Monitor,        label: 'Software' },
+                { key: 'failure',       Icon: AlertTriangle,  label: 'Falhas' },
+                { key: 'extras',        Icon: Package,        label: 'Extras' },
+                { key: 'postProcessing',Icon: Paintbrush,     label: 'Acabamento' },
+                { key: 'packaging',     Icon: ClipboardList,  label: 'Embalagem' },
+                { key: 'shipping',      Icon: Truck,          label: 'Frete' },
+              ] as { key: string; Icon: LucideIcon; label: string }[]).map(s => (
                 <button key={s.key}
                   onClick={() => store.toggleSection(s.key)}
-                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
+                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                     store.enabledSections[s.key]
-                      ? 'bg-purple-600/30 text-white border border-purple-500/50'
-                      : 'bg-white/5 text-gray-500 border border-transparent'
+                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40'
+                      : 'text-slate-500 border border-transparent hover:bg-white/[0.04] hover:text-slate-400'
                   }`}>
-                  <span className="text-base">{s.icon}</span>
-                  <span>{s.label}</span>
-                  <span className={`w-2 h-2 rounded-full ${store.enabledSections[s.key] ? 'bg-green-400' : 'bg-gray-600'}`} />
+                  <s.Icon className={`w-3.5 h-3.5 ${store.enabledSections[s.key] ? 'text-indigo-400' : 'text-slate-600'}`} />
+                  <span className="leading-tight">{s.label}</span>
                 </button>
               ))}
             </div>
@@ -904,28 +928,31 @@ export function Calculator() {
       </div>
 
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/10 lg:hidden h-16">
-        <div className="flex h-full overflow-x-auto">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex h-14 overflow-x-auto">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[60px] text-[9px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
-                activeSection === s.id ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300'
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] text-[9px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
               }`}>
-              <span className={`text-xl leading-none ${activeSection === s.id ? 'drop-shadow-[0_0_6px_rgba(167,139,250,0.6)]' : ''}`}>{s.icon}</span>
-              <span className="truncate max-w-[64px] leading-tight">{s.short}</span>
+              <s.Icon className={`w-[17px] h-[17px] transition-transform ${activeSection === s.id ? 'scale-110' : ''}`} />
+              <span className="truncate max-w-[56px] leading-tight">{s.short}</span>
             </button>
           ))}
         </div>
       </nav>
 
       {/* Sticky Mobile/Tablet Results Bar — above bottom nav */}
-      <div className="fixed bottom-16 left-0 right-0 z-50 glass border-t border-white/10 lg:hidden px-4 py-2 flex items-center justify-between">
-        <div className="flex gap-3 text-xs">
-          <span className="text-green-400"><span className="text-gray-500">Custo </span>{fmtCurrency(results.totalCost)}</span>
-          <span className="text-emerald-400 font-bold"><span className="text-gray-500">Venda </span>{fmtCurrency(results.sellPrice)}</span>
-          <span className="text-orange-400"><span className="text-gray-500">Lucro </span>{fmtCurrency(results.profit)}</span>
+      <div className="fixed bottom-14 left-0 right-0 z-20 lg:hidden px-3 py-2 flex items-center justify-between gap-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex gap-4 text-xs">
+          <span className="text-slate-200"><span className="text-slate-500 mr-1">Custo</span>{fmtCurrency(results.totalCost)}</span>
+          <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>
+          <span className="text-amber-400"><span className="text-slate-500 mr-1">Lucro</span>{fmtCurrency(results.profit)}</span>
         </div>
-        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[10px] font-bold shrink-0 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">📁</button>
+        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
+          <FolderOpen className="w-3 h-3" />
+          Salvar
+        </button>
       </div>
     </>
   )

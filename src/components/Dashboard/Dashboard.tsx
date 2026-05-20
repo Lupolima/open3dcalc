@@ -4,7 +4,7 @@ import { useCalculatorStore } from '@/stores/calculatorStore'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 
-const COLORS = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#14b8a6']
+const COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#14b8a6']
 
 function formatMoney(value: number) {
   return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -90,7 +90,7 @@ export function Dashboard() {
         </div>
         <div className="glass rounded-2xl p-4 text-center hover:-translate-y-0.5 transition-transform">
           <p className="text-xs text-gray-400 mb-1">{t('dashboard.profit')}</p>
-          <p className={`text-lg font-extrabold ${results.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+          <p className={`text-lg font-extrabold ${results.profit >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
             {formatMoney(results.profit)}
           </p>
         </div>
@@ -152,7 +152,7 @@ export function Dashboard() {
             </div>
             <div className="glass rounded-xl p-3 text-center">
               <p className="text-[10px] text-gray-500">{t('calc.monthlyProfit')}</p>
-              <p className={`text-sm font-bold ${monthlyProjection && monthlyProjection.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+              <p className={`text-sm font-bold ${monthlyProjection && monthlyProjection.profit >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
                 {monthlyProjection ? formatMoney(monthlyProjection.profit) : '---'}
               </p>
             </div>
@@ -182,7 +182,7 @@ export function Dashboard() {
             </div>
             <div className="glass rounded-xl p-3 text-center">
               <p className="text-[10px] text-gray-500">Lucro</p>
-              <p className={`text-sm font-bold ${reverseMargin && reverseMargin.profit >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
+              <p className={`text-sm font-bold ${reverseMargin && reverseMargin.profit >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
                 {reverseMargin ? formatMoney(reverseMargin.profit) : '---'}
               </p>
             </div>

@@ -39,9 +39,9 @@ export function CatalogTab() {
       </div>
 
       <div className="glass rounded-2xl p-2 flex gap-2">
-        <button onClick={() => setSection('printers')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${section === 'printers' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.printers')}</button>
-        <button onClick={() => setSection('materials')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${section === 'materials' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.materials')}</button>
-        <button onClick={() => setSection('marketplaces')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${section === 'marketplaces' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.marketplaces')}</button>
+        <button onClick={() => setSection('printers')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'printers' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.printers')}</button>
+        <button onClick={() => setSection('materials')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'materials' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.materials')}</button>
+        <button onClick={() => setSection('marketplaces')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'marketplaces' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.marketplaces')}</button>
       </div>
 
       {section === 'printers' && <PrinterManager />}
@@ -85,7 +85,7 @@ function PrinterManager() {
           <InputGroup label={t('catalog.power')} value={power} onChange={setPower} type="number" unit="W" />
           <InputGroup label={t('catalog.value')} value={value} onChange={setValue} type="number" prefix="R$" />
         </div>
-        <button onClick={add} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">{t('catalog.save')}</button>
+        <button onClick={add} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none">{t('catalog.save')}</button>
       </div>
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {store.printers.map(p => (
@@ -95,7 +95,7 @@ function PrinterManager() {
                 <div className="font-semibold text-white">{p.name}</div>
                 <div className="text-xs text-gray-500">{p.brand}</div>
               </div>
-              {p.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-purple-600/20 text-purple-300">Custom</span>}
+              {p.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-600/20 text-indigo-300">Custom</span>}
             </div>
             <div className="text-xs text-gray-400">{t('catalog.power')}: {p.power}W</div>
             <div className="text-xs text-gray-400">{t('catalog.value')}: R$ {p.value}</div>
@@ -142,7 +142,7 @@ function MaterialManager() {
           <InputGroup label={t('catalog.density')} value={density} onChange={setDensity} type="number" />
           <InputGroup label={t('catalog.avgPrice')} value={price} onChange={setPrice} type="number" prefix="R$" />
         </div>
-        <button onClick={add} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">{t('catalog.save')}</button>
+        <button onClick={add} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none">{t('catalog.save')}</button>
       </div>
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {store.materials.map(m => (
@@ -152,7 +152,7 @@ function MaterialManager() {
                 <div className="font-semibold text-white">{m.name}</div>
                 <div className="text-xs text-gray-500 uppercase">{m.type}</div>
               </div>
-              {m.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-purple-600/20 text-purple-300">Custom</span>}
+              {m.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-600/20 text-indigo-300">Custom</span>}
             </div>
             <div className="text-xs text-gray-400">{t('catalog.density')}: {m.density}</div>
             <div className="text-xs text-gray-400">{t('catalog.avgPrice')}: R$ {m.avgPrice}</div>
@@ -201,7 +201,7 @@ function MarketplaceManager() {
           <input type="checkbox" checked={hasFreeShipping} onChange={e => setHasFreeShipping(e.target.checked)} className="rounded bg-white/10 border-white/20" />
           {t('catalog.freeShipping')}
         </label>
-        <button onClick={add} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">{t('catalog.save')}</button>
+        <button onClick={add} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none">{t('catalog.save')}</button>
       </div>
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {store.marketplaces.map(m => (
@@ -210,7 +210,7 @@ function MarketplaceManager() {
               <div>
                 <div className="font-semibold text-white">{m.name}</div>
               </div>
-              {m.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-purple-600/20 text-purple-300">Custom</span>}
+              {m.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-600/20 text-indigo-300">Custom</span>}
             </div>
             <div className="text-xs text-gray-400">{t('catalog.fee')}: {m.feePercent}% + R$ {m.feeFixed}</div>
             <div className="text-xs text-gray-400">{m.hasFreeShipping ? t('catalog.hasFreeShipping') : t('catalog.noFreeShipping')}</div>

@@ -52,7 +52,7 @@ export function InputGroup({
           } ${unit ? 'pr-14' : ''} ${
             error
               ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/50'
-              : 'border-white/10 hover:border-white/20 focus:border-purple-500/60 focus:ring-purple-500'
+              : 'border-white/10 hover:border-white/20 focus:border-indigo-500/60 focus:ring-indigo-500'
           }`}
         />
         {unit && (
@@ -86,7 +86,7 @@ export function SelectGroup({ label, value, onChange, options }: SelectGroupProp
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500/60 outline-none transition-all appearance-none cursor-pointer"
+        className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500/60 outline-none transition-all appearance-none cursor-pointer"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
