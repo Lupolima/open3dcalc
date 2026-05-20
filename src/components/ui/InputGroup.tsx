@@ -24,7 +24,7 @@ export function InputGroup({
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2">
-        <label htmlFor={id} className={`text-[12px] sm:text-[11px] font-semibold uppercase tracking-wider ${error ? 'text-red-400' : 'text-gray-500'}`}>
+        <label htmlFor={id} className={`text-[11px] font-semibold uppercase tracking-wider ${error ? 'text-red-400' : 'text-gray-500'}`}>
           {label}
         </label>
         {tooltip && (
@@ -47,9 +47,9 @@ export function InputGroup({
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           step={step}
-          className={`w-full bg-white/[0.04] border rounded-xl text-[0.95rem] text-white min-h-[44px] px-3 transition-all placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+          className={`w-full bg-white/[0.04] border rounded-xl text-[0.95rem] text-white min-h-[48px] px-3 transition-all placeholder:text-gray-400/70 focus:outline-none focus:ring-2 ${
             prefix ? 'pl-9' : ''
-          } ${unit ? 'pr-14' : ''} ${
+          } ${unit ? 'pr-16' : ''} ${
             error
               ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/50'
               : 'border-white/10 hover:border-white/20 focus:border-indigo-500/60 focus:ring-indigo-500'

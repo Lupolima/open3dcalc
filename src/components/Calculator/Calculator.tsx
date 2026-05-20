@@ -12,9 +12,8 @@ import { ResultsPanel } from './ResultsPanel'
 import type { BufferGeometry } from 'three'
 import {
   Layers, SlidersHorizontal, Wrench, Printer, HardHat, ShieldCheck,
-  DollarSign, BarChart3, Paintbrush, Zap, Monitor, Package, Truck,
-  ClipboardList, AlertTriangle, FolderOpen,
-  FlaskConical, Upload, Maximize2, Minimize2,
+  DollarSign, BarChart3, FolderOpen,
+  FlaskConical, Upload,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -26,10 +25,21 @@ const SECTIONS: { id: string; Icon: LucideIcon; label: string; short: string }[]
   { id: 'hardware', Icon: Wrench,            label: 'calc.fdmHardware', short: 'Hardware' },
   { id: 'machine',  Icon: Printer,           label: 'calc.machine',    short: 'Máquina' },
   { id: 'labor',    Icon: HardHat,           label: 'calc.labor',      short: 'M.Obra' },
-  { id: 'ops',      Icon: ShieldCheck,       label: 'calc.opsSoftware', short: 'Ops' },
+  { id: 'ops',      Icon: ShieldCheck,       label: 'calc.opsSoftware', short: 'Soft/EPI' },
   { id: 'sales',    Icon: DollarSign,        label: 'calc.sales',      short: 'Vendas' },
   { id: 'results',  Icon: BarChart3,         label: 'calc.results',    short: 'Resultado' },
 ]
+
+const SECTION_ENABLES: Record<string, string[]> = {
+  material: ['material'],
+  print:    ['energy', 'failure'],
+  hardware: ['hardware', 'postProcessing'],
+  machine:  ['machine'],
+  labor:    ['labor'],
+  ops:      ['software', 'consumables'],
+  sales:    ['packaging', 'shipping', 'extras'],
+  results:  [],
+}
 
 export function Calculator() {
   const { t } = useTranslation()
@@ -40,7 +50,6 @@ export function Calculator() {
   const [stlInfo, setStlInfo] = useState<{ volume: number; faces: number; vertices: number } | null>(null)
   const [stlLoading, setStlLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('material')
-  const [fullView, setFullView] = useState(true)
   const [toastItems, setToastItems] = useState<{ id: number; message: string; type: 'error' | 'success' | 'info' }[]>([])
 
   const dismissToast = (id: number) => {
@@ -550,106 +559,85 @@ export function Calculator() {
     return <ResultsPanel variant="sidebar" />
   }
 
-  function renderResultsSection() {
-    return <ResultsPanel variant="mobile" />
-  }
-
   return (
     <>
       <ToastContainer items={toastItems} onDismiss={dismissToast} />
       <div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
-        {/* Desktop sidebar — icon + label */}
-        <nav className="hidden lg:flex flex-col gap-1 w-[128px] xl:w-[140px] shrink-0 sticky top-6 h-fit">
-          {SECTIONS.map(s => (
-            <button key={s.id}
-              onClick={() => {
-                setActiveSection(s.id)
-                if (fullView) {
-                  document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }
-              }}
-              className={`w-full py-2.5 px-3 rounded-xl flex items-center gap-2.5 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-                activeSection === s.id
-                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent'
-              }`}
-              title={t(s.label)}>
-              <s.Icon className={`w-4 h-4 shrink-0 ${activeSection === s.id ? 'text-indigo-400' : ''}`} />
-              <span className="text-[11px] font-medium leading-tight">{s.short}</span>
-            </button>
-          ))}
+        {/* Desktop sidebar — icon + label + cost toggle dot */}
+        <nav className="hidden lg:flex flex-col gap-0.5 w-[148px] xl:w-[156px] shrink-0 sticky top-6 h-fit">
+          {SECTIONS.map(s => {
+            const keys = SECTION_ENABLES[s.id] || []
+            const allEnabled = keys.length === 0 || keys.every(k => store.enabledSections[k])
+            const anyEnabled = keys.length === 0 || keys.some(k => store.enabledSections[k])
+            return (
+              <div key={s.id} className="flex items-center gap-1.5 px-1">
+                {/* cost toggle dot */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (keys.length > 0) {
+                      const setTo = !allEnabled
+                      keys.forEach(k => { if (store.enabledSections[k] !== setTo) store.toggleSection(k) })
+                    }
+                  }}
+                  disabled={keys.length === 0}
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all border ${
+                    keys.length === 0 ? 'invisible pointer-events-none' :
+                    allEnabled ? 'bg-indigo-500 border-indigo-400 hover:bg-indigo-400 cursor-pointer' :
+                    anyEnabled ? 'bg-yellow-500/70 border-yellow-500/50 hover:bg-yellow-400/80 cursor-pointer' :
+                    'bg-transparent border-white/20 hover:border-white/40 cursor-pointer'
+                  }`}
+                  title={keys.length === 0 ? '' : allEnabled ? 'Excluir do cálculo' : 'Incluir no cálculo'}
+                  aria-label={keys.length === 0 ? '' : `${allEnabled ? 'Desativar' : 'Ativar'} ${s.short}`}
+                />
+                {/* nav button */}
+                <button
+                  onClick={() => {
+                    setActiveSection(s.id)
+                    document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }}
+                  className={`flex-1 py-2.5 px-2 rounded-xl flex items-center gap-2 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                    activeSection === s.id
+                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                      : `text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent ${
+                          keys.length > 0 && !anyEnabled ? 'opacity-50' : ''
+                        }`
+                  }`}
+                  title={t(s.label)}>
+                  <s.Icon className={`w-4 h-4 shrink-0 ${activeSection === s.id ? 'text-indigo-400' : ''}`} />
+                  <span className="text-[11px] font-medium leading-tight">{s.short}</span>
+                </button>
+              </div>
+            )
+          })}
         </nav>
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-4">
-        {/* ── Sticky Controls Bar ── */}
-        <div className="sticky top-[68px] z-20 -mx-1 px-1 pt-0 pb-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(20px)' }}>
-          {/* FDM / Resin Tabs */}
-          <div className="segmented-control mb-3">
-            <button onClick={() => store.setActiveTab('fdm')}
-              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
-              <Printer className="w-4 h-4" />
-              {t('calc.fdm')}
-            </button>
-            <button onClick={() => store.setActiveTab('resin')}
-              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none ${!isFDM ? 'active-resin' : ''}`}>
-              <FlaskConical className="w-4 h-4" />
-              {t('calc.resin')}
-            </button>
-          </div>
-
-          {/* Quick Mode + View Toggle row */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-3">
-              <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
-              <button onClick={() => store.setQuickMode(!store.quickMode)}
-                aria-pressed={store.quickMode}
-                className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
-                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-6' : 'left-0.5'}`} />
+          {/* FDM / Resina + Quick Mode row */}
+          <div className="flex items-center gap-3">
+            <div className="segmented-control flex-1">
+              <button onClick={() => store.setActiveTab('fdm')}
+                className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
+                <Printer className="w-4 h-4" />
+                {t('calc.fdm')}
+              </button>
+              <button onClick={() => store.setActiveTab('resin')}
+                className={`segmented-btn focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none ${!isFDM ? 'active-resin' : ''}`}>
+                <FlaskConical className="w-4 h-4" />
+                {t('calc.resin')}
               </button>
             </div>
-            <button onClick={() => setFullView(!fullView)}
-              className={`glass rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none whitespace-nowrap ${fullView ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}>
-              {fullView ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{fullView ? 'Ver tudo' : 'Por seção'}</span>
-            </button>
-          </div>
-
-          {/* Sections Customization */}
-          <div className="glass rounded-xl px-4 py-3">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-sm font-semibold text-slate-200">Seções ativas</span>
-              <span className="text-xs text-slate-500">clique para ativar/desativar</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {([
-                { key: 'material',       Icon: Layers,        label: 'Material' },
-                { key: 'energy',         Icon: Zap,           label: 'Energia' },
-                { key: 'machine',        Icon: Printer,       label: 'Máquina' },
-                { key: 'hardware',       Icon: Wrench,        label: 'Hardware' },
-                { key: 'consumables',    Icon: ShieldCheck,   label: 'Consumo' },
-                { key: 'labor',          Icon: HardHat,       label: 'M. Obra' },
-                { key: 'software',       Icon: Monitor,       label: 'Software' },
-                { key: 'failure',        Icon: AlertTriangle, label: 'Falhas' },
-                { key: 'extras',         Icon: Package,       label: 'Extras' },
-                { key: 'postProcessing', Icon: Paintbrush,    label: 'Acabamento' },
-                { key: 'packaging',      Icon: ClipboardList, label: 'Embalagem' },
-                { key: 'shipping',       Icon: Truck,         label: 'Frete' },
-              ] as { key: string; Icon: LucideIcon; label: string }[]).map(s => (
-                <button key={s.key}
-                  onClick={() => store.toggleSection(s.key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-                    store.enabledSections[s.key]
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40'
-                      : 'text-slate-500 border border-white/[0.08] hover:text-slate-300 hover:border-white/20'
-                  }`}>
-                  <s.Icon className={`w-3.5 h-3.5 ${store.enabledSections[s.key] ? 'text-indigo-400' : 'text-slate-600'}`} />
-                  {s.label}
-                </button>
-              ))}
+            {/* Quick Mode */}
+            <div className="flex items-center gap-2.5 glass rounded-xl px-3.5 py-2.5 shrink-0">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t('calc.quickMode')}</span>
+              <button onClick={() => store.setQuickMode(!store.quickMode)}
+                aria-pressed={store.quickMode}
+                className={`relative w-10 h-5 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-5' : 'left-0.5'}`} />
+              </button>
             </div>
           </div>
-        </div>
 
           {/* Product Name */}
           <div className="glass rounded-2xl px-5 py-5">
@@ -658,33 +646,20 @@ export function Calculator() {
               type="text" placeholder={t('calc.productNamePlaceholder')} />
           </div>
 
-          {/* Active Section — single or full view */}
-          {fullView ? (
-            <div className="space-y-4">
-              <div id="section-material" className="scroll-mt-[280px]">{renderMaterialSection()}</div>
-              <div id="section-print" className="scroll-mt-[280px]">{renderPrintSection()}</div>
-              <div id="section-hardware" className="scroll-mt-[280px]">{renderHardwareSection()}</div>
-              <div id="section-machine" className="scroll-mt-[280px]">{renderMachineSection()}</div>
-              <div id="section-labor" className="scroll-mt-[280px]">{renderLaborSection()}</div>
-              <div id="section-ops" className="scroll-mt-[280px]">{renderOpsSection()}</div>
-              <div id="section-sales" className="scroll-mt-[280px]">{renderSalesSection()}</div>
-              <div id="section-results" className="scroll-mt-[280px]">
-                <div className="hidden lg:block"><ResultsPanel variant="sidebar" /></div>
-                <div className="lg:hidden"><ResultsPanel variant="mobile" /></div>
-              </div>
+          {/* All sections */}
+          <div className="space-y-4">
+            <div id="section-material" className="scroll-mt-24">{renderMaterialSection()}</div>
+            <div id="section-print" className="scroll-mt-24">{renderPrintSection()}</div>
+            <div id="section-hardware" className="scroll-mt-24">{renderHardwareSection()}</div>
+            <div id="section-machine" className="scroll-mt-24">{renderMachineSection()}</div>
+            <div id="section-labor" className="scroll-mt-24">{renderLaborSection()}</div>
+            <div id="section-ops" className="scroll-mt-24">{renderOpsSection()}</div>
+            <div id="section-sales" className="scroll-mt-24">{renderSalesSection()}</div>
+            <div id="section-results" className="scroll-mt-24">
+              <div className="hidden lg:block"><ResultsPanel variant="sidebar" /></div>
+              <div className="lg:hidden"><ResultsPanel variant="mobile" /></div>
             </div>
-          ) : (
-            <>
-              {activeSection === 'material' && renderMaterialSection()}
-              {activeSection === 'print' && renderPrintSection()}
-              {activeSection === 'hardware' && renderHardwareSection()}
-              {activeSection === 'machine' && renderMachineSection()}
-              {activeSection === 'labor' && renderLaborSection()}
-              {activeSection === 'ops' && renderOpsSection()}
-              {activeSection === 'sales' && renderSalesSection()}
-              {activeSection === 'results' && renderResultsSection()}
-            </>
-          )}
+          </div>
         </div>
 
         {/* Desktop right sidebar — always visible */}
@@ -713,9 +688,7 @@ export function Calculator() {
             {SECTIONS.map(s => (
               <button key={s.id} onClick={() => {
                 setActiveSection(s.id)
-                if (fullView) {
-                  document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }
+                document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
                 className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                   activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
