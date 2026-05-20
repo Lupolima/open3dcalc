@@ -54,10 +54,10 @@ export function InfillCalculator() {
       <div className="grid gap-4 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
         <div className="glass rounded-2xl p-6 sm:p-7 space-y-4">
           <div className="text-sm sm:text-[15px] font-semibold text-white">Dimensões (mm)</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <InputGroup label="Largura" value={width} onChange={v => setWidth(v)} type="number" unit="mm" />
             <InputGroup label="Profundidade" value={depth} onChange={v => setDepth(v)} type="number" unit="mm" />
-            <InputGroup label="Altura" value={height} onChange={v => setHeight(v)} type="number" unit="mm" />
+            <InputGroup label="Altura" value={height} onChange={v => setHeight(v)} type="number" unit="mm" className="col-span-2" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <InputGroup label="Espessura Parede" value={wallThickness} onChange={v => setWallThickness(v)} type="number" unit="mm" />
