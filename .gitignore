@@ -24,4 +24,5 @@ OLD_REF
 *.njsproj
 *.sln
 *.sw?
+*.plan.md
 docs/
