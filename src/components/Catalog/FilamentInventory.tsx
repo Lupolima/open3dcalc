@@ -51,7 +51,7 @@ export function FilamentInventory() {
             </span>
           )}
           <button onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-semibold">
+            className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-semibold hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">
             {showForm ? 'Cancelar' : '+ Novo Carretel'}
           </button>
         </div>
@@ -72,7 +72,7 @@ export function FilamentInventory() {
             <InputGroup label="Diâmetro" value={diameter} onChange={v => setDiameter(v)} type="number" unit="mm" />
           </div>
           <InputGroup label="Notas" value={notes} onChange={setNotes} type="text" />
-          <button onClick={addSpool} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold">Salvar Carretel</button>
+          <button onClick={addSpool} className="w-full py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">Salvar Carretel</button>
         </div>
       )}
 
@@ -89,7 +89,11 @@ export function FilamentInventory() {
                 </div>
                 <div className="flex gap-2">
                   {isLow && <span className="text-[10px] px-2 py-1 rounded-full bg-red-600/20 text-red-300">Baixo</span>}
-                  <button onClick={() => store.removeSpool(s.id)} className="text-xs text-red-400 hover:text-red-300">✕</button>
+                  <button
+                    onClick={() => store.removeSpool(s.id)}
+                    className="text-xs text-red-400 hover:text-red-300 w-8 h-8 flex items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
+                    aria-label="Remover carretel"
+                  >✕</button>
                 </div>
               </div>
               <div className="space-y-1">
@@ -108,12 +112,18 @@ export function FilamentInventory() {
                 </div>
               )}
               <div className="flex gap-2">
-                <button onClick={() => store.deductWeight(s.id, 10)}
-                  className="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white">-10g</button>
-                <button onClick={() => store.deductWeight(s.id, 50)}
-                  className="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white">-50g</button>
-                <button onClick={() => store.deductWeight(s.id, 100)}
-                  className="text-xs px-2 py-1 rounded bg-white/5 text-gray-400 hover:text-white">-100g</button>
+                <button
+                  onClick={() => store.deductWeight(s.id, 10)}
+                  className="text-xs px-3 h-11 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                >-10g</button>
+                <button
+                  onClick={() => store.deductWeight(s.id, 50)}
+                  className="text-xs px-3 h-11 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                >-50g</button>
+                <button
+                  onClick={() => store.deductWeight(s.id, 100)}
+                  className="text-xs px-3 h-11 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                >-100g</button>
               </div>
             </div>
           )

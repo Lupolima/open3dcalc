@@ -25,7 +25,7 @@ function App() {
             onClick={() => setActiveTab('calculator')}
             role="tab"
             aria-selected={activeTab === 'calculator'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'calculator'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -37,7 +37,7 @@ function App() {
             onClick={() => setActiveTab('dashboard')}
             role="tab"
             aria-selected={activeTab === 'dashboard'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'dashboard'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -49,7 +49,7 @@ function App() {
             onClick={() => setActiveTab('infill')}
             role="tab"
             aria-selected={activeTab === 'infill'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'infill'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -61,7 +61,7 @@ function App() {
             onClick={() => setActiveTab('inventory')}
             role="tab"
             aria-selected={activeTab === 'inventory'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'inventory'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -73,7 +73,7 @@ function App() {
             onClick={() => setActiveTab('catalog')}
             role="tab"
             aria-selected={activeTab === 'catalog'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'catalog'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -85,7 +85,7 @@ function App() {
             onClick={() => setActiveTab('history')}
             role="tab"
             aria-selected={activeTab === 'history'}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:outline-none whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none whitespace-nowrap ${
               activeTab === 'history'
                 ? 'border-purple-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-white/20'
@@ -106,7 +106,7 @@ function App() {
       </main>
 
       <footer className="text-center text-xs text-gray-600 py-4 border-t border-white/5">
-        <a href="https://github.com/ils15/open3dcalc" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
+        <a href="https://github.com/ils15/open3dcalc" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none px-1 rounded">
           Open3DCalc — Open Source · MIT License
         </a>
       </footer>

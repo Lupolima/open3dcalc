@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProductStore } from '@/stores/productStore'
 import type { SavedProduct } from '@/types'
@@ -13,29 +13,66 @@ interface DetailModalProps {
 }
 
 function DetailModal({ product, onClose }: DetailModalProps) {
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
+  // Focus trap + ESC close
   useEffect(() => {
-    if (product) {
-      document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
+    if (!product) return
+
+    // Move focus to close button when modal opens
+    closeButtonRef.current?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return }
+
+      // Focus trap
+      if (e.key !== 'Tab') return
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
     }
-  }, [product, handleKeyDown])
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [product, onClose])
 
   if (!product) return null
 
   const d = product.result
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label="Detalhes do produto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Detalhes do produto"
+    >
       <div
+        ref={dialogRef}
         className="glass rounded-2xl p-6 w-[90%] max-w-md max-h-[80vh] overflow-y-auto animate-fade-in"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold gradient-text">{product.name}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none" aria-label="Fechar">&times;</button>
+          <button
+            ref={closeButtonRef}
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-xl leading-none w-8 h-8 flex items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+            aria-label="Fechar"
+          >
+            &times;
+          </button>
         </div>
 
         <div className="space-y-2 text-sm">
@@ -78,7 +115,7 @@ export function HistoryTab() {
     .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
     .reverse()
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const data = exportJson()
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -87,7 +124,7 @@ export function HistoryTab() {
     a.download = 'open3dcalc_export.json'
     a.click()
     URL.revokeObjectURL(url)
-  }
+  }, [exportJson])
 
   return (
     <div className="glass rounded-2xl p-5 animate-fade-in">
@@ -100,7 +137,7 @@ export function HistoryTab() {
         value={search}
         onChange={e => setSearch(e.target.value)}
         placeholder={t('history.search')}
-        className="w-full px-4 py-2.5 rounded-xl text-sm mb-4"
+        className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-4 mb-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/60 transition-all"
       />
 
       {filtered.length === 0 ? (
@@ -115,10 +152,17 @@ export function HistoryTab() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-emerald-400">{formatMoney(p.result.sellPrice)}</span>
-                <button onClick={() => setSelectedProduct(p)} className="px-3 py-1.5 text-xs rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors">
+                <button
+                  onClick={() => setSelectedProduct(p)}
+                  className="px-3 py-1.5 text-xs rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                >
                   {t('history.details')}
                 </button>
-                <button onClick={() => { if (confirm(t('history.deleteConfirm'))) remove(p.id) }} className="px-2 py-1.5 text-xs rounded-lg bg-red-600/50 text-red-300 hover:bg-red-600 transition-colors">
+                <button
+                  onClick={() => { if (confirm(t('history.deleteConfirm'))) remove(p.id) }}
+                  className="px-2 py-1.5 text-xs rounded-lg bg-red-600/50 text-red-300 hover:bg-red-600 transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
+                  aria-label="Remover"
+                >
                   ✕
                 </button>
               </div>
@@ -127,7 +171,10 @@ export function HistoryTab() {
         </div>
       )}
 
-      <button onClick={handleExport} className="w-full mt-4 py-2.5 rounded-xl text-sm glass text-gray-400 hover:text-white transition-colors">
+      <button
+        onClick={handleExport}
+        className="w-full mt-4 py-2.5 rounded-xl text-sm glass text-gray-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+      >
         {t('history.exportJson')}
       </button>
 

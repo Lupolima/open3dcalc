@@ -8,6 +8,7 @@ import type {
 import { marketplaces } from '@/lib/marketplace'
 import { printers } from '@/lib/printers'
 import { useCatalogStore } from '@/stores/catalogStore'
+import { calculateFDM, calculateResin } from '@/lib/calculator'
 
 type Marketplace = (typeof marketplaces)[number]
 type PrinterProfile = (typeof printers)[number]
@@ -132,125 +133,248 @@ const loadHistory = (): SavedCalculation[] => {
   } catch { return [] }
 }
 
-export const useCalculatorStore = create<CalculatorState>((set, get) => ({
-  activeTab: 'fdm',
-  setActiveTab: (activeTab) => set({ activeTab }),
-
-  fdmMaterial: { ...DEFAULT_FDM_MATERIAL, ...loadStr('fdmMaterial', {}) },
-  setFdmMaterial: (v) => set({ fdmMaterial: v }),
-  fdmPrintParams: { ...DEFAULT_FDM_PARAMS, ...loadStr('fdmPrintParams', {}) },
-  setFdmPrintParams: (v) => set({ fdmPrintParams: v }),
-  fdmMachine: { ...DEFAULT_FDM_MACHINE, ...loadStr('fdmMachine', {}) },
-  setFdmMachine: (v) => set({ fdmMachine: v }),
-  fdmHardware: { ...DEFAULT_FDM_HARDWARE, ...loadStr('fdmHardware', {}) },
-  setFdmHardware: (v) => set({ fdmHardware: v }),
-  fdmFinishing: { ...DEFAULT_FDM_FINISHING, ...loadStr('fdmFinishing', {}) },
-  setFdmFinishing: (v) => set({ fdmFinishing: v }),
-  fdmLabor: { ...DEFAULT_LABOR, ...loadStr('fdmLabor', {}) },
-  setFdmLabor: (v) => set({ fdmLabor: v }),
-  fdmExtras: { ...DEFAULT_EXTRAS, ...loadStr('fdmExtras', {}) },
-  setFdmExtras: (v) => set({ fdmExtras: v }),
-  fdmSales: { ...DEFAULT_SALES, ...loadStr('fdmSales', {}) },
-  setFdmSales: (v) => set({ fdmSales: v }),
-  fdmOps: { ...DEFAULT_OPS, ...loadStr('fdmOps', {}) },
-  setFdmOps: (v) => set({ fdmOps: v }),
-  fdmSoft: { ...DEFAULT_SOFT, ...loadStr('fdmSoft', {}) },
-  setFdmSoft: (v) => set({ fdmSoft: v }),
-
-  resinMaterial: { ...DEFAULT_RESIN_MATERIAL, ...loadStr('resinMaterial', {}) },
-  setResinMaterial: (v) => set({ resinMaterial: v }),
-  resinPrintParams: { ...DEFAULT_RESIN_PARAMS, ...loadStr('resinPrintParams', {}) },
-  setResinPrintParams: (v) => set({ resinPrintParams: v }),
-  resinPostProcess: { ...DEFAULT_RESIN_PP, ...loadStr('resinPostProcess', {}) },
-  setResinPostProcess: (v) => set({ resinPostProcess: v }),
-  resinMachine: { ...DEFAULT_RESIN_MACHINE, ...loadStr('resinMachine', {}) },
-  setResinMachine: (v) => set({ resinMachine: v }),
-  resinHardware: { ...DEFAULT_RESIN_HARDWARE, ...loadStr('resinHardware', {}) },
-  setResinHardware: (v) => set({ resinHardware: v }),
-  resinLabor: { ...DEFAULT_RESIN_LABOR, ...loadStr('resinLabor', {}) },
-  setResinLabor: (v) => set({ resinLabor: v }),
-  resinExtras: { ...DEFAULT_RESIN_EXTRAS, ...loadStr('resinExtras', {}) },
-  setResinExtras: (v) => set({ resinExtras: v }),
-  resinSales: { ...DEFAULT_RESIN_SALES, ...loadStr('resinSales', {}) },
-  setResinSales: (v) => set({ resinSales: v }),
-  resinOps: { ...DEFAULT_RESIN_OPS, ...loadStr('resinOps', {}) },
-  setResinOps: (v) => set({ resinOps: v }),
-  resinSoft: { ...DEFAULT_RESIN_SOFT, ...loadStr('resinSoft', {}) },
-  setResinSoft: (v) => set({ resinSoft: v }),
-
-  selectedPrinter: printers[0],
-  setSelectedPrinter: (selectedPrinter) => set({ selectedPrinter }),
-  selectedMarketplace: marketplaces[0],
-  setSelectedMarketplace: (selectedMarketplace) => set({ selectedMarketplace }),
-
-  productName: '',
-  setProductName: (productName) => set({ productName }),
-  quickMode: false,
-  setQuickMode: (quickMode) => set({ quickMode }),
-  quantity: loadStr('quantity', 1),
-  setQuantity: (quantity) => set({ quantity }),
-  infillPercent: loadStr('infillPercent', 20),
-  setInfillPercent: (infillPercent) => set({ infillPercent }),
-  targetMarginMode: false,
-  setTargetMarginMode: (targetMarginMode) => set({ targetMarginMode }),
-  enabledSections: loadStr('enabledSections', {
-    material: true, energy: true, machine: true, hardware: true,
-    consumables: true, labor: true, software: true, failure: true,
-    extras: true, postProcessing: true, packaging: true, shipping: true,
-  }),
-  toggleSection: (section) => {
-    const s = get()
-    const next = { ...s.enabledSections, [section]: !s.enabledSections[section] }
-    localStorage.setItem('open3dcalc_sections', JSON.stringify(next))
-    set({ enabledSections: next })
-  },
-
-  results: null,
-  history: loadHistory(),
-
-  addToHistory: () => {
-    const s = get()
-    const r = s.results
-    if (!r) return
-    const summary = s.productName.trim() || (s.activeTab === 'fdm'
-      ? `${s.fdmMaterial.type} - ${s.fdmMaterial.weightUsed}g`
-      : `${s.resinMaterial.type} - ${s.resinMaterial.volumeUsedMl}ml`)
-    const item: SavedCalculation = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      type: s.activeTab,
-      summary,
-      totalCost: r.totalCost,
-      sellPrice: r.sellPrice,
-      profit: r.profit,
+function computeStoreResults(s: {
+  activeTab: 'fdm' | 'resin'
+  fdmMaterial: MaterialStateFDM
+  fdmPrintParams: PrintParameters
+  fdmMachine: MachineCosts
+  fdmLabor: LaborCosts
+  fdmExtras: AdditionalCosts
+  fdmSales: SalesParameters
+  fdmOps: OperationalCosts
+  fdmSoft: SoftwareCosts
+  fdmHardware: FDMHardware
+  fdmFinishing: FDMFinishing
+  resinMaterial: MaterialStateResin
+  resinPrintParams: PrintParameters
+  resinMachine: MachineCosts
+  resinLabor: LaborCosts
+  resinExtras: AdditionalCosts
+  resinSales: SalesParameters
+  resinOps: OperationalCosts
+  resinSoft: SoftwareCosts
+  resinPostProcess: PostProcessingResin
+  resinHardware: ResinHardware
+  quantity: number
+  enabledSections: Record<string, boolean>
+}): CalculationResult {
+  const qty = s.quantity > 0 ? s.quantity : 1
+  const es = s.enabledSections
+  if (s.activeTab === 'fdm') {
+    const result = calculateFDM(
+      s.fdmMaterial, s.fdmPrintParams, s.fdmMachine,
+      s.fdmLabor, s.fdmExtras, s.fdmSales, s.fdmOps, s.fdmSoft,
+      s.fdmHardware, s.fdmFinishing,
+    )
+    const filtered = {
+      ...result,
+      materialCost: es.material ? result.materialCost : 0,
+      energyCost: es.energy ? result.energyCost : 0,
+      machineCost: es.machine ? result.machineCost : 0,
+      hardwareCost: es.hardware ? result.hardwareCost : 0,
+      consumablesCost: es.consumables ? result.consumablesCost : 0,
+      laborCost: es.labor ? result.laborCost : 0,
+      softwareCost: es.software ? result.softwareCost : 0,
+      failureCost: es.failure ? result.failureCost : 0,
+      extrasCost: es.extras ? result.extrasCost : 0,
+      postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
     }
-    const newHistory = [item, ...s.history].slice(0, 20)
-    localStorage.setItem('open3dcalc_history_v2', JSON.stringify(newHistory))
-    set({ history: newHistory })
-  },
-
-  clearHistory: () => {
-    localStorage.removeItem('open3dcalc_history_v2')
-    set({ history: [] })
-  },
-
-  saveSettings: () => {
-    const s = get()
-    const data = {
-      fdmMaterial: s.fdmMaterial, fdmPrintParams: s.fdmPrintParams,
-      fdmMachine: s.fdmMachine, fdmHardware: s.fdmHardware, fdmFinishing: s.fdmFinishing,
-      fdmLabor: s.fdmLabor, fdmExtras: s.fdmExtras, fdmSales: s.fdmSales,
-      fdmOps: s.fdmOps, fdmSoft: s.fdmSoft,
-      resinMaterial: s.resinMaterial, resinPrintParams: s.resinPrintParams,
-      resinPostProcess: s.resinPostProcess, resinMachine: s.resinMachine,
-      resinHardware: s.resinHardware, resinLabor: s.resinLabor,
-      resinExtras: s.resinExtras, resinSales: s.resinSales,
-      resinOps: s.resinOps, resinSoft: s.resinSoft,
-      quantity: s.quantity, infillPercent: s.infillPercent,
+    const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.fdmSales.packagingCost : 0) + (es.shipping ? s.fdmSales.shippingCost : 0)
+    const profitAmountRaw = totalBaseCost * (s.fdmSales.profitMarginPercent / 100)
+    const priceBeforeFees = totalBaseCost + profitAmountRaw
+    const totalFeePercent = (s.fdmSales.taxPercent + s.fdmSales.marketplaceFeePercent) / 100
+    const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
+    const taxAmount = sellPrice * (s.fdmSales.taxPercent / 100)
+    const marketplaceFee = sellPrice * (s.fdmSales.marketplaceFeePercent / 100)
+    const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
+    const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
+    if (qty > 1) {
+      const laborPerUnit = s.fdmLabor.enabled ? ((s.fdmLabor.setupTimeMinutes + s.fdmLabor.postProcessingTimeMinutes) / 60) * s.fdmLabor.hourlyRate : 0
+      const setupCost = laborPerUnit
+      const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
+      const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
+      return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
     }
-    localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
-  },
-}))
+    return r
+  } else {
+    const result = calculateResin(
+      s.resinMaterial, s.resinPrintParams, s.resinMachine,
+      s.resinLabor, s.resinExtras, s.resinSales, s.resinOps, s.resinSoft,
+      s.resinPostProcess, s.resinHardware,
+    )
+    const filtered = {
+      ...result,
+      materialCost: es.material ? result.materialCost : 0,
+      energyCost: es.energy ? result.energyCost : 0,
+      machineCost: es.machine ? result.machineCost : 0,
+      hardwareCost: es.hardware ? result.hardwareCost : 0,
+      consumablesCost: es.consumables ? result.consumablesCost : 0,
+      laborCost: es.labor ? result.laborCost : 0,
+      softwareCost: es.software ? result.softwareCost : 0,
+      failureCost: es.failure ? result.failureCost : 0,
+      extrasCost: es.extras ? result.extrasCost : 0,
+      postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
+    }
+    const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.resinSales.packagingCost : 0) + (es.shipping ? s.resinSales.shippingCost : 0)
+    const profitAmountRaw = totalBaseCost * (s.resinSales.profitMarginPercent / 100)
+    const priceBeforeFees = totalBaseCost + profitAmountRaw
+    const totalFeePercent = (s.resinSales.taxPercent + s.resinSales.marketplaceFeePercent) / 100
+    const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
+    const taxAmount = sellPrice * (s.resinSales.taxPercent / 100)
+    const marketplaceFee = sellPrice * (s.resinSales.marketplaceFeePercent / 100)
+    const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
+    const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
+    if (qty > 1) {
+      const laborPerUnit = s.resinLabor.enabled ? ((s.resinLabor.setupTimeMinutes + s.resinLabor.postProcessingTimeMinutes) / 60) * s.resinLabor.hourlyRate : 0
+      const setupCost = laborPerUnit
+      const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
+      const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
+      return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
+    }
+    return r
+  }
+}
+
+export const useCalculatorStore = create<CalculatorState>((set, get) => {
+  const setWithCompute = (update: Partial<CalculatorState> | ((state: CalculatorState) => Partial<CalculatorState>)) => {
+    set((state) => {
+      const nextState = typeof update === 'function' ? update(state) : update
+      const merged = { ...state, ...nextState }
+      const results = computeStoreResults(merged)
+      return { ...nextState, results }
+    })
+  }
+
+  const initialValues = {
+    activeTab: 'fdm' as const,
+    fdmMaterial: { ...DEFAULT_FDM_MATERIAL, ...loadStr('fdmMaterial', {}) },
+    fdmPrintParams: { ...DEFAULT_FDM_PARAMS, ...loadStr('fdmPrintParams', {}) },
+    fdmMachine: { ...DEFAULT_FDM_MACHINE, ...loadStr('fdmMachine', {}) },
+    fdmHardware: { ...DEFAULT_FDM_HARDWARE, ...loadStr('fdmHardware', {}) },
+    fdmFinishing: { ...DEFAULT_FDM_FINISHING, ...loadStr('fdmFinishing', {}) },
+    fdmLabor: { ...DEFAULT_LABOR, ...loadStr('fdmLabor', {}) },
+    fdmExtras: { ...DEFAULT_EXTRAS, ...loadStr('fdmExtras', {}) },
+    fdmSales: { ...DEFAULT_SALES, ...loadStr('fdmSales', {}) },
+    fdmOps: { ...DEFAULT_OPS, ...loadStr('fdmOps', {}) },
+    fdmSoft: { ...DEFAULT_SOFT, ...loadStr('fdmSoft', {}) },
+
+    resinMaterial: { ...DEFAULT_RESIN_MATERIAL, ...loadStr('resinMaterial', {}) },
+    resinPrintParams: { ...DEFAULT_RESIN_PARAMS, ...loadStr('resinPrintParams', {}) },
+    resinPostProcess: { ...DEFAULT_RESIN_PP, ...loadStr('resinPostProcess', {}) },
+    resinMachine: { ...DEFAULT_RESIN_MACHINE, ...loadStr('resinMachine', {}) },
+    resinHardware: { ...DEFAULT_RESIN_HARDWARE, ...loadStr('resinHardware', {}) },
+    resinLabor: { ...DEFAULT_RESIN_LABOR, ...loadStr('resinLabor', {}) },
+    resinExtras: { ...DEFAULT_RESIN_EXTRAS, ...loadStr('resinExtras', {}) },
+    resinSales: { ...DEFAULT_RESIN_SALES, ...loadStr('resinSales', {}) },
+    resinOps: { ...DEFAULT_RESIN_OPS, ...loadStr('resinOps', {}) },
+    resinSoft: { ...DEFAULT_RESIN_SOFT, ...loadStr('resinSoft', {}) },
+
+    selectedPrinter: printers[0],
+    selectedMarketplace: marketplaces[0],
+
+    productName: '',
+    quickMode: false,
+    quantity: loadStr('quantity', 1),
+    infillPercent: loadStr('infillPercent', 20),
+    targetMarginMode: false,
+    enabledSections: loadStr('enabledSections', {
+      material: true, energy: true, machine: true, hardware: true,
+      consumables: true, labor: true, software: true, failure: true,
+      extras: true, postProcessing: true, packaging: true, shipping: true,
+    }),
+  }
+
+  const initialResults = computeStoreResults(initialValues as any)
+
+  return {
+    ...initialValues,
+    results: initialResults,
+    history: loadHistory(),
+
+    setActiveTab: (activeTab) => setWithCompute({ activeTab }),
+
+    setFdmMaterial: (v) => setWithCompute({ fdmMaterial: v }),
+    setFdmPrintParams: (v) => setWithCompute({ fdmPrintParams: v }),
+    setFdmMachine: (v) => setWithCompute({ fdmMachine: v }),
+    setFdmHardware: (v) => setWithCompute({ fdmHardware: v }),
+    setFdmFinishing: (v) => setWithCompute({ fdmFinishing: v }),
+    setFdmLabor: (v) => setWithCompute({ fdmLabor: v }),
+    setFdmExtras: (v) => setWithCompute({ fdmExtras: v }),
+    setFdmSales: (v) => setWithCompute({ fdmSales: v }),
+    setFdmOps: (v) => setWithCompute({ fdmOps: v }),
+    setFdmSoft: (v) => setWithCompute({ fdmSoft: v }),
+
+    setResinMaterial: (v) => setWithCompute({ resinMaterial: v }),
+    setResinPrintParams: (v) => setWithCompute({ resinPrintParams: v }),
+    setResinPostProcess: (v) => setWithCompute({ resinPostProcess: v }),
+    setResinMachine: (v) => setWithCompute({ resinMachine: v }),
+    setResinHardware: (v) => setWithCompute({ resinHardware: v }),
+    setResinLabor: (v) => setWithCompute({ resinLabor: v }),
+    setResinExtras: (v) => setWithCompute({ resinExtras: v }),
+    setResinSales: (v) => setWithCompute({ resinSales: v }),
+    setResinOps: (v) => setWithCompute({ resinOps: v }),
+    setResinSoft: (v) => setWithCompute({ resinSoft: v }),
+
+    setSelectedPrinter: (selectedPrinter) => setWithCompute({ selectedPrinter }),
+    setSelectedMarketplace: (selectedMarketplace) => setWithCompute({ selectedMarketplace }),
+
+    setProductName: (productName) => setWithCompute({ productName }),
+    setQuickMode: (quickMode) => setWithCompute({ quickMode }),
+    setQuantity: (quantity) => setWithCompute({ quantity }),
+    setInfillPercent: (infillPercent) => setWithCompute({ infillPercent }),
+    setTargetMarginMode: (targetMarginMode) => setWithCompute({ targetMarginMode }),
+    toggleSection: (section) => {
+      setWithCompute((state) => {
+        const next = { ...state.enabledSections, [section]: !state.enabledSections[section] }
+        localStorage.setItem('open3dcalc_sections', JSON.stringify(next))
+        return { enabledSections: next }
+      })
+    },
+
+    addToHistory: () => {
+      const s = get()
+      const r = s.results
+      if (!r) return
+      const summary = s.productName.trim() || (s.activeTab === 'fdm'
+        ? `${s.fdmMaterial.type} - ${s.fdmMaterial.weightUsed}g`
+        : `${s.resinMaterial.type} - ${s.resinMaterial.volumeUsedMl}ml`)
+      const item: SavedCalculation = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        type: s.activeTab,
+        summary,
+        totalCost: r.totalCost,
+        sellPrice: r.sellPrice,
+        profit: r.profit,
+      }
+      const newHistory = [item, ...s.history].slice(0, 20)
+      localStorage.setItem('open3dcalc_history_v2', JSON.stringify(newHistory))
+      set({ history: newHistory })
+    },
+
+    clearHistory: () => {
+      localStorage.removeItem('open3dcalc_history_v2')
+      set({ history: [] })
+    },
+
+    saveSettings: () => {
+      const s = get()
+      const data = {
+        fdmMaterial: s.fdmMaterial, fdmPrintParams: s.fdmPrintParams,
+        fdmMachine: s.fdmMachine, fdmHardware: s.fdmHardware, fdmFinishing: s.fdmFinishing,
+        fdmLabor: s.fdmLabor, fdmExtras: s.fdmExtras, fdmSales: s.fdmSales,
+        fdmOps: s.fdmOps, fdmSoft: s.fdmSoft,
+        resinMaterial: s.resinMaterial, resinPrintParams: s.resinPrintParams,
+        resinPostProcess: s.resinPostProcess, resinMachine: s.resinMachine,
+        resinHardware: s.resinHardware, resinLabor: s.resinLabor,
+        resinExtras: s.resinExtras, resinSales: s.resinSales,
+        resinOps: s.resinOps, resinSoft: s.resinSoft,
+        quantity: s.quantity, infillPercent: s.infillPercent,
+      }
+      localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
+    },
+  }
+})
 
 // Sync default selections with catalog overrides when available.
 if (typeof window !== 'undefined') {
@@ -259,3 +383,4 @@ if (typeof window !== 'undefined') {
   const printer = catalog.printers.find(p => p.id === state.selectedPrinter.id)
   if (printer) useCalculatorStore.setState({ selectedPrinter: printer as PrinterProfile })
 }
+

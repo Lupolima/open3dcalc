@@ -4,12 +4,10 @@ import { useCalculatorStore } from '@/stores/calculatorStore'
 import { fdmMaterials, resinMaterials } from '@/lib/materials'
 import { printers } from '@/lib/printers'
 import { marketplaces } from '@/lib/marketplace'
-import { calculateFDM, calculateResin } from '@/lib/calculator'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import type { BufferGeometry } from 'three'
-import type { CalculationResult } from '@/types'
 
 const StlPreview = lazy(() => import('@/components/StlPreview/StlPreview').then(m => ({ default: m.StlPreview })))
 
@@ -23,83 +21,6 @@ const SECTIONS = [
   { id: 'sales', icon: '💰', label: 'calc.sales', short: 'Vendas' },
   { id: 'results', icon: '📊', label: 'calc.results', short: 'Resultados' },
 ]
-
-function buildResults(s: ReturnType<typeof useCalculatorStore.getState>): CalculationResult {
-  const qty = s.quantity > 0 ? s.quantity : 1
-  const es = s.enabledSections
-  if (s.activeTab === 'fdm') {
-    const result = calculateFDM(
-      s.fdmMaterial, s.fdmPrintParams, s.fdmMachine,
-      s.fdmLabor, s.fdmExtras, s.fdmSales, s.fdmOps, s.fdmSoft,
-      s.fdmHardware, s.fdmFinishing,
-    )
-    const filtered = {
-      ...result,
-      materialCost: es.material ? result.materialCost : 0,
-      energyCost: es.energy ? result.energyCost : 0,
-      machineCost: es.machine ? result.machineCost : 0,
-      hardwareCost: es.hardware ? result.hardwareCost : 0,
-      consumablesCost: es.consumables ? result.consumablesCost : 0,
-      laborCost: es.labor ? result.laborCost : 0,
-      softwareCost: es.software ? result.softwareCost : 0,
-      failureCost: es.failure ? result.failureCost : 0,
-      extrasCost: es.extras ? result.extrasCost : 0,
-      postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
-    }
-    const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.fdmSales.packagingCost : 0) + (es.shipping ? s.fdmSales.shippingCost : 0)
-    const profitAmountRaw = totalBaseCost * (s.fdmSales.profitMarginPercent / 100)
-    const priceBeforeFees = totalBaseCost + profitAmountRaw
-    const totalFeePercent = (s.fdmSales.taxPercent + s.fdmSales.marketplaceFeePercent) / 100
-    const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
-    const taxAmount = sellPrice * (s.fdmSales.taxPercent / 100)
-    const marketplaceFee = sellPrice * (s.fdmSales.marketplaceFeePercent / 100)
-    const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
-    const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
-    if (qty > 1) {
-      const laborPerUnit = s.fdmLabor.enabled ? ((s.fdmLabor.setupTimeMinutes + s.fdmLabor.postProcessingTimeMinutes) / 60) * s.fdmLabor.hourlyRate : 0
-      const setupCost = laborPerUnit
-      const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
-      const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
-      return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
-    }
-    return r
-  }
-  const result = calculateResin(
-    s.resinMaterial, s.resinPrintParams, s.resinMachine,
-    s.resinLabor, s.resinExtras, s.resinSales, s.resinOps, s.resinSoft,
-    s.resinPostProcess, s.resinHardware,
-  )
-  const filtered = {
-    ...result,
-    materialCost: es.material ? result.materialCost : 0,
-    energyCost: es.energy ? result.energyCost : 0,
-    machineCost: es.machine ? result.machineCost : 0,
-    hardwareCost: es.hardware ? result.hardwareCost : 0,
-    consumablesCost: es.consumables ? result.consumablesCost : 0,
-    laborCost: es.labor ? result.laborCost : 0,
-    softwareCost: es.software ? result.softwareCost : 0,
-    failureCost: es.failure ? result.failureCost : 0,
-    extrasCost: es.extras ? result.extrasCost : 0,
-    postProcessingCost: es.postProcessing ? result.postProcessingCost : 0,
-  }
-  const totalBaseCost = filtered.subtotal + filtered.failureCost + (es.packaging ? s.resinSales.packagingCost : 0) + (es.shipping ? s.resinSales.shippingCost : 0)
-  const profitAmountRaw = totalBaseCost * (s.resinSales.profitMarginPercent / 100)
-  const priceBeforeFees = totalBaseCost + profitAmountRaw
-  const totalFeePercent = (s.resinSales.taxPercent + s.resinSales.marketplaceFeePercent) / 100
-  const sellPrice = totalFeePercent < 1 ? priceBeforeFees / (1 - totalFeePercent) : priceBeforeFees * 2
-  const taxAmount = sellPrice * (s.resinSales.taxPercent / 100)
-  const marketplaceFee = sellPrice * (s.resinSales.marketplaceFeePercent / 100)
-  const totalProfit = sellPrice - totalBaseCost - taxAmount - marketplaceFee
-  const r = { ...filtered, totalCost: totalBaseCost, sellPrice, profit: totalProfit, taxAmount, marketplaceFee }
-  if (qty > 1) {
-    const laborPerUnit = s.resinLabor.enabled ? ((s.resinLabor.setupTimeMinutes + s.resinLabor.postProcessingTimeMinutes) / 60) * s.resinLabor.hourlyRate : 0
-    const setupCost = laborPerUnit
-    const perUnitCost = r.totalCost - setupCost + (setupCost / qty)
-    const perUnitSellPrice = r.sellPrice - setupCost + (setupCost / qty)
-    return { ...r, totalCost: perUnitCost, sellPrice: perUnitSellPrice, profit: perUnitSellPrice - perUnitCost - r.marketplaceFee - r.taxAmount, costPerUnit: perUnitCost }
-  }
-  return r
-}
 
 export function Calculator() {
   const { t } = useTranslation()
@@ -115,9 +36,9 @@ export function Calculator() {
   const isFDM = store.activeTab === 'fdm'
   const themeBg = isFDM ? 'bg-sky-600' : 'bg-purple-600'
 
-  const results = useMemo(() => buildResults(store), [store])
+  const results = store.results!
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo((): { name: string; value: number; color: string }[] => {
     const items = [
       { name: 'Material', value: results.materialCost, color: isFDM ? '#38bdf8' : '#a855f7' },
       { name: 'Energia', value: results.energyCost, color: '#facc15' },
@@ -230,16 +151,17 @@ export function Calculator() {
               onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, costPerKg: val }))}
               type="number" prefix="R$" />
             <div className="md:col-span-2">
-              <div
+              <button
+                type="button"
                 onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
                 onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileDrop(f) }}
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500/50 transition-colors"
+                className="w-full border-2 border-dashed border-white/10 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500/50 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
               >
                 <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
                 <p className="text-xs text-gray-400">{t('product.uploadStl')}</p>
                 {stlLoading && <p className="text-xs text-purple-400 mt-1">{t('stl.loading')}</p>}
-              </div>
+              </button>
               {stlGeometry && (
                 <div className="mt-2 h-48">
                   <Suspense fallback={<div className="text-xs text-gray-400">{t('common.loading')}</div>}>
@@ -820,7 +742,7 @@ export function Calculator() {
         )}
 
         <button onClick={() => store.addToHistory()}
-          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2">
+          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-200 text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">
           📁 {t('calc.addHistory')}
         </button>
 
@@ -851,15 +773,15 @@ export function Calculator() {
 
         <div className="grid grid-cols-3 gap-3">
           <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
+            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${saveStatus === 'saved' ? 'bg-green-600 text-white' : 'bg-purple-600 text-white hover:bg-purple-500'}`}>
             {saveStatus === 'saved' ? '✅ ' + t('calc.saved') : '💾 ' + t('calc.saveSettings')}
           </button>
           <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all">
+            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
             📄 {t('calc.exportPdf')}
           </button>
           <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all">
+            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none">
             📊 CSV
           </button>
         </div>
@@ -944,7 +866,7 @@ export function Calculator() {
               ].map(s => (
                 <button key={s.key}
                   onClick={() => store.toggleSection(s.key)}
-                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all ${
+                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
                     store.enabledSections[s.key]
                       ? 'bg-purple-600/30 text-white border border-purple-500/50'
                       : 'bg-white/5 text-gray-500 border border-transparent'
@@ -986,7 +908,7 @@ export function Calculator() {
         <div className="flex h-full overflow-x-auto">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[60px] text-[9px] font-medium transition-all focus-visible:outline-none ${
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[60px] text-[9px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
                 activeSection === s.id ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300'
               }`}>
               <span className={`text-xl leading-none ${activeSection === s.id ? 'drop-shadow-[0_0_6px_rgba(167,139,250,0.6)]' : ''}`}>{s.icon}</span>
@@ -996,14 +918,14 @@ export function Calculator() {
         </div>
       </nav>
 
-      {/* Sticky Mobile Results Bar — above bottom nav */}
-      <div className="fixed bottom-16 left-0 right-0 z-50 glass border-t border-white/10 md:hidden px-4 py-2 flex items-center justify-between">
+      {/* Sticky Mobile/Tablet Results Bar — above bottom nav */}
+      <div className="fixed bottom-16 left-0 right-0 z-50 glass border-t border-white/10 lg:hidden px-4 py-2 flex items-center justify-between">
         <div className="flex gap-3 text-xs">
           <span className="text-green-400"><span className="text-gray-500">Custo </span>{fmtCurrency(results.totalCost)}</span>
           <span className="text-emerald-400 font-bold"><span className="text-gray-500">Venda </span>{fmtCurrency(results.sellPrice)}</span>
           <span className="text-orange-400"><span className="text-gray-500">Lucro </span>{fmtCurrency(results.profit)}</span>
         </div>
-        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[10px] font-bold shrink-0">📁</button>
+        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-[10px] font-bold shrink-0 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none">📁</button>
       </div>
     </>
   )

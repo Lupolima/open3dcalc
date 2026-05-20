@@ -47,12 +47,12 @@ export function InputGroup({
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           step={step}
-          className={`w-full bg-white/[0.04] border rounded-xl text-sm text-white h-11 px-3 transition-all placeholder:text-gray-600 focus:outline-none focus:ring-2 ${
+          className={`w-full bg-white/[0.04] border rounded-xl text-sm text-white h-11 px-3 transition-all placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
             prefix ? 'pl-9' : ''
           } ${unit ? 'pr-14' : ''} ${
             error
-              ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
-              : 'border-white/10 hover:border-white/20 focus:border-purple-500/60 focus:ring-purple-500/20'
+              ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/50'
+              : 'border-white/10 hover:border-white/20 focus:border-purple-500/60 focus:ring-purple-500'
           }`}
         />
         {unit && (
@@ -86,7 +86,7 @@ export function SelectGroup({ label, value, onChange, options }: SelectGroupProp
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/60 outline-none transition-all appearance-none cursor-pointer"
+        className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500/60 outline-none transition-all appearance-none cursor-pointer"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
