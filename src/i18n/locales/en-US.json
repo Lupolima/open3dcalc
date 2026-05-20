@@ -7,7 +7,9 @@
     "calculator": "Calculator",
     "catalog": "Catalog",
     "history": "History",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "infill": "Infill Calc.",
+    "inventory": "Filaments"
   },
   "dashboard": {
     "totalCost": "Total Cost",

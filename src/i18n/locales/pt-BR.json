@@ -7,7 +7,9 @@
     "calculator": "Calculadora",
     "catalog": "Cadastros",
     "history": "Histórico",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "infill": "Calc. Infill",
+    "inventory": "Filamentos"
   },
   "dashboard": {
     "totalCost": "Custo Total",

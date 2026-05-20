@@ -103,7 +103,7 @@ function App() {
                 {tab.icon}
               </span>
               <span className="text-[10px] font-semibold leading-none tracking-wide">
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             </button>
           ))}

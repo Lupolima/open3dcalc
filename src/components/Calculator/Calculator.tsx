@@ -40,7 +40,7 @@ export function Calculator() {
   const [stlInfo, setStlInfo] = useState<{ volume: number; faces: number; vertices: number } | null>(null)
   const [stlLoading, setStlLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('material')
-  const [fullView, setFullView] = useState(false)
+  const [fullView, setFullView] = useState(true)
   const [toastItems, setToastItems] = useState<{ id: number; message: string; type: 'error' | 'success' | 'info' }[]>([])
 
   const dismissToast = (id: number) => {
@@ -582,8 +582,10 @@ export function Calculator() {
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-4">
+        {/* ── Sticky Controls Bar ── */}
+        <div className="sticky top-[68px] z-20 -mx-1 px-1 pt-0 pb-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(20px)' }}>
           {/* FDM / Resin Tabs */}
-          <div className="segmented-control">
+          <div className="segmented-control mb-3">
             <button onClick={() => store.setActiveTab('fdm')}
               className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
               <Printer className="w-4 h-4" />
@@ -596,13 +598,10 @@ export function Calculator() {
             </button>
           </div>
 
-          {/* Quick Mode + Full View Toggles */}
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
-            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-4">
-              <div>
-                <span className="text-sm sm:text-[15px] font-semibold text-white">{t('calc.quickMode')}</span>
-                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
-              </div>
+          {/* Quick Mode + View Toggle row */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-3">
+              <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
               <button onClick={() => store.setQuickMode(!store.quickMode)}
                 aria-pressed={store.quickMode}
                 className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
@@ -610,47 +609,47 @@ export function Calculator() {
               </button>
             </div>
             <button onClick={() => setFullView(!fullView)}
-              className={`glass rounded-xl px-4 py-4 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${fullView ? 'text-indigo-400 border-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
-              title={fullView ? 'Visão por seção' : 'Visão completa'}>
+              className={`glass rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none whitespace-nowrap ${fullView ? 'text-indigo-400' : 'text-slate-400 hover:text-white'}`}>
               {fullView ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{fullView ? 'Por Seção' : 'Completo'}</span>
+              <span className="hidden sm:inline">{fullView ? 'Ver tudo' : 'Por seção'}</span>
             </button>
           </div>
 
-          {/* Cost Sections Toggle */}
+          {/* Sections Customization */}
           <div className="glass rounded-xl px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm sm:text-[15px] font-semibold text-slate-200">Seções do Cálculo</span>
-              <span className="text-[10px] sm:text-xs text-slate-500">Marque/desmarque para personalizar</span>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-sm font-semibold text-slate-200">Seções ativas</span>
+              <span className="text-xs text-slate-500">clique para ativar/desativar</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {([
-                { key: 'material',      Icon: Layers,         label: 'Material' },
-                { key: 'energy',        Icon: Zap,            label: 'Energia' },
-                { key: 'machine',       Icon: Printer,        label: 'Máquina' },
-                { key: 'hardware',      Icon: Wrench,         label: 'Hardware' },
-                { key: 'consumables',   Icon: ShieldCheck,    label: 'Consumo' },
-                { key: 'labor',         Icon: HardHat,        label: 'M.Obra' },
-                { key: 'software',      Icon: Monitor,        label: 'Software' },
-                { key: 'failure',       Icon: AlertTriangle,  label: 'Falhas' },
-                { key: 'extras',        Icon: Package,        label: 'Extras' },
-                { key: 'postProcessing',Icon: Paintbrush,     label: 'Acabamento' },
-                { key: 'packaging',     Icon: ClipboardList,  label: 'Embalagem' },
-                { key: 'shipping',      Icon: Truck,          label: 'Frete' },
+                { key: 'material',       Icon: Layers,        label: 'Material' },
+                { key: 'energy',         Icon: Zap,           label: 'Energia' },
+                { key: 'machine',        Icon: Printer,       label: 'Máquina' },
+                { key: 'hardware',       Icon: Wrench,        label: 'Hardware' },
+                { key: 'consumables',    Icon: ShieldCheck,   label: 'Consumo' },
+                { key: 'labor',          Icon: HardHat,       label: 'M. Obra' },
+                { key: 'software',       Icon: Monitor,       label: 'Software' },
+                { key: 'failure',        Icon: AlertTriangle, label: 'Falhas' },
+                { key: 'extras',         Icon: Package,       label: 'Extras' },
+                { key: 'postProcessing', Icon: Paintbrush,    label: 'Acabamento' },
+                { key: 'packaging',      Icon: ClipboardList, label: 'Embalagem' },
+                { key: 'shipping',       Icon: Truck,         label: 'Frete' },
               ] as { key: string; Icon: LucideIcon; label: string }[]).map(s => (
                 <button key={s.key}
                   onClick={() => store.toggleSection(s.key)}
-                  className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-lg text-[10px] sm:text-[11px] transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                     store.enabledSections[s.key]
                       ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40'
-                      : 'text-slate-500 border border-transparent hover:bg-white/[0.04] hover:text-slate-400'
+                      : 'text-slate-500 border border-white/[0.08] hover:text-slate-300 hover:border-white/20'
                   }`}>
                   <s.Icon className={`w-3.5 h-3.5 ${store.enabledSections[s.key] ? 'text-indigo-400' : 'text-slate-600'}`} />
-                  <span className="leading-tight">{s.label}</span>
+                  {s.label}
                 </button>
               ))}
             </div>
           </div>
+        </div>
 
           {/* Product Name */}
           <div className="glass rounded-2xl px-5 py-5">
@@ -662,14 +661,14 @@ export function Calculator() {
           {/* Active Section — single or full view */}
           {fullView ? (
             <div className="space-y-4">
-              <div id="section-material" className="scroll-mt-24">{renderMaterialSection()}</div>
-              <div id="section-print" className="scroll-mt-24">{renderPrintSection()}</div>
-              <div id="section-hardware" className="scroll-mt-24">{renderHardwareSection()}</div>
-              <div id="section-machine" className="scroll-mt-24">{renderMachineSection()}</div>
-              <div id="section-labor" className="scroll-mt-24">{renderLaborSection()}</div>
-              <div id="section-ops" className="scroll-mt-24">{renderOpsSection()}</div>
-              <div id="section-sales" className="scroll-mt-24">{renderSalesSection()}</div>
-              <div id="section-results" className="scroll-mt-24">
+              <div id="section-material" className="scroll-mt-[280px]">{renderMaterialSection()}</div>
+              <div id="section-print" className="scroll-mt-[280px]">{renderPrintSection()}</div>
+              <div id="section-hardware" className="scroll-mt-[280px]">{renderHardwareSection()}</div>
+              <div id="section-machine" className="scroll-mt-[280px]">{renderMachineSection()}</div>
+              <div id="section-labor" className="scroll-mt-[280px]">{renderLaborSection()}</div>
+              <div id="section-ops" className="scroll-mt-[280px]">{renderOpsSection()}</div>
+              <div id="section-sales" className="scroll-mt-[280px]">{renderSalesSection()}</div>
+              <div id="section-results" className="scroll-mt-[280px]">
                 <div className="hidden lg:block"><ResultsPanel variant="sidebar" /></div>
                 <div className="lg:hidden"><ResultsPanel variant="mobile" /></div>
               </div>
