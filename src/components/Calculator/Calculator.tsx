@@ -147,7 +147,7 @@ export function Calculator() {
 
   function renderMaterialSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export function Calculator() {
 
   function renderPrintSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.printTime')}
@@ -272,7 +272,7 @@ export function Calculator() {
                         ? store.setFdmPrintParams({ ...store.fdmPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.fdmPrintParams.failureValue })
                         : store.setResinPrintParams({ ...store.resinPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.resinPrintParams.failureValue })
                       }
-                      className={`px-3 py-1.5 text-xs rounded-lg transition-all ${current === mode ? `${themeBg} text-white` : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                      className={`px-3 min-h-[44px] text-xs rounded-lg transition-all flex items-center ${current === mode ? `${themeBg} text-white` : 'bg-white/5 text-gray-400 hover:text-white'}`}
                     >
                       {label}
                     </button>
@@ -308,7 +308,7 @@ export function Calculator() {
 
   function renderHardwareSection() {
     return (
-      <div className="glass rounded-2xl p-6 space-y-6">
+      <div className="glass rounded-2xl p-4 sm:p-6 space-y-6">
         {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
         {isFDM && (
           <>
@@ -317,7 +317,7 @@ export function Calculator() {
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.nozzle')}</span>
                   <button onClick={() => store.setFdmHardware({ ...store.fdmHardware, nozzleEnabled: !store.fdmHardware.nozzleEnabled })}
-                    className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${store.fdmHardware.nozzleEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                    className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.fdmHardware.nozzleEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
                 </div>
                 {store.fdmHardware.nozzleEnabled && (
                   <>
@@ -332,7 +332,7 @@ export function Calculator() {
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.bed')}</span>
                   <button onClick={() => store.setFdmHardware({ ...store.fdmHardware, bedEnabled: !store.fdmHardware.bedEnabled })}
-                    className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${store.fdmHardware.bedEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                    className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.fdmHardware.bedEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
                 </div>
                 {store.fdmHardware.bedEnabled && (
                   <InputGroup label={t('calc.bedCost')} value={store.fdmHardware.bedAdhesionCost}
@@ -360,7 +360,7 @@ export function Calculator() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-300">{t('calc.washing')}</span>
                 <button onClick={() => store.setResinPostProcess({ ...store.resinPostProcess, washingEnabled: !store.resinPostProcess.washingEnabled })}
-                  className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${store.resinPostProcess.washingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                  className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.resinPostProcess.washingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
               </div>
               {store.resinPostProcess.washingEnabled && (
                 <div className="grid grid-cols-2 gap-3 pl-3 border-l-2 border-white/10">
@@ -373,7 +373,7 @@ export function Calculator() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-300">{t('calc.curing')}</span>
                 <button onClick={() => store.setResinPostProcess({ ...store.resinPostProcess, curingEnabled: !store.resinPostProcess.curingEnabled })}
-                  className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${store.resinPostProcess.curingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                  className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.resinPostProcess.curingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
               </div>
               {store.resinPostProcess.curingEnabled && (
                 <div className="grid grid-cols-2 gap-3 pl-3 border-l-2 border-white/10">
@@ -408,7 +408,7 @@ export function Calculator() {
 
   function renderMachineSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.machineCost')}
@@ -423,7 +423,7 @@ export function Calculator() {
           <div className="md:col-span-2 flex items-center justify-between glass rounded-xl p-3">
             <span className="text-xs text-gray-400">{t('calc.maintenance')}</span>
             <button onClick={() => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceEnabled: !store.fdmMachine.maintenanceEnabled }) : store.setResinMachine({ ...store.resinMachine, maintenanceEnabled: !store.resinMachine.maintenanceEnabled })}
-              className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+              className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
           </div>
           {(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) && (
             <div className="md:col-span-2">
@@ -439,7 +439,7 @@ export function Calculator() {
 
   function renderLaborSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup label={t('calc.setupTime')}
@@ -458,14 +458,14 @@ export function Calculator() {
 
   function renderOpsSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.ppe')}</span>
               <button onClick={() => isFDM ? store.setFdmOps({ ...store.fdmOps, enabled: !store.fdmOps.enabled }) : store.setResinOps({ ...store.resinOps, enabled: !store.resinOps.enabled })}
-                className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
             </div>
             {(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) && (
               <InputGroup label={t('calc.ppeCost')}
@@ -477,7 +477,7 @@ export function Calculator() {
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.software')}</span>
               <button onClick={() => isFDM ? store.setFdmSoft({ ...store.fdmSoft, enabled: !store.fdmSoft.enabled }) : store.setResinSoft({ ...store.resinSoft, enabled: !store.resinSoft.enabled })}
-                className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${(isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
             </div>
             {(isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled) && (
               <div className="space-y-3">
@@ -497,7 +497,7 @@ export function Calculator() {
 
   function renderSalesSection() {
     return (
-      <div className="glass rounded-2xl p-6">
+      <div className="glass rounded-2xl p-4 sm:p-6">
         {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -537,7 +537,7 @@ export function Calculator() {
                       ? store.setFdmSales({ ...store.fdmSales, profitMarginPercent: pct })
                       : store.setResinSales({ ...store.resinSales, profitMarginPercent: pct })
                     }
-                    className={`px-2 py-1 text-[10px] rounded-md transition-all ${
+                    className={`px-3 min-h-[44px] text-[11px] rounded-md transition-all flex items-center ${
                       (isFDM ? store.fdmSales.profitMarginPercent : store.resinSales.profitMarginPercent) === pct
                         ? 'bg-purple-600 text-white'
                         : 'bg-white/5 text-gray-400 hover:text-white'
@@ -613,7 +613,7 @@ export function Calculator() {
               ))}
             </div>
             {/* Pie chart compact */}
-            <div className="mt-4 h-48 w-full">
+            <div className="mt-4 h-44 sm:h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={chartData} cx="40%" cy="50%" innerRadius={48} outerRadius={68} paddingAngle={3} dataKey="value">
@@ -746,7 +746,7 @@ export function Calculator() {
                 </div>
               ))}
             </div>
-            <div className="h-56 w-full">
+            <div className="h-48 sm:h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={chartData} cx="40%" cy="50%" innerRadius={52} outerRadius={72} paddingAngle={3} dataKey="value">
@@ -922,17 +922,17 @@ export function Calculator() {
         </div>
 
         {/* Desktop right sidebar — always visible */}
-        <div className="hidden lg:flex flex-col gap-4 w-[380px] shrink-0">
+        <div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0">
           {renderRightSidebar()}
         </div>
       </div>
 
       {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex h-14 overflow-x-auto">
           {SECTIONS.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] text-[9px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[52px] min-h-[44px] text-[9px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                 activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
               }`}>
               <s.Icon className={`w-[17px] h-[17px] transition-transform ${activeSection === s.id ? 'scale-110' : ''}`} />
@@ -943,7 +943,7 @@ export function Calculator() {
       </nav>
 
       {/* Sticky Mobile/Tablet Results Bar — above bottom nav */}
-      <div className="fixed bottom-14 left-0 right-0 z-20 lg:hidden px-3 py-2 flex items-center justify-between gap-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="fixed bottom-14 left-0 right-0 z-20 lg:hidden px-3 py-2 flex items-center justify-between gap-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
         <div className="flex gap-4 text-xs">
           <span className="text-slate-200"><span className="text-slate-500 mr-1">Custo</span>{fmtCurrency(results.totalCost)}</span>
           <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>

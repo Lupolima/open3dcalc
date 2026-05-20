@@ -73,18 +73,18 @@ export function InfillCalculator() {
 
         <div className="space-y-4">
           {/* Result Cards */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="glass rounded-2xl p-4 text-center">
-              <p className="text-xs text-gray-400 mb-1">Peso Estimado</p>
-              <p className="text-xl font-bold text-cyan-400">{result.weight.toFixed(1)}g</p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Peso Estimado</p>
+              <p className="text-base sm:text-xl font-bold text-cyan-400">{result.weight.toFixed(1)}g</p>
             </div>
-            <div className="glass rounded-2xl p-4 text-center">
-              <p className="text-xs text-gray-400 mb-1">Custo Material</p>
-              <p className="text-xl font-bold text-emerald-400">R$ {result.cost.toFixed(2)}</p>
+            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Custo Material</p>
+              <p className="text-base sm:text-xl font-bold text-emerald-400">R$ {result.cost.toFixed(2)}</p>
             </div>
-            <div className="glass rounded-2xl p-4 text-center">
-              <p className="text-xs text-gray-400 mb-1">Volume Sólido</p>
-              <p className="text-xl font-bold text-purple-400">{(solidVolumeCm3).toFixed(1)} cm³</p>
+            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Volume Sólido</p>
+              <p className="text-base sm:text-xl font-bold text-purple-400">{(solidVolumeCm3).toFixed(1)} cm³</p>
             </div>
           </div>
 

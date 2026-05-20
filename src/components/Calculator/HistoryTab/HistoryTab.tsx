@@ -146,7 +146,7 @@ export function HistoryTab() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t('history.search')}
-          className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500/60 transition-all"
+          className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-12 pl-10 pr-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500/60 transition-all"
         />
       </div>
 

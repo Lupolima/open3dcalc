@@ -18,7 +18,7 @@ export function Header() {
         borderColor: 'rgba(255,255,255,0.06)',
       }}
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-[61px] flex items-center justify-between gap-4">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-[61px] flex items-center justify-between gap-4">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
