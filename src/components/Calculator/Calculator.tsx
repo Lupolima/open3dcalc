@@ -132,16 +132,25 @@ export function Calculator() {
     setter(value === '' ? 0 : parseFloat(value) || 0)
   }, [])
 
-  function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string) {
+  function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string, sectionId?: string) {
+    const keys = sectionId ? (SECTION_ENABLES[sectionId] ?? []) : []
+    const sectionEnabled = keys.length > 0 ? keys.every(k => store.enabledSections[k]) : undefined
+    const handleSectionToggle = () => {
+      const target = !sectionEnabled
+      keys.forEach(k => { if (!!store.enabledSections[k] !== target) store.toggleSection(k) })
+    }
     return (
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.07]">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)' }}>
           <Icon className="w-[18px] h-[18px] text-indigo-400" />
         </div>
-        <div>
+        <div className="flex-1">
           <h3 className="text-base sm:text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
           {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
+        {sectionEnabled !== undefined && (
+          <ToggleSwitch enabled={sectionEnabled} onToggle={handleSectionToggle} />
+        )}
       </div>
     )
   }
@@ -149,7 +158,7 @@ export function Calculator() {
   function renderMaterialSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
+        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica', 'material')}
         {isFDM ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
@@ -234,7 +243,7 @@ export function Calculator() {
   function renderPrintSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
+        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora', 'print')}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
@@ -312,7 +321,7 @@ export function Calculator() {
   function renderHardwareSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8 space-y-6">
-        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
+        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP', 'hardware')}
         {isFDM && (
           <>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">
@@ -408,7 +417,7 @@ export function Calculator() {
   function renderMachineSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
+        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção', 'machine')}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
@@ -439,7 +448,7 @@ export function Calculator() {
   function renderLaborSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
+        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária', 'labor')}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
@@ -458,7 +467,7 @@ export function Calculator() {
   function renderOpsSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
+        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo', 'ops')}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
@@ -497,7 +506,7 @@ export function Calculator() {
   function renderSalesSection() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
+        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem', 'sales')}
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <InputGroup label={t('calc.quantity')}
