@@ -641,9 +641,8 @@ export function Calculator() {
             <div id="section-labor" className="scroll-mt-24">{renderLaborSection()}</div>
             <div id="section-ops" className="scroll-mt-24">{renderOpsSection()}</div>
             <div id="section-sales" className="scroll-mt-24">{renderSalesSection()}</div>
-            <div id="section-results" className="scroll-mt-24">
-              <div className="hidden lg:block"><ResultsPanel variant="sidebar" /></div>
-              <div className="lg:hidden"><ResultsPanel variant="mobile" /></div>
+            <div id="section-results" className="scroll-mt-24 lg:hidden">
+              <ResultsPanel variant="mobile" />
             </div>
           </div>
         </div>

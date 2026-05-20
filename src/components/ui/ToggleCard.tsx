@@ -30,14 +30,14 @@ export function ToggleSwitch({ enabled, onToggle, title, showLabels = false }: T
   return (
     <button
       onClick={() => onToggle(!enabled)}
-      className={`group relative flex h-11 w-14 items-center rounded-full p-1 transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-        enabled ? 'bg-indigo-600 shadow-inner shadow-indigo-900/50' : 'bg-white/10'
+      className={`relative h-5 w-9 rounded-full shrink-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+        enabled ? 'bg-indigo-600' : 'bg-white/15'
       }`}
       title={title || (enabled ? 'Desativar' : 'Ativar')}
       aria-pressed={enabled}
     >
-      <div className={`h-6 w-6 rounded-full bg-white shadow-lg transition-all duration-300 group-active:w-7 ${
-        enabled ? 'translate-x-7' : 'translate-x-0'
+      <span className={`absolute top-[3px] h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all duration-200 ${
+        enabled ? 'left-[19px]' : 'left-[3px]'
       }`} />
     </button>
   )

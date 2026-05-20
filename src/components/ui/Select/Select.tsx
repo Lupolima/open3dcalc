@@ -23,6 +23,12 @@ interface SelectProps {
   className?: string
 }
 
+function getMonogram(text: string): string {
+  const words = text.trim().split(/\s+/)
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
+  return text.slice(0, 2).toUpperCase()
+}
+
 export function Select({
   value, onChange, options, label, placeholder,
   search = true, groups = false, portal = false, className = '',
@@ -109,8 +115,10 @@ export function Select({
       onClick={() => setOpen(o => !o)}
       className={`w-full flex items-center gap-2.5 bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/60 ${className}`}
     >
-      {selected?.image && (
-        <img src={selected.image} alt="" className="w-6 h-6 rounded-md object-cover shrink-0" />
+      {(selected?.group || selected?.image) && (
+        <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0 text-[9px] font-bold text-white/70 leading-none select-none">
+          {getMonogram(selected.group || selected.label)}
+        </div>
       )}
       <span className={`flex-1 text-left truncate ${selected ? '' : 'text-gray-600'}`}>
         {selected ? selected.label : (placeholder || label)}
@@ -210,8 +218,10 @@ function OptionItem({ opt, idx, focusIdx, value, onSelect }: {
         isFocused ? 'bg-white/10' : 'hover:bg-white/5'
       } ${isSelected ? 'text-white font-semibold' : 'text-gray-300'}`}
     >
-      {opt.image && (
-        <img src={opt.image} alt="" className="w-6 h-6 rounded-md object-cover shrink-0" />
+      {(opt.group || opt.image) && (
+        <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0 text-[9px] font-bold text-white/60 leading-none select-none">
+          {getMonogram(opt.group || opt.label)}
+        </div>
       )}
       <div className="flex-1 min-w-0">
         <div className="truncate">{opt.label}</div>
