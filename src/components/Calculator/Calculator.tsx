@@ -141,9 +141,7 @@ export function Calculator() {
     }
     return (
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.07]">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)' }}>
-          <Icon className="w-[18px] h-[18px] text-indigo-400" />
-        </div>
+        <Icon className="w-5 h-5 text-indigo-400 shrink-0" />
         <div className="flex-1">
           <h3 className="text-base sm:text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
           {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>}
@@ -266,7 +264,7 @@ export function Calculator() {
           {isFDM && (
             <div className="sm:col-span-2 xl:col-span-3">
               <Select label={t('calc.printer')} value={store.selectedPrinter.id}
-              onChange={handlePrinterSelect} portal
+              onChange={handlePrinterSelect}
               options={printers.map(p => ({ label: p.name, value: p.id, image: p.image, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))}
               groups search />
             </div>
@@ -573,39 +571,18 @@ export function Calculator() {
       <ToastContainer items={toastItems} onDismiss={dismissToast} />
       <div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
         {/* Desktop sidebar — icon + label + cost toggle dot */}
-        <nav className="hidden lg:flex flex-col gap-0.5 w-[148px] xl:w-[156px] shrink-0 sticky top-6 h-fit">
+        <nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-6 h-fit">
           {SECTIONS.map(s => {
             const keys = SECTION_ENABLES[s.id] || []
-            const allEnabled = keys.length === 0 || keys.every(k => store.enabledSections[k])
             const anyEnabled = keys.length === 0 || keys.some(k => store.enabledSections[k])
             return (
-              <div key={s.id} className="flex items-center gap-1.5 px-1">
-                {/* cost toggle dot */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (keys.length > 0) {
-                      const setTo = !allEnabled
-                      keys.forEach(k => { if (store.enabledSections[k] !== setTo) store.toggleSection(k) })
-                    }
-                  }}
-                  disabled={keys.length === 0}
-                  className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all border ${
-                    keys.length === 0 ? 'invisible pointer-events-none' :
-                    allEnabled ? 'bg-indigo-500 border-indigo-400 hover:bg-indigo-400 cursor-pointer' :
-                    anyEnabled ? 'bg-yellow-500/70 border-yellow-500/50 hover:bg-yellow-400/80 cursor-pointer' :
-                    'bg-transparent border-white/20 hover:border-white/40 cursor-pointer'
-                  }`}
-                  title={keys.length === 0 ? '' : allEnabled ? 'Excluir do cálculo' : 'Incluir no cálculo'}
-                  aria-label={keys.length === 0 ? '' : `${allEnabled ? 'Desativar' : 'Ativar'} ${s.short}`}
-                />
-                {/* nav button */}
+              <div key={s.id} className="px-1">
                 <button
                   onClick={() => {
                     setActiveSection(s.id)
                     document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   }}
-                  className={`flex-1 py-2.5 px-2 rounded-xl flex items-center gap-2 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                  className={`w-full py-2.5 px-2 rounded-xl flex items-center gap-2 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                     activeSection === s.id
                       ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
                       : `text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent ${
