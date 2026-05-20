@@ -35,10 +35,10 @@ function App() {
     <div className="min-h-dvh flex flex-col">
       <Header />
 
-      <div className="flex flex-1 max-w-[1520px] mx-auto w-full">
+      <div className="flex flex-1 w-full max-w-[1440px] mx-auto">
 
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden lg:flex flex-col gap-1 w-52 xl:w-56 shrink-0 px-3 py-5 sticky top-[61px] h-[calc(100dvh-61px)] overflow-y-auto border-r border-white/[0.06]">
+        <aside className="hidden lg:flex flex-col gap-1 w-56 xl:w-64 shrink-0 px-4 py-6 sticky top-[68px] h-[calc(100dvh-68px)] overflow-y-auto border-r border-white/[0.06]">
           <p className="label-xs px-3 mb-2">Navegação</p>
           {TABS.map(tab => (
             <button
@@ -69,7 +69,7 @@ function App() {
         </aside>
 
         {/* ── Main Content ── */}
-        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-8">
+        <main className="flex-1 min-w-0 px-6 sm:px-8 lg:px-10 xl:px-12 py-8 pb-28 lg:pb-10">
           <div className="animate-fade-up">
             {activeTab === 'calculator' && <Calculator />}
             {activeTab === 'dashboard'  && <Dashboard />}

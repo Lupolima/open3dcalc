@@ -46,13 +46,13 @@ export function InfillCalculator() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="glass rounded-2xl p-6 sm:p-7">
         <h2 className="text-lg sm:text-xl font-bold text-white">{t('calc.infillPercent')} Calculator</h2>
         <p className="text-xs sm:text-sm text-gray-500 mt-1">Veja como o % de infill afeta peso, custo e tempo</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
-        <div className="glass rounded-2xl p-5 sm:p-6 space-y-4">
+        <div className="glass rounded-2xl p-6 sm:p-7 space-y-4">
           <div className="text-sm sm:text-[15px] font-semibold text-white">Dimensões (mm)</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             <InputGroup label="Largura" value={width} onChange={v => setWidth(v)} type="number" unit="mm" />
@@ -89,7 +89,7 @@ export function InfillCalculator() {
           </div>
 
           {/* Comparison Table */}
-          <div className="glass rounded-2xl p-5 sm:p-6">
+          <div className="glass rounded-2xl p-6 sm:p-7">
             <h3 className="text-sm sm:text-[15px] font-bold text-white mb-3">Comparação de Infill</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs sm:text-sm">

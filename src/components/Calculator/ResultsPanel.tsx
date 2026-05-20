@@ -77,7 +77,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </div>
 
       {chartData.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-5 sm:p-6">
+        <div className="glass-elevated rounded-2xl p-6 sm:p-7">
           <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
           <div className="space-y-3">
             {chartData.map(item => (
@@ -125,7 +125,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </button>
 
       {history.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-5 sm:p-6">
+        <div className="glass-elevated rounded-2xl p-6 sm:p-7">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({history.length})</span>
             <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) clearHistory() }}

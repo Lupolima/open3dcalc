@@ -18,7 +18,7 @@ export function Header() {
         borderColor: 'rgba(255,255,255,0.06)',
       }}
     >
-      <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-[64px] flex items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 h-[68px] flex items-center justify-between gap-4">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -34,12 +34,12 @@ export function Header() {
 
           <div className="leading-none">
             <div className="flex items-center gap-2">
-              <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight gradient-text">
+              <h1 className="text-[17px] sm:text-[19px] font-black tracking-tight gradient-text">
                 {t('app.title')}
               </h1>
               <span className="badge badge-indigo hidden sm:inline-flex">Beta</span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-widest mt-0.5 hidden sm:block">
+            <p className="text-[11px] sm:text-[12px] text-slate-500 uppercase tracking-widest mt-0.5 hidden sm:block">
               {t('app.subtitle')}
             </p>
           </div>
