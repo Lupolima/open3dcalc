@@ -133,7 +133,7 @@ const loadHistory = (): SavedCalculation[] => {
   } catch { return [] }
 }
 
-function computeStoreResults(s: {
+type ComputeStoreInput = {
   activeTab: 'fdm' | 'resin'
   fdmMaterial: MaterialStateFDM
   fdmPrintParams: PrintParameters
@@ -157,7 +157,9 @@ function computeStoreResults(s: {
   resinHardware: ResinHardware
   quantity: number
   enabledSections: Record<string, boolean>
-}): CalculationResult {
+}
+
+function computeStoreResults(s: ComputeStoreInput): CalculationResult {
   const qty = s.quantity > 0 ? s.quantity : 1
   const es = s.enabledSections
   if (s.activeTab === 'fdm') {
@@ -284,7 +286,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     }),
   }
 
-  const initialResults = computeStoreResults(initialValues as any)
+  const initialResults = computeStoreResults(initialValues as ComputeStoreInput)
 
   return {
     ...initialValues,
