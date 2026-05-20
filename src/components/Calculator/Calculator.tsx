@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, lazy, Suspense } from 'react'
+import { useCallback, useRef, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { fdmMaterials, resinMaterials } from '@/lib/materials'
@@ -6,13 +6,15 @@ import { printers } from '@/lib/printers'
 import { marketplaces } from '@/lib/marketplace'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { ToggleSwitch } from '@/components/ui/ToggleCard'
+import { ToastContainer } from '@/components/ui/Toast'
+import { ResultsPanel } from './ResultsPanel'
 import type { BufferGeometry } from 'three'
 import {
   Layers, SlidersHorizontal, Wrench, Printer, HardHat, ShieldCheck,
   DollarSign, BarChart3, Paintbrush, Zap, Monitor, Package, Truck,
-  ClipboardList, AlertTriangle, FolderOpen, Save, FileText,
-  FlaskConical, CheckCircle2, Upload, BarChart2,
+  ClipboardList, AlertTriangle, FolderOpen,
+  FlaskConical, Upload, Maximize2, Minimize2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -37,39 +39,29 @@ export function Calculator() {
   const [stlGeometry, setStlGeometry] = useState<BufferGeometry | null>(null)
   const [stlInfo, setStlInfo] = useState<{ volume: number; faces: number; vertices: number } | null>(null)
   const [stlLoading, setStlLoading] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
   const [activeSection, setActiveSection] = useState('material')
+  const [fullView, setFullView] = useState(false)
+  const [toastItems, setToastItems] = useState<{ id: number; message: string; type: 'error' | 'success' | 'info' }[]>([])
+
+  const dismissToast = (id: number) => {
+    setToastItems(prev => prev.filter(t => t.id !== id))
+  }
 
   const isFDM = store.activeTab === 'fdm'
   const themeBg = isFDM ? 'bg-sky-600' : 'bg-purple-600'
-
   const results = store.results!
-
-  const chartData = useMemo((): { name: string; value: number; color: string }[] => {
-    const items = [
-      { name: 'Material', value: results.materialCost, color: isFDM ? '#38bdf8' : '#a855f7' },
-      { name: 'Energia', value: results.energyCost, color: '#facc15' },
-      { name: 'Máquina', value: results.machineCost, color: '#94a3b8' },
-      { name: 'Hardware', value: results.hardwareCost, color: '#f97316' },
-      { name: 'Acabamento', value: results.postProcessingCost, color: '#22d3ee' },
-      { name: 'Consumíveis', value: results.consumablesCost, color: '#06b6d4' },
-      { name: 'Software', value: results.softwareCost, color: '#818cf8' },
-      { name: 'Mão de Obra', value: results.laborCost, color: '#f472b6' },
-      { name: 'Falha', value: results.failureCost, color: '#f87171' },
-      { name: 'Extras', value: results.extrasCost, color: '#cbd5e1' },
-    ].filter(d => d.value > 0.01)
-    return items
-  }, [results, isFDM])
-
   const fmtCurrency = (val: number) => (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   const handleFileDrop = useCallback(async (file: File) => {
+    const toast = (msg: string) => {
+      setToastItems(prev => [...prev, { id: Date.now(), message: msg, type: 'error' as const }])
+    }
     if (!file.name.match(/\.(stl|obj|3mf|gcode)$/i)) {
-      alert(t('stl.invalidFile'))
+      toast(t('stl.invalidFile'))
       return
     }
     if (file.size > 50 * 1024 * 1024) {
-      alert('Arquivo muito grande. Limite: 50MB.')
+      toast('Arquivo muito grande. Limite: 50MB.')
       return
     }
     setStlLoading(true)
@@ -94,7 +86,7 @@ export function Calculator() {
         const { analyzeMeshFile, volumeToCm3, estimateWeight } = await import('@/lib/stlParser')
         const { geometry, analysis } = await analyzeMeshFile(file)
         if (analysis.triangleCount > 2_000_000) {
-          alert('Malha muito complexa. Limite: 2 milhões de triângulos.')
+          toast('Malha muito complexa. Limite: 2 milhões de triângulos.')
           setStlLoading(false)
           return
         }
@@ -105,7 +97,7 @@ export function Calculator() {
         store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(weight.toFixed(2)) })
       }
     } catch {
-      alert(t('stl.error'))
+      toast(t('stl.error'))
     }
     setStlLoading(false)
   }, [store, t, isFDM])
@@ -316,8 +308,7 @@ export function Calculator() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.nozzle')}</span>
-                  <button onClick={() => store.setFdmHardware({ ...store.fdmHardware, nozzleEnabled: !store.fdmHardware.nozzleEnabled })}
-                    className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.fdmHardware.nozzleEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                  <ToggleSwitch enabled={store.fdmHardware.nozzleEnabled} onToggle={v => store.setFdmHardware({ ...store.fdmHardware, nozzleEnabled: v })} />
                 </div>
                 {store.fdmHardware.nozzleEnabled && (
                   <>
@@ -331,8 +322,7 @@ export function Calculator() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.bed')}</span>
-                  <button onClick={() => store.setFdmHardware({ ...store.fdmHardware, bedEnabled: !store.fdmHardware.bedEnabled })}
-                    className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.fdmHardware.bedEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                  <ToggleSwitch enabled={store.fdmHardware.bedEnabled} onToggle={v => store.setFdmHardware({ ...store.fdmHardware, bedEnabled: v })} />
                 </div>
                 {store.fdmHardware.bedEnabled && (
                   <InputGroup label={t('calc.bedCost')} value={store.fdmHardware.bedAdhesionCost}
@@ -359,8 +349,7 @@ export function Calculator() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-300">{t('calc.washing')}</span>
-                <button onClick={() => store.setResinPostProcess({ ...store.resinPostProcess, washingEnabled: !store.resinPostProcess.washingEnabled })}
-                  className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.resinPostProcess.washingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                <ToggleSwitch enabled={store.resinPostProcess.washingEnabled} onToggle={v => store.setResinPostProcess({ ...store.resinPostProcess, washingEnabled: v })} />
               </div>
               {store.resinPostProcess.washingEnabled && (
                 <div className="grid grid-cols-2 gap-3 pl-3 border-l-2 border-white/10">
@@ -372,8 +361,7 @@ export function Calculator() {
               )}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-300">{t('calc.curing')}</span>
-                <button onClick={() => store.setResinPostProcess({ ...store.resinPostProcess, curingEnabled: !store.resinPostProcess.curingEnabled })}
-                  className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${store.resinPostProcess.curingEnabled ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+                <ToggleSwitch enabled={store.resinPostProcess.curingEnabled} onToggle={v => store.setResinPostProcess({ ...store.resinPostProcess, curingEnabled: v })} />
               </div>
               {store.resinPostProcess.curingEnabled && (
                 <div className="grid grid-cols-2 gap-3 pl-3 border-l-2 border-white/10">
@@ -422,8 +410,8 @@ export function Calculator() {
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, hoursPerMonth: val }) : store.setResinMachine({ ...store.resinMachine, hoursPerMonth: val }))} type="number" unit="h/mês" />
           <div className="md:col-span-2 flex items-center justify-between glass rounded-xl p-3">
             <span className="text-xs text-gray-400">{t('calc.maintenance')}</span>
-            <button onClick={() => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceEnabled: !store.fdmMachine.maintenanceEnabled }) : store.setResinMachine({ ...store.resinMachine, maintenanceEnabled: !store.resinMachine.maintenanceEnabled })}
-              className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+            <ToggleSwitch enabled={isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled}
+              onToggle={v => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceEnabled: v }) : store.setResinMachine({ ...store.resinMachine, maintenanceEnabled: v })} />
           </div>
           {(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) && (
             <div className="md:col-span-2">
@@ -464,8 +452,8 @@ export function Calculator() {
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.ppe')}</span>
-              <button onClick={() => isFDM ? store.setFdmOps({ ...store.fdmOps, enabled: !store.fdmOps.enabled }) : store.setResinOps({ ...store.resinOps, enabled: !store.resinOps.enabled })}
-                className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+              <ToggleSwitch enabled={isFDM ? store.fdmOps.enabled : store.resinOps.enabled}
+                onToggle={v => isFDM ? store.setFdmOps({ ...store.fdmOps, enabled: v }) : store.setResinOps({ ...store.resinOps, enabled: v })} />
             </div>
             {(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) && (
               <InputGroup label={t('calc.ppeCost')}
@@ -476,8 +464,8 @@ export function Calculator() {
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.software')}</span>
-              <button onClick={() => isFDM ? store.setFdmSoft({ ...store.fdmSoft, enabled: !store.fdmSoft.enabled }) : store.setResinSoft({ ...store.resinSoft, enabled: !store.resinSoft.enabled })}
-                className={`px-3 min-h-[44px] text-[11px] font-bold rounded-lg transition-all flex items-center ${(isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled) ? 'bg-purple-600 text-white' : 'bg-white/5 text-gray-500'}`}>ON/OFF</button>
+              <ToggleSwitch enabled={isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled}
+                onToggle={v => isFDM ? store.setFdmSoft({ ...store.fdmSoft, enabled: v }) : store.setResinSoft({ ...store.resinSoft, enabled: v })} />
             </div>
             {(isFDM ? store.fdmSoft.enabled : store.resinSoft.enabled) && (
               <div className="space-y-3">
@@ -557,276 +545,27 @@ export function Calculator() {
   }
 
   function renderRightSidebar() {
-    return (
-      <>
-        {/* Hero — Sell Price */}
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-emerald-900/60 via-emerald-900/40 to-emerald-800/20 border border-emerald-700/30 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
-          <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
-          {results.taxAmount > 0 && (
-            <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
-          )}
-        </div>
-
-        {/* Cost per Gram + Failure Cost */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.costPerGram')}</div>
-            <div className="text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
-          </div>
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('breakdown.failure')}</div>
-            <div className="text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
-          </div>
-        </div>
-
-        {/* Cost + Profit */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.totalCost')}</div>
-            <div className="text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
-          </div>
-          <div className="rounded-xl p-4 bg-orange-900/20 border border-orange-800/30 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400/70 mb-1">{t('calc.profit')}</div>
-            <div className="text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
-          </div>
-        </div>
-
-        {/* Cost Breakdown — progress bars */}
-        {chartData.length > 0 && (
-          <div className="glass rounded-2xl p-5">
-            <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
-            <div className="space-y-3">
-              {chartData.map(item => (
-                <div key={item.name}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-400">{item.name}</span>
-                    <span className="text-xs font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
-                  </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Pie chart compact */}
-            <div className="mt-4 h-44 sm:h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={48} outerRadius={68} paddingAngle={3} dataKey="value">
-                    {chartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => fmtCurrency(value)}
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
-                    itemStyle={{ color: '#e2e8f0' }} />
-                  <Legend layout="vertical" verticalAlign="middle" align="right"
-                    iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '42%' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
-        {/* Add to History */}
-        <button onClick={() => store.addToHistory()}
-          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e2e8f0' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-        >
-          <FolderOpen className="w-4 h-4" />
-          {t('calc.addHistory')}
-        </button>
-
-        {/* History */}
-        {store.history.length > 0 && (
-          <div className="glass rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({store.history.length})</span>
-              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }}
-                className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">
-                {t('calc.clearHistory')}
-              </button>
-            </div>
-            <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1">
-              {store.history.map(item => (
-                <div key={item.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-                  <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                    <span>{new Date(item.timestamp).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="uppercase font-bold tracking-wider">{item.type}</span>
-                  </div>
-                  <div className="font-medium text-gray-200 text-xs truncate mb-1">{item.summary}</div>
-                  <div className="flex justify-between">
-                    <span className="text-orange-400 font-mono text-xs">{fmtCurrency(item.profit)}</span>
-                    <span className="text-emerald-400 font-mono font-bold text-xs">{fmtCurrency(item.sellPrice)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
-              saveStatus === 'saved'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-indigo-600 text-white hover:bg-indigo-500'
-            }`}>
-            {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-            {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
-          </button>
-          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
-            <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
-          </button>
-          <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
-            <BarChart2 className="w-3.5 h-3.5" /> CSV
-          </button>
-        </div>
-      </>
-    )
+    return <ResultsPanel variant="sidebar" />
   }
 
   function renderResultsSection() {
-    return (
-      <div className="space-y-4 lg:hidden">
-        {/* Hero sell price */}
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-emerald-900/60 via-emerald-900/40 to-emerald-800/20 border border-emerald-700/30 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
-          <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
-          {results.taxAmount > 0 && <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas</div>}
-        </div>
-
-        {/* Cost per Gram + Failure */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.costPerGram')}</div>
-            <div className="text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
-          </div>
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('breakdown.failure')}</div>
-            <div className="text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.totalCost')}</div>
-            <div className="text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
-          </div>
-          <div className="rounded-xl p-4 bg-orange-900/20 border border-orange-800/30 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400/70 mb-1">{t('calc.profit')}</div>
-            <div className="text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
-          </div>
-        </div>
-
-        {/* Cost breakdown bars */}
-        {chartData.length > 0 && (
-          <div className="glass rounded-2xl p-5">
-            <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
-            <div className="space-y-3 mb-4">
-              {chartData.map(item => (
-                <div key={item.name}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-400">{item.name}</span>
-                    <span className="text-xs font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
-                  </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="h-48 sm:h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={52} outerRadius={72} paddingAngle={3} dataKey="value">
-                    {chartData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />)}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => fmtCurrency(value)}
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
-                    itemStyle={{ color: '#e2e8f0' }} />
-                  <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '42%' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
-        <button onClick={() => store.addToHistory()}
-          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e2e8f0' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-        >
-          <FolderOpen className="w-4 h-4" />
-          {t('calc.addHistory')}
-        </button>
-
-        {store.history.length > 0 && (
-          <div className="glass rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({store.history.length})</span>
-              <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) store.clearHistory() }}
-                className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">{t('calc.clearHistory')}</button>
-            </div>
-            <div className="space-y-2.5 max-h-52 overflow-y-auto">
-              {store.history.map(item => (
-                <div key={item.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5">
-                  <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                    <span>{new Date(item.timestamp).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="uppercase font-bold tracking-wider">{item.type}</span>
-                  </div>
-                  <div className="font-medium text-gray-200 text-xs truncate mb-1">{item.summary}</div>
-                  <div className="flex justify-between">
-                    <span className="text-orange-400 font-mono text-xs">{fmtCurrency(item.profit)}</span>
-                    <span className="text-emerald-400 font-mono font-bold text-xs">{fmtCurrency(item.sellPrice)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={() => { store.saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
-              saveStatus === 'saved'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-indigo-600 text-white hover:bg-indigo-500'
-            }`}>
-            {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-            {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
-          </button>
-          <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-            className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
-            <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
-          </button>
-          <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, store.productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-            className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
-            <BarChart2 className="w-3.5 h-3.5" /> CSV
-          </button>
-        </div>
-      </div>
-    )
+    return <ResultsPanel variant="mobile" />
   }
 
   return (
     <>
+      <ToastContainer items={toastItems} onDismiss={dismissToast} />
       <div className="flex gap-6 pb-20 lg:pb-0">
         {/* Desktop sidebar — icon + label */}
         <nav className="hidden lg:flex flex-col gap-1 w-[116px] shrink-0 sticky top-6 h-fit">
           {SECTIONS.map(s => (
-            <button key={s.id} onClick={() => setActiveSection(s.id)}
+            <button key={s.id}
+              onClick={() => {
+                setActiveSection(s.id)
+                if (fullView) {
+                  document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }}
               className={`w-full py-2.5 px-3 rounded-xl flex items-center gap-2.5 transition-all text-left focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                 activeSection === s.id
                   ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
@@ -855,16 +594,24 @@ export function Calculator() {
             </button>
           </div>
 
-          {/* Quick Mode Toggle */}
-          <div className="flex items-center justify-between glass rounded-xl px-4 py-3">
-            <div>
-              <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
-              <p className="text-xs text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
+          {/* Quick Mode + Full View Toggles */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-3">
+              <div>
+                <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
+                <p className="text-xs text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
+              </div>
+              <button onClick={() => store.setQuickMode(!store.quickMode)}
+                aria-pressed={store.quickMode}
+                className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-6' : 'left-0.5'}`} />
+              </button>
             </div>
-            <button onClick={() => store.setQuickMode(!store.quickMode)}
-              aria-pressed={store.quickMode}
-              className={`relative w-12 h-6 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-6' : 'left-0.5'}`} />
+            <button onClick={() => setFullView(!fullView)}
+              className={`glass rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${fullView ? 'text-indigo-400 border-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
+              title={fullView ? 'Visão por seção' : 'Visão completa'}>
+              {fullView ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <span className="hidden sm:inline">{fullView ? 'Por Seção' : 'Completo'}</span>
             </button>
           </div>
 
@@ -910,15 +657,33 @@ export function Calculator() {
               type="text" placeholder={t('calc.productNamePlaceholder')} />
           </div>
 
-          {/* Active Section */}
-          {activeSection === 'material' && renderMaterialSection()}
-          {activeSection === 'print' && renderPrintSection()}
-          {activeSection === 'hardware' && renderHardwareSection()}
-          {activeSection === 'machine' && renderMachineSection()}
-          {activeSection === 'labor' && renderLaborSection()}
-          {activeSection === 'ops' && renderOpsSection()}
-          {activeSection === 'sales' && renderSalesSection()}
-          {activeSection === 'results' && renderResultsSection()}
+          {/* Active Section — single or full view */}
+          {fullView ? (
+            <div className="space-y-4">
+              <div id="section-material" className="scroll-mt-24">{renderMaterialSection()}</div>
+              <div id="section-print" className="scroll-mt-24">{renderPrintSection()}</div>
+              <div id="section-hardware" className="scroll-mt-24">{renderHardwareSection()}</div>
+              <div id="section-machine" className="scroll-mt-24">{renderMachineSection()}</div>
+              <div id="section-labor" className="scroll-mt-24">{renderLaborSection()}</div>
+              <div id="section-ops" className="scroll-mt-24">{renderOpsSection()}</div>
+              <div id="section-sales" className="scroll-mt-24">{renderSalesSection()}</div>
+              <div id="section-results" className="scroll-mt-24">
+                <div className="hidden lg:block"><ResultsPanel variant="sidebar" /></div>
+                <div className="lg:hidden"><ResultsPanel variant="mobile" /></div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeSection === 'material' && renderMaterialSection()}
+              {activeSection === 'print' && renderPrintSection()}
+              {activeSection === 'hardware' && renderHardwareSection()}
+              {activeSection === 'machine' && renderMachineSection()}
+              {activeSection === 'labor' && renderLaborSection()}
+              {activeSection === 'ops' && renderOpsSection()}
+              {activeSection === 'sales' && renderSalesSection()}
+              {activeSection === 'results' && renderResultsSection()}
+            </>
+          )}
         </div>
 
         {/* Desktop right sidebar — always visible */}
@@ -927,32 +692,39 @@ export function Calculator() {
         </div>
       </div>
 
-      {/* Mobile bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        <div className="flex h-14 overflow-x-auto">
-          {SECTIONS.map(s => (
-            <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[52px] min-h-[44px] text-[9px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-                activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
-              }`}>
-              <s.Icon className={`w-[17px] h-[17px] transition-transform ${activeSection === s.id ? 'scale-110' : ''}`} />
-              <span className="truncate max-w-[56px] leading-tight">{s.short}</span>
-            </button>
-          ))}
+      {/* Mobile bottom bar — consolidated nav + results */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {/* Results mini-bar */}
+        <div className="flex items-center justify-between gap-3 px-3 py-1.5 border-t border-white/[0.06]" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(16px)' }}>
+          <div className="flex gap-3 text-[11px]">
+            <span className="text-slate-200"><span className="text-slate-500 mr-1">Custo</span>{fmtCurrency(results.totalCost)}</span>
+            <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>
+            <span className="text-amber-400"><span className="text-slate-500 mr-1">Lucro</span>{fmtCurrency(results.profit)}</span>
+          </div>
+          <button onClick={() => store.addToHistory()} className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[9px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
+            <FolderOpen className="w-2.5 h-2.5" />
+            Salvar
+          </button>
         </div>
-      </nav>
-
-      {/* Sticky Mobile/Tablet Results Bar — above bottom nav */}
-      <div className="fixed bottom-14 left-0 right-0 z-20 lg:hidden px-3 py-2 flex items-center justify-between gap-3" style={{ background: 'rgba(6,8,24,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
-        <div className="flex gap-4 text-xs">
-          <span className="text-slate-200"><span className="text-slate-500 mr-1">Custo</span>{fmtCurrency(results.totalCost)}</span>
-          <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>
-          <span className="text-amber-400"><span className="text-slate-500 mr-1">Lucro</span>{fmtCurrency(results.profit)}</span>
-        </div>
-        <button onClick={() => store.addToHistory()} className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
-          <FolderOpen className="w-3 h-3" />
-          Salvar
-        </button>
+        {/* Section nav */}
+        <nav style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex h-12 overflow-x-auto">
+            {SECTIONS.map(s => (
+              <button key={s.id} onClick={() => {
+                setActiveSection(s.id)
+                if (fullView) {
+                  document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                  activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
+                }`}>
+                <s.Icon className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? 'scale-110' : ''}`} />
+                <span className="truncate max-w-[48px] leading-tight">{s.short}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
       </div>
     </>
   )
