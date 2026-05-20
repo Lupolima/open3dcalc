@@ -126,12 +126,12 @@ export function Calculator() {
   function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string) {
     return (
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.07]">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)' }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(79,70,229,0.12)', border: '1px solid rgba(79,70,229,0.25)' }}>
           <Icon className="w-[18px] h-[18px] text-indigo-400" />
         </div>
         <div>
-          <h3 className="text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          <h3 className="text-base sm:text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
+          {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
       </div>
     )
@@ -139,52 +139,52 @@ export function Calculator() {
 
   function renderMaterialSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
               onChange={v => store.setFdmMaterial({ ...store.fdmMaterial, type: v })}
               options={fdmMaterials.map(m => ({ label: m.name, value: m.name }))} />
             <InputGroup label={t('calc.costPerKg')} value={store.fdmMaterial.costPerKg}
               onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, costPerKg: val }))}
               type="number" prefix="R$" />
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 xl:col-span-4">
               <button
                 type="button"
                 onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
                 onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileDrop(f) }}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex flex-col items-center gap-2"
+                className="w-full border-2 border-dashed rounded-xl p-5 sm:p-6 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex flex-col items-center gap-2"
                 style={{ borderColor: 'rgba(255,255,255,0.1)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(79,70,229,0.4)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
               >
                 <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
                 <Upload className="w-5 h-5 text-slate-500" />
-                <p className="text-xs text-slate-400">{t('product.uploadStl')}</p>
+                <p className="text-sm text-slate-300">{t('product.uploadStl')}</p>
                 {stlLoading && <p className="text-xs text-indigo-400">{t('stl.loading')}</p>}
               </button>
               {stlGeometry && (
-                <div className="mt-2 h-48">
+                <div className="mt-3 h-52">
                   <Suspense fallback={<div className="text-xs text-gray-400">{t('common.loading')}</div>}>
                     <StlPreview geometry={stlGeometry} />
                   </Suspense>
                 </div>
               )}
               {stlInfo && (
-                <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
-                  <div className="glass rounded-lg p-2 text-center">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3 text-xs sm:text-sm">
+                  <div className="glass rounded-lg p-3 text-center">
                     <p className="text-gray-400">{t('stl.volume')}</p>
-                    <p className="font-semibold text-purple-400">{stlInfo.volume.toFixed(1)} cm³</p>
+                    <p className="font-semibold text-purple-400 text-sm sm:text-base">{stlInfo.volume.toFixed(1)} cm³</p>
                   </div>
-                  <div className="glass rounded-lg p-2 text-center">
+                  <div className="glass rounded-lg p-3 text-center">
                     <p className="text-gray-400">{t('stl.faces')}</p>
-                    <p className="font-semibold text-gray-200">{stlInfo.faces}</p>
+                    <p className="font-semibold text-gray-200 text-sm sm:text-base">{stlInfo.faces}</p>
                   </div>
-                  <div className="glass rounded-lg p-2 text-center">
+                  <div className="glass rounded-lg p-3 text-center lg:col-span-1 col-span-2">
                     <p className="text-gray-400">{t('stl.vertices')}</p>
-                    <p className="font-semibold text-gray-200">{stlInfo.vertices}</p>
+                    <p className="font-semibold text-gray-200 text-sm sm:text-base">{stlInfo.vertices}</p>
                   </div>
                 </div>
               )}
@@ -203,7 +203,7 @@ export function Calculator() {
               type="number" unit="g/cm³" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             <Select label={t('calc.resinType')} value={store.resinMaterial.type}
               onChange={v => store.setResinMaterial({ ...store.resinMaterial, type: v })}
               options={resinMaterials.map(m => ({ label: m.name, value: m.name }))} />
@@ -224,9 +224,9 @@ export function Calculator() {
 
   function renderPrintSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
             onChange={v => handleInput(v, val => isFDM
@@ -246,15 +246,17 @@ export function Calculator() {
               : store.setResinPrintParams({ ...store.resinPrintParams, energyCostPerKwh: val })
             )} type="number" unit="R$/kWh" step="0.01" />
           {isFDM && (
-            <Select label={t('calc.printer')} value={store.selectedPrinter.id}
+            <div className="sm:col-span-2 xl:col-span-4">
+              <Select label={t('calc.printer')} value={store.selectedPrinter.id}
               onChange={handlePrinterSelect} portal
               options={printers.map(p => ({ label: p.name, value: p.id, image: p.image, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))}
               groups search />
+            </div>
           )}
-          <div className="md:col-span-2 glass rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-400">{t('calc.failure')}</span>
-              <div className="flex gap-2">
+          <div className="sm:col-span-2 xl:col-span-4 glass rounded-xl p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <span className="text-xs sm:text-sm font-medium text-gray-400">{t('calc.failure')}</span>
+              <div className="flex flex-wrap gap-2">
                 {(['none', 'percent', 'fixed'] as const).map(mode => {
                   const current = isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode
                   const label = mode === 'none' ? t('calc.noFailure') : mode === 'percent' ? '%' : 'R$'
@@ -264,7 +266,7 @@ export function Calculator() {
                         ? store.setFdmPrintParams({ ...store.fdmPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.fdmPrintParams.failureValue })
                         : store.setResinPrintParams({ ...store.resinPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.resinPrintParams.failureValue })
                       }
-                      className={`px-3 min-h-[44px] text-xs rounded-lg transition-all flex items-center ${current === mode ? `${themeBg} text-white` : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                      className={`px-3 min-h-[44px] text-xs sm:text-sm rounded-lg transition-all flex items-center ${current === mode ? `${themeBg} text-white` : 'bg-white/5 text-gray-400 hover:text-white'}`}
                     >
                       {label}
                     </button>
@@ -273,7 +275,7 @@ export function Calculator() {
               </div>
             </div>
             {(isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode) !== 'none' && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <InputGroup label={t('calc.failureValue')}
                   value={isFDM ? store.fdmPrintParams.failureValue : store.resinPrintParams.failureValue}
                   onChange={v => handleInput(v, val => isFDM
@@ -300,11 +302,11 @@ export function Calculator() {
 
   function renderHardwareSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6 space-y-6">
+      <div className="glass rounded-2xl p-5 sm:p-7 space-y-6">
         {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
         {isFDM && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.nozzle')}</span>
@@ -377,7 +379,7 @@ export function Calculator() {
                 <span>🖥️</span>
                 <span className="text-sm font-semibold text-white">{t('calc.resinHardware')}</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <InputGroup label={t('calc.lcdCost')} value={store.resinHardware.lcdCost}
                   onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdCost: val }))} type="number" prefix="R$" />
                 <InputGroup label={t('calc.lcdLife')} value={store.resinHardware.lcdLifespanHours}
@@ -396,9 +398,9 @@ export function Calculator() {
 
   function renderMachineSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, machineCost: val }) : store.setResinMachine({ ...store.resinMachine, machineCost: val }))} type="number" prefix="R$" />
@@ -408,13 +410,13 @@ export function Calculator() {
           <InputGroup label={t('calc.hoursPerMonth')}
             value={isFDM ? store.fdmMachine.hoursPerMonth : store.resinMachine.hoursPerMonth}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, hoursPerMonth: val }) : store.setResinMachine({ ...store.resinMachine, hoursPerMonth: val }))} type="number" unit="h/mês" />
-          <div className="md:col-span-2 flex items-center justify-between glass rounded-xl p-3">
+          <div className="sm:col-span-2 xl:col-span-3 flex items-center justify-between glass rounded-xl p-4 sm:p-5">
             <span className="text-xs text-gray-400">{t('calc.maintenance')}</span>
             <ToggleSwitch enabled={isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled}
               onToggle={v => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceEnabled: v }) : store.setResinMachine({ ...store.resinMachine, maintenanceEnabled: v })} />
           </div>
           {(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) && (
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 xl:col-span-3">
               <InputGroup label={t('calc.maintenanceCost')}
                 value={isFDM ? store.fdmMachine.maintenanceCost : store.resinMachine.maintenanceCost}
                 onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceCost: val }) : store.setResinMachine({ ...store.resinMachine, maintenanceCost: val }))} type="number" prefix="R$/mês" />
@@ -427,9 +429,9 @@ export function Calculator() {
 
   function renderLaborSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, setupTimeMinutes: val }) : store.setResinLabor({ ...store.resinLabor, setupTimeMinutes: val }))} type="number" unit="min" />
@@ -446,9 +448,9 @@ export function Calculator() {
 
   function renderOpsSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.ppe')}</span>
@@ -485,10 +487,10 @@ export function Calculator() {
 
   function renderSalesSection() {
     return (
-      <div className="glass rounded-2xl p-4 sm:p-6">
+      <div className="glass rounded-2xl p-5 sm:p-7">
         {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <InputGroup label={t('calc.quantity')}
               value={store.quantity}
               onChange={v => handleInput(v, val => store.setQuantity(val > 0 ? val : 1))} type="number" unit="un" />
@@ -499,7 +501,7 @@ export function Calculator() {
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix="R$" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <InputGroup label={t('calc.packaging')}
               value={isFDM ? store.fdmSales.packagingCost : store.resinSales.packagingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, packagingCost: val }) : store.setResinSales({ ...store.resinSales, packagingCost: val }))} type="number" prefix="R$" />
@@ -507,7 +509,7 @@ export function Calculator() {
               value={isFDM ? store.fdmSales.shippingCost : store.resinSales.shippingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix="R$" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <Select label={t('calc.marketplace')} value={store.selectedMarketplace.id}
               onChange={handleMarketplaceChange}
               options={marketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$ ${m.feeFixed}` }))} />
@@ -515,17 +517,17 @@ export function Calculator() {
               value={isFDM ? store.fdmSales.taxPercent : store.resinSales.taxPercent}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, taxPercent: val }) : store.setResinSales({ ...store.resinSales, taxPercent: val }))} type="number" unit="%" />
           </div>
-          <div className="glass rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400">{t('calc.markupPresets')}</span>
-              <div className="flex gap-1.5">
+          <div className="glass rounded-xl p-4 sm:p-5">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between mb-2">
+              <span className="text-xs sm:text-sm text-gray-400">{t('calc.markupPresets')}</span>
+              <div className="flex flex-wrap gap-1.5">
                 {[100, 150, 200, 250, 300, 500].map(pct => (
                   <button key={pct}
                     onClick={() => isFDM
                       ? store.setFdmSales({ ...store.fdmSales, profitMarginPercent: pct })
                       : store.setResinSales({ ...store.resinSales, profitMarginPercent: pct })
                     }
-                    className={`px-3 min-h-[44px] text-[11px] rounded-md transition-all flex items-center ${
+                    className={`px-3 min-h-[44px] text-[11px] sm:text-xs rounded-md transition-all flex items-center ${
                       (isFDM ? store.fdmSales.profitMarginPercent : store.resinSales.profitMarginPercent) === pct
                         ? 'bg-purple-600 text-white'
                         : 'bg-white/5 text-gray-400 hover:text-white'
@@ -555,9 +557,9 @@ export function Calculator() {
   return (
     <>
       <ToastContainer items={toastItems} onDismiss={dismissToast} />
-      <div className="flex gap-6 pb-20 lg:pb-0">
+      <div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
         {/* Desktop sidebar — icon + label */}
-        <nav className="hidden lg:flex flex-col gap-1 w-[116px] shrink-0 sticky top-6 h-fit">
+        <nav className="hidden lg:flex flex-col gap-1 w-[128px] xl:w-[140px] shrink-0 sticky top-6 h-fit">
           {SECTIONS.map(s => (
             <button key={s.id}
               onClick={() => {
@@ -595,11 +597,11 @@ export function Calculator() {
           </div>
 
           {/* Quick Mode + Full View Toggles */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-3">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-stretch">
+            <div className="flex-1 flex items-center justify-between glass rounded-xl px-4 py-4">
               <div>
-                <span className="text-sm font-semibold text-white">{t('calc.quickMode')}</span>
-                <p className="text-xs text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
+                <span className="text-sm sm:text-[15px] font-semibold text-white">{t('calc.quickMode')}</span>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Mostrar apenas campos essenciais</p>
               </div>
               <button onClick={() => store.setQuickMode(!store.quickMode)}
                 aria-pressed={store.quickMode}
@@ -608,7 +610,7 @@ export function Calculator() {
               </button>
             </div>
             <button onClick={() => setFullView(!fullView)}
-              className={`glass rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${fullView ? 'text-indigo-400 border-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
+              className={`glass rounded-xl px-4 py-4 flex items-center gap-2 text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${fullView ? 'text-indigo-400 border-indigo-500/30' : 'text-slate-400 hover:text-white'}`}
               title={fullView ? 'Visão por seção' : 'Visão completa'}>
               {fullView ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               <span className="hidden sm:inline">{fullView ? 'Por Seção' : 'Completo'}</span>
@@ -618,10 +620,10 @@ export function Calculator() {
           {/* Cost Sections Toggle */}
           <div className="glass rounded-xl px-4 py-3">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-slate-200">Seções do Cálculo</span>
-              <span className="text-[10px] text-slate-500">Marque/desmarque para personalizar</span>
+              <span className="text-sm sm:text-[15px] font-semibold text-slate-200">Seções do Cálculo</span>
+              <span className="text-[10px] sm:text-xs text-slate-500">Marque/desmarque para personalizar</span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
               {([
                 { key: 'material',      Icon: Layers,         label: 'Material' },
                 { key: 'energy',        Icon: Zap,            label: 'Energia' },
@@ -638,7 +640,7 @@ export function Calculator() {
               ] as { key: string; Icon: LucideIcon; label: string }[]).map(s => (
                 <button key={s.key}
                   onClick={() => store.toggleSection(s.key)}
-                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                  className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-lg text-[10px] sm:text-[11px] transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                     store.enabledSections[s.key]
                       ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40'
                       : 'text-slate-500 border border-transparent hover:bg-white/[0.04] hover:text-slate-400'
@@ -651,7 +653,7 @@ export function Calculator() {
           </div>
 
           {/* Product Name */}
-          <div className="glass rounded-2xl px-5 py-4">
+          <div className="glass rounded-2xl px-5 py-5">
             <InputGroup label={t('calc.productName')} value={store.productName}
               onChange={v => store.setProductName(v)}
               type="text" placeholder={t('calc.productNamePlaceholder')} />

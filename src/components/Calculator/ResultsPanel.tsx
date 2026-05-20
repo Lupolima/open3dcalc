@@ -46,45 +46,45 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
 
   const content = (
     <>
-      <div className="rounded-2xl p-6 bg-gradient-to-br from-emerald-900/60 via-emerald-900/40 to-emerald-800/20 border border-emerald-700/30 text-center">
-        <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
-        <div className="text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
+      <div className="result-hero rounded-2xl p-6 sm:p-7 text-center">
+        <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
+        <div className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
         {results.taxAmount > 0 && (
-          <div className="text-xs text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
+          <div className="text-xs sm:text-sm text-emerald-500/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-xl p-4 sm:p-5 bg-white/5 border border-white/10 text-center">
           <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.costPerGram')}</div>
-          <div className="text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
+          <div className="text-base sm:text-lg font-black text-cyan-400 font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
         </div>
-        <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+        <div className="rounded-xl p-4 sm:p-5 bg-white/5 border border-white/10 text-center">
           <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('breakdown.failure')}</div>
-          <div className="text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
+          <div className="text-base sm:text-lg font-black text-red-400 font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl p-4 bg-white/5 border border-white/10 text-center">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-xl p-4 sm:p-5 bg-white/5 border border-white/10 text-center">
           <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{t('calc.totalCost')}</div>
-          <div className="text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
+          <div className="text-lg sm:text-xl font-black text-green-400 font-mono">{fmtCurrency(results.totalCost)}</div>
         </div>
-        <div className="rounded-xl p-4 bg-orange-900/20 border border-orange-800/30 text-center">
+        <div className="rounded-xl p-4 sm:p-5 bg-orange-900/20 border border-orange-800/30 text-center">
           <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400/70 mb-1">{t('calc.profit')}</div>
-          <div className="text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
+          <div className="text-lg sm:text-xl font-black text-orange-400 font-mono">{fmtCurrency(results.profit)}</div>
         </div>
       </div>
 
       {chartData.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-5">
-          <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
+        <div className="glass-elevated rounded-2xl p-5 sm:p-6">
+          <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
           <div className="space-y-3">
             {chartData.map(item => (
               <div key={item.name}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs text-gray-400">{item.name}</span>
-                  <span className="text-xs font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
+                  <span className="text-xs sm:text-sm text-gray-400">{item.name}</span>
+                  <span className="text-xs sm:text-sm font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
@@ -107,7 +107,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
                   contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
                   itemStyle={{ color: '#e2e8f0' }} />
                 <Legend layout="vertical" verticalAlign="middle" align="right"
-                  iconType="circle" wrapperStyle={{ fontSize: '10px', maxWidth: '42%' }} />
+                  iconType="circle" wrapperStyle={{ fontSize: '11px', maxWidth: '42%' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -115,7 +115,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       )}
 
       <button onClick={() => addToHistory()}
-        className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+        className="w-full py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#e2e8f0' }}
         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
@@ -125,11 +125,11 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </button>
 
       {history.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-5">
+        <div className="glass-elevated rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({history.length})</span>
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({history.length})</span>
             <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) clearHistory() }}
-              className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">
+              className="text-[10px] sm:text-xs text-red-400/70 hover:text-red-400 transition-colors">
               {t('calc.clearHistory')}
             </button>
           </div>
@@ -153,7 +153,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
 
       <div className="grid grid-cols-3 gap-2">
         <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-          className={`py-3 rounded-xl text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+          className={`py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
             saveStatus === 'saved'
               ? 'bg-emerald-600 text-white'
               : 'bg-indigo-600 text-white hover:bg-indigo-500'
@@ -162,11 +162,11 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
           {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
         </button>
         <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
-          className="py-3 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
           <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
         </button>
         <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-          className="py-3 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
+          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-teal-700 text-white hover:bg-teal-600 transition-all focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none flex items-center justify-center gap-1.5">
           <BarChart2 className="w-3.5 h-3.5" /> CSV
         </button>
       </div>

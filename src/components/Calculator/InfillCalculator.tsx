@@ -45,25 +45,25 @@ export function InfillCalculator() {
   })
 
   return (
-    <div className="space-y-5">
-      <div className="glass rounded-2xl p-5">
-        <h2 className="text-lg font-bold text-white">{t('calc.infillPercent')} Calculator</h2>
-        <p className="text-xs text-gray-500 mt-1">Veja como o % de infill afeta peso, custo e tempo</p>
+    <div className="space-y-5 sm:space-y-6">
+      <div className="glass rounded-2xl p-5 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white">{t('calc.infillPercent')} Calculator</h2>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">Veja como o % de infill afeta peso, custo e tempo</p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-        <div className="glass rounded-2xl p-5 space-y-3">
-          <div className="text-sm font-semibold text-white">Dimensões (mm)</div>
-          <div className="grid grid-cols-3 gap-2">
+      <div className="grid gap-4 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
+        <div className="glass rounded-2xl p-5 sm:p-6 space-y-4">
+          <div className="text-sm sm:text-[15px] font-semibold text-white">Dimensões (mm)</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             <InputGroup label="Largura" value={width} onChange={v => setWidth(v)} type="number" unit="mm" />
             <InputGroup label="Profundidade" value={depth} onChange={v => setDepth(v)} type="number" unit="mm" />
             <InputGroup label="Altura" value={height} onChange={v => setHeight(v)} type="number" unit="mm" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <InputGroup label="Espessura Parede" value={wallThickness} onChange={v => setWallThickness(v)} type="number" unit="mm" />
             <InputGroup label="Camadas Topo/Base" value={topBottomLayers} onChange={v => setTopBottomLayers(v)} type="number" unit="un" />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <InputGroup label="Layer Height" value={layerHeight} onChange={v => setLayerHeight(v)} type="number" unit="mm" />
             <Select label="Material" value={material} onChange={setMaterial}
               options={MATERIALS.map(m => ({ label: m.label, value: m.value }))} search={false} />
@@ -71,28 +71,28 @@ export function InfillCalculator() {
           <InputGroup label="Infill %" value={infillPercent} onChange={v => setInfillPercent(v)} type="number" unit="%" />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-5">
           {/* Result Cards */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+            <div className="glass rounded-2xl p-4 sm:p-5 text-center">
               <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Peso Estimado</p>
-              <p className="text-base sm:text-xl font-bold text-cyan-400">{result.weight.toFixed(1)}g</p>
+              <p className="text-lg sm:text-xl font-bold text-cyan-400">{result.weight.toFixed(1)}g</p>
             </div>
-            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+            <div className="glass rounded-2xl p-4 sm:p-5 text-center">
               <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Custo Material</p>
-              <p className="text-base sm:text-xl font-bold text-emerald-400">R$ {result.cost.toFixed(2)}</p>
+              <p className="text-lg sm:text-xl font-bold text-emerald-400">R$ {result.cost.toFixed(2)}</p>
             </div>
-            <div className="glass rounded-2xl p-3 sm:p-4 text-center">
+            <div className="glass rounded-2xl p-4 sm:p-5 text-center">
               <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Volume Sólido</p>
-              <p className="text-base sm:text-xl font-bold text-purple-400">{(solidVolumeCm3).toFixed(1)} cm³</p>
+              <p className="text-lg sm:text-xl font-bold text-purple-400">{(solidVolumeCm3).toFixed(1)} cm³</p>
             </div>
           </div>
 
           {/* Comparison Table */}
-          <div className="glass rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-white mb-3">Comparação de Infill</h3>
+          <div className="glass rounded-2xl p-5 sm:p-6">
+            <h3 className="text-sm sm:text-[15px] font-bold text-white mb-3">Comparação de Infill</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
                   <tr className="text-gray-400 border-b border-white/10">
                     <th className="text-left py-2 px-3">Infill</th>

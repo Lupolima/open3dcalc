@@ -35,10 +35,10 @@ function App() {
     <div className="min-h-dvh flex flex-col">
       <Header />
 
-      <div className="flex flex-1 max-w-[1400px] mx-auto w-full">
+      <div className="flex flex-1 max-w-[1520px] mx-auto w-full">
 
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden lg:flex flex-col gap-1 w-48 shrink-0 px-3 py-5 sticky top-[61px] h-[calc(100dvh-61px)] overflow-y-auto border-r border-white/[0.06]">
+        <aside className="hidden lg:flex flex-col gap-1 w-52 xl:w-56 shrink-0 px-3 py-5 sticky top-[61px] h-[calc(100dvh-61px)] overflow-y-auto border-r border-white/[0.06]">
           <p className="label-xs px-3 mb-2">Navegação</p>
           {TABS.map(tab => (
             <button
@@ -69,7 +69,7 @@ function App() {
         </aside>
 
         {/* ── Main Content ── */}
-        <main className="flex-1 min-w-0 px-3 sm:px-5 py-6 pb-28 lg:pb-8">
+        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-8">
           <div className="animate-fade-up">
             {activeTab === 'calculator' && <Calculator />}
             {activeTab === 'dashboard'  && <Dashboard />}
@@ -87,12 +87,12 @@ function App() {
         style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label="Navegação principal"
       >
-        <div className="flex overflow-x-auto h-16 px-1">
+        <div className="flex overflow-x-auto h-[68px] px-1.5">
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-[52px] min-h-[44px] px-1 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+              className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-[56px] min-h-[48px] px-1.5 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
                 activeTab === tab.id
                   ? 'text-indigo-400'
                   : 'text-slate-500 hover:text-slate-300'
@@ -102,7 +102,7 @@ function App() {
               <span className={`transition-transform ${activeTab === tab.id ? 'scale-110' : ''}`}>
                 {tab.icon}
               </span>
-              <span className="text-[9px] font-semibold leading-none tracking-wide">
+              <span className="text-[10px] font-semibold leading-none tracking-wide">
                 {tab.label}
               </span>
             </button>
