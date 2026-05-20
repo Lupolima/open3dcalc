@@ -23,7 +23,7 @@ export function InputGroup({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2 min-h-[2.5rem]">
         <label htmlFor={id} className={`text-[11px] font-semibold uppercase tracking-wider ${error ? 'text-red-400' : 'text-gray-500'}`}>
           {label}
         </label>

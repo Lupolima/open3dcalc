@@ -182,9 +182,11 @@ export function Select({
 
   return (
     <div className={`relative flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={`${id}-trigger`} className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-        {label}
-      </label>
+      <div className="min-h-[2.5rem] flex items-start">
+        <label htmlFor={`${id}-trigger`} className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+          {label}
+        </label>
+      </div>
       {triggerContent}
       {portal ? createPortal(dropdownContent, document.body) : dropdownContent}
     </div>

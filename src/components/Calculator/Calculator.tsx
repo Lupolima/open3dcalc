@@ -151,7 +151,7 @@ export function Calculator() {
       <div className="glass rounded-2xl p-6 sm:p-8">
         {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
               onChange={v => store.setFdmMaterial({ ...store.fdmMaterial, type: v })}
               options={fdmMaterials.map(m => ({ label: m.name, value: m.name }))} />
@@ -212,7 +212,7 @@ export function Calculator() {
               type="number" unit="g/cm³" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
             <Select label={t('calc.resinType')} value={store.resinMaterial.type}
               onChange={v => store.setResinMaterial({ ...store.resinMaterial, type: v })}
               options={resinMaterials.map(m => ({ label: m.name, value: m.name }))} />
@@ -235,7 +235,7 @@ export function Calculator() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
         {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
             onChange={v => handleInput(v, val => isFDM
@@ -388,7 +388,7 @@ export function Calculator() {
                 <span>🖥️</span>
                 <span className="text-sm font-semibold text-white">{t('calc.resinHardware')}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <InputGroup label={t('calc.lcdCost')} value={store.resinHardware.lcdCost}
                   onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdCost: val }))} type="number" prefix="R$" />
                 <InputGroup label={t('calc.lcdLife')} value={store.resinHardware.lcdLifespanHours}
@@ -409,7 +409,7 @@ export function Calculator() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
         {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, machineCost: val }) : store.setResinMachine({ ...store.resinMachine, machineCost: val }))} type="number" prefix="R$" />
@@ -440,7 +440,7 @@ export function Calculator() {
     return (
       <div className="glass rounded-2xl p-6 sm:p-8">
         {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, setupTimeMinutes: val }) : store.setResinLabor({ ...store.resinLabor, setupTimeMinutes: val }))} type="number" unit="min" />
@@ -499,7 +499,7 @@ export function Calculator() {
       <div className="glass rounded-2xl p-6 sm:p-8">
         {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <InputGroup label={t('calc.quantity')}
               value={store.quantity}
               onChange={v => handleInput(v, val => store.setQuantity(val > 0 ? val : 1))} type="number" unit="un" />
@@ -510,7 +510,7 @@ export function Calculator() {
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix="R$" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <InputGroup label={t('calc.packaging')}
               value={isFDM ? store.fdmSales.packagingCost : store.resinSales.packagingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, packagingCost: val }) : store.setResinSales({ ...store.resinSales, packagingCost: val }))} type="number" prefix="R$" />
@@ -518,7 +518,7 @@ export function Calculator() {
               value={isFDM ? store.fdmSales.shippingCost : store.resinSales.shippingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix="R$" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <Select label={t('calc.marketplace')} value={store.selectedMarketplace.id}
               onChange={handleMarketplaceChange}
               options={marketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$ ${m.feeFixed}` }))} />
