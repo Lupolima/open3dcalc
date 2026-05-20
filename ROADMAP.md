@@ -195,9 +195,15 @@
 
 ## 🏷️ Status
 
+### ✅ Concluído nesta release
+- **AMS Multi-material** — suporte a impressoras multifilamento com até 4 slots independentes
+- **StoreBridge** — camada de orquestração entre stores (catálogo, inventário, calculadora, histórico)
+- **Responsividade** — grids com no máximo 2 itens por linha, padding/headers reduzidos, unidades fora dos inputs
+- **UX** — modo rápido reposicionado, headers sem toggle, ConfirmDialog estilizado
+
 | Item | Status |
 |------|--------|
-| Fase 1 | 🔜 Próxima |
+| Fase 1 | ✅ Concluída |
 | Fase 2 | 📋 Planejado |
 | Fase 3 | 📋 Planejado |
 | Fase 4 | 📋 Planejado |

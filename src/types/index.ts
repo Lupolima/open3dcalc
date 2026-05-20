@@ -23,6 +23,20 @@ export interface PrinterProfile {
   usefulLife: number
   maintenancePerHour: number
   image?: string
+  maxFilaments?: number
+}
+
+export interface AMSSlot {
+  enabled: boolean
+  materialType: string
+  costPerKg: number
+  weightUsedGrams: number
+  purgeWeightGrams: number
+  transitionPurgeGrams: number
+  density: number
+  spoolEfficiency: number
+  color: string
+  spoolId?: string
 }
 
 export interface Marketplace {
@@ -171,6 +185,7 @@ export interface SavedProduct {
   name: string
   date: string
   result: CalculationResult
+  snapshot?: CalculationSnapshot
 }
 
 export interface CalculationInputs {
@@ -194,4 +209,41 @@ export interface CalculationInputs {
   shippingCost: number
   taxRate: number
   cardFeePercent: number
+}
+
+export interface CalculationSnapshot {
+  id: string
+  timestamp: number
+  type: 'fdm' | 'resin'
+  summary: string
+  fdmAmsEnabled?: boolean
+  fdmAmsSlots?: AMSSlot[]
+  fdmMaterial: MaterialStateFDM
+  fdmPrintParams: PrintParameters
+  fdmMachine: MachineCosts
+  fdmHardware: FDMHardware
+  fdmFinishing: FDMFinishing
+  fdmLabor: LaborCosts
+  fdmExtras: AdditionalCosts
+  fdmSales: SalesParameters
+  fdmOps: OperationalCosts
+  fdmSoft: SoftwareCosts
+  resinMaterial: MaterialStateResin
+  resinPrintParams: PrintParameters
+  resinPostProcess: PostProcessingResin
+  resinMachine: MachineCosts
+  resinHardware: ResinHardware
+  resinLabor: LaborCosts
+  resinExtras: AdditionalCosts
+  resinSales: SalesParameters
+  resinOps: OperationalCosts
+  resinSoft: SoftwareCosts
+  selectedPrinterId: string
+  selectedMarketplaceId: string
+  productName: string
+  quantity: number
+  infillPercent: number
+  targetMarginMode: boolean
+  enabledSections: Record<string, boolean>
+  results: CalculationResult | null
 }

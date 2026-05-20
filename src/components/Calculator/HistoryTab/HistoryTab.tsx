@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProductStore } from '@/stores/productStore'
+import { useCalculatorStore } from '@/stores/calculatorStore'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { SavedProduct } from '@/types'
 import {
   X, Layers, Zap, Printer, Wrench, HardHat, Monitor,
-  Paintbrush, DollarSign, Store, Tags, TrendingUp, Search, FileJson
+  Paintbrush, DollarSign, Store, Tags, TrendingUp, Search, FileJson,
+  RotateCcw,
 } from 'lucide-react'
 
 function formatMoney(value: number) {
@@ -110,17 +113,29 @@ function Row({ icon, label, value, bold = false }: { icon: React.ReactNode; labe
   )
 }
 
-export function HistoryTab() {
+interface HistoryTabProps {
+  onLoadToCalculator?: () => void
+}
+
+export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
   const { t } = useTranslation()
   const { products, load, remove, exportJson } = useProductStore()
   const [search, setSearch] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<SavedProduct | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   useEffect(() => { load() }, [load])
 
   const filtered = products
     .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
     .reverse()
+
+  const handleLoadToCalculator = (p: SavedProduct) => {
+    if (p.snapshot) {
+      useCalculatorStore.getState().loadHistoryItem(p.snapshot)
+      onLoadToCalculator?.()
+    }
+  }
 
   const handleExport = useCallback(() => {
     const data = exportJson()
@@ -162,6 +177,15 @@ export function HistoryTab() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-emerald-400">{formatMoney(p.result.sellPrice)}</span>
+                {p.snapshot && (
+                  <button
+                    onClick={() => handleLoadToCalculator(p)}
+                    className="px-2 py-1.5 text-xs rounded-lg bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/50 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none flex items-center gap-1"
+                    title="Carregar na calculadora"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </button>
+                )}
                 <button
                   onClick={() => setSelectedProduct(p)}
                   className="px-3 py-1.5 text-xs rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
@@ -169,7 +193,7 @@ export function HistoryTab() {
                   {t('history.details')}
                 </button>
                 <button
-                  onClick={() => { if (confirm(t('history.deleteConfirm'))) remove(p.id) }}
+                  onClick={() => setConfirmDeleteId(p.id)}
                   className="p-1.5 text-xs rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none flex items-center justify-center"
                   aria-label="Remover"
                 >
@@ -190,6 +214,19 @@ export function HistoryTab() {
       </button>
 
       <DetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        title="Remover produto"
+        message={t('history.deleteConfirm')}
+        variant="danger"
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          if (confirmDeleteId !== null) remove(confirmDeleteId)
+          setConfirmDeleteId(null)
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

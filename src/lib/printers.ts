@@ -4,11 +4,11 @@ export type { PrinterProfile }
 
 export const printers: PrinterProfile[] = [
   // ── Bambu Lab ──
-  { id: 'bambu_a1_mini', name: 'A1 Mini', brand: 'Bambu Lab', power: 170, value: 2000, usefulLife: 3000, maintenancePerHour: 0.20, image: '/images/printers/brands/bambu-lab/bambu-lab-a1-mini-card-300.png' },
-  { id: 'bambu_a1', name: 'A1', brand: 'Bambu Lab', power: 220, value: 3000, usefulLife: 3000, maintenancePerHour: 0.30, image: '/images/printers/brands/bambu-lab/bambu-lab-a1-card-300.png' },
-  { id: 'bambu_p1s', name: 'P1S', brand: 'Bambu Lab', power: 350, value: 5500, usefulLife: 4000, maintenancePerHour: 0.40, image: '/images/printers/brands/bambu-lab/bambu-lab-p1s-card-300.png' },
-  { id: 'bambu_x1c', name: 'X1 Carbon', brand: 'Bambu Lab', power: 350, value: 10000, usefulLife: 5000, maintenancePerHour: 0.60, image: '/images/printers/brands/bambu-lab/bambu-lab-x1-carbon-card-300.png' },
-  { id: 'bambu_x1e', name: 'X1E', brand: 'Bambu Lab', power: 350, value: 13000, usefulLife: 5000, maintenancePerHour: 0.65 },
+  { id: 'bambu_a1_mini', name: 'A1 Mini', brand: 'Bambu Lab', power: 170, value: 2000, usefulLife: 3000, maintenancePerHour: 0.20, image: '/images/printers/brands/bambu-lab/bambu-lab-a1-mini-card-300.png', maxFilaments: 4 },
+  { id: 'bambu_a1', name: 'A1', brand: 'Bambu Lab', power: 220, value: 3000, usefulLife: 3000, maintenancePerHour: 0.30, image: '/images/printers/brands/bambu-lab/bambu-lab-a1-card-300.png', maxFilaments: 4 },
+  { id: 'bambu_p1s', name: 'P1S', brand: 'Bambu Lab', power: 350, value: 5500, usefulLife: 4000, maintenancePerHour: 0.40, image: '/images/printers/brands/bambu-lab/bambu-lab-p1s-card-300.png', maxFilaments: 4 },
+  { id: 'bambu_x1c', name: 'X1 Carbon', brand: 'Bambu Lab', power: 350, value: 10000, usefulLife: 5000, maintenancePerHour: 0.60, image: '/images/printers/brands/bambu-lab/bambu-lab-x1-carbon-card-300.png', maxFilaments: 4 },
+  { id: 'bambu_x1e', name: 'X1E', brand: 'Bambu Lab', power: 350, value: 13000, usefulLife: 5000, maintenancePerHour: 0.65, maxFilaments: 4 },
 
   // ── Creality ──
   { id: 'creality_ender_3_s1', name: 'Ender 3 S1', brand: 'Creality', power: 120, value: 1500, usefulLife: 2000, maintenancePerHour: 0.15, image: '/images/printers/brands/creality/creality-ender-3-s1-card-300.png' },
@@ -50,8 +50,8 @@ export const printers: PrinterProfile[] = [
   { id: 'prusa_mk3s', name: 'MK3S+', brand: 'Prusa', power: 160, value: 5500, usefulLife: 4000, maintenancePerHour: 0.25 },
   { id: 'prusa_mk4', name: 'MK4', brand: 'Prusa', power: 180, value: 7500, usefulLife: 4500, maintenancePerHour: 0.30 },
   { id: 'prusa_mk4s', name: 'MK4S', brand: 'Prusa', power: 180, value: 8000, usefulLife: 4500, maintenancePerHour: 0.30 },
-  { id: 'prusa_xl_2', name: 'XL 2-Head', brand: 'Prusa', power: 350, value: 20000, usefulLife: 6000, maintenancePerHour: 0.60 },
-  { id: 'prusa_xl_5', name: 'XL 5-Head', brand: 'Prusa', power: 500, value: 35000, usefulLife: 6000, maintenancePerHour: 0.80 },
+  { id: 'prusa_xl_2', name: 'XL 2-Head', brand: 'Prusa', power: 350, value: 20000, usefulLife: 6000, maintenancePerHour: 0.60, maxFilaments: 2 },
+  { id: 'prusa_xl_5', name: 'XL 5-Head', brand: 'Prusa', power: 500, value: 35000, usefulLife: 6000, maintenancePerHour: 0.80, maxFilaments: 5 },
   { id: 'prusa_mini', name: 'Mini+', brand: 'Prusa', power: 120, value: 3500, usefulLife: 3000, maintenancePerHour: 0.20 },
   { id: 'prusa_sl1s', name: 'SL1S Speed', brand: 'Prusa', power: 100, value: 15000, usefulLife: 3000, maintenancePerHour: 0.40 },
 

@@ -1,12 +1,12 @@
 import { create } from 'zustand'
-import type { SavedProduct, CalculationResult } from '@/types'
+import type { SavedProduct, CalculationResult, CalculationSnapshot } from '@/types'
 
 const STORAGE_KEY = 'open3dcalc_products'
 
 interface ProductState {
   products: SavedProduct[]
   load: () => void
-  save: (name: string, result: CalculationResult) => void
+  save: (name: string, result: CalculationResult, snapshot?: CalculationSnapshot) => void
   remove: (id: number) => void
   exportJson: () => string
 }
@@ -30,12 +30,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ products: loadFromStorage() })
   },
 
-  save: (name, result) => {
+  save: (name, result, snapshot) => {
     const product: SavedProduct = {
       id: Date.now(),
       name,
       date: new Date().toLocaleDateString('pt-BR'),
       result,
+      snapshot,
     }
     const products = [...get().products, product]
     saveToStorage(products)

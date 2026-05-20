@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import {
   FolderOpen, Save, FileText, BarChart2, CheckCircle2,
@@ -21,6 +22,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
   const activeTab = useCalculatorStore(s => s.activeTab)
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const isFDM = activeTab === 'fdm'
 
@@ -46,7 +48,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
 
   const content = (
     <>
-      <div className="result-hero rounded-2xl p-6 sm:p-7 text-center">
+      <div className="result-hero rounded-2xl p-4 sm:p-5 text-center">
         <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-emerald-400/70 mb-2">{t('calc.sellPrice')}</div>
         <div className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
         {results.taxAmount > 0 && (
@@ -77,7 +79,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </div>
 
       {chartData.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-6 sm:p-7">
+        <div className="glass-elevated rounded-2xl p-4 sm:p-5">
           <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
           <div className="space-y-3">
             {chartData.map(item => (
@@ -125,10 +127,10 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </button>
 
       {history.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-6 sm:p-7">
+        <div className="glass-elevated rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500">{t('calc.history')} ({history.length})</span>
-            <button onClick={() => { if (confirm(t('calc.clearConfirm') || 'Limpar histórico?')) clearHistory() }}
+            <button onClick={() => setShowClearConfirm(true)}
               className="text-[10px] sm:text-xs text-red-400/70 hover:text-red-400 transition-colors">
               {t('calc.clearHistory')}
             </button>
@@ -173,9 +175,25 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
     </>
   )
 
+  const withDialogs = (
+    <>
+      {content}
+      <ConfirmDialog
+        open={showClearConfirm}
+        title="Limpar histórico"
+        message={t('calc.clearConfirm') || 'Limpar histórico?'}
+        variant="danger"
+        confirmLabel="Limpar"
+        cancelLabel="Cancelar"
+        onConfirm={() => { clearHistory(); setShowClearConfirm(false) }}
+        onCancel={() => setShowClearConfirm(false)}
+      />
+    </>
+  )
+
   if (isSidebar) {
-    return content
+    return withDialogs
   }
 
-  return <div className="space-y-4 lg:hidden">{content}</div>
+  return <div className="space-y-4 lg:hidden">{withDialogs}</div>
 }

@@ -57,10 +57,11 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 
 ### Core
 - ✅ **Cálculo FDM completo** — filamento, purga, eficiência do carretel, bico, mesa, acabamento
+- ✅ **AMS multi-material** — até 4 filamentos simultâneos com slots individuais, cálculo de purga por troca
 - ✅ **Cálculo Resina completo** — resina, lavagem, cura UV, LCD, FEP
 - ✅ **Upload STL/OBJ/3MF** — análise automática de volume, peso estimado, preview 3D
 - ✅ **Upload G-code** — extrai tempo de impressão e consumo de filamento automaticamente
-- ✅ **80+ impressoras** pré-cadastradas (Bambu Lab, Creality, Prusa, Elegoo, etc.)
+- ✅ **80+ impressoras** pré-cadastradas (Bambu Lab, Creality, Prusa, Elegoo, etc.) — suporte a multi-material (AMS, Prusa XL)
 - ✅ **31 materiais** pré-cadastrados (PLA, PETG, ABS, TPU, Nylon, etc.)
 - ✅ **6 marketplaces** com taxas atualizadas (Shopee 2 faixas, Mercado Livre, Amazon, Etsy)
 - ✅ **Modo rápido** — esconde campos avançados para cálculos simples
@@ -89,6 +90,9 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - 📲 **PWA** — instalável como app nativo
 - 🎨 **UI moderna** — glassmorphism, animações, dark theme
 - 💾 **Persistência** — configurações e histórico salvos em localStorage
+- 🔄 **Auto-save** — formulário salvo automaticamente a cada alteração (800ms debounce)
+- 📋 **Carregar do histórico** — restaure qualquer cálculo salvo completo na calculadora
+- ✅ **ConfirmDialog** — modais de confirmação estilizados no lugar de `confirm()` nativo
 
 ---
 
@@ -98,6 +102,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 
 1. **Selecione a aba "Impressão FDM"** no topo
 2. **Material** — Escolha o tipo de filamento, peso da peça, custo/kg, densidade
+   - **AMS Multi-material** (impressoras compatíveis): ative o toggle para configurar até 4 slots com material, cor, peso e purga individuais
 3. **Parâmetros** — Tempo de impressão, potência, custo de energia
 4. **Hardware** — Configure bico, mesa e acabamento
 5. **Máquina** — Valor da impressora, depreciação, horas/mês

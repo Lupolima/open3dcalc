@@ -1,9 +1,10 @@
 import { useCallback, useRef, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
-import { fdmMaterials, resinMaterials } from '@/lib/materials'
-import { printers } from '@/lib/printers'
-import { marketplaces } from '@/lib/marketplace'
+import { useCatalogStore } from '@/stores/catalogStore'
+import { useFilamentInventory } from '@/stores/filamentInventory'
+import { useProductStore } from '@/stores/productStore'
+import { selectSpool } from '@/stores/storeBridge'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import { ToggleSwitch } from '@/components/ui/ToggleCard'
@@ -44,6 +45,12 @@ const SECTION_ENABLES: Record<string, string[]> = {
 export function Calculator() {
   const { t } = useTranslation()
   const store = useCalculatorStore()
+
+  const catalogPrinters = useCatalogStore(s => s.printers)
+  const catalogMaterials = useCatalogStore(s => s.materials)
+  const catalogMarketplaces = useCatalogStore(s => s.marketplaces)
+  const inventorySpools = useFilamentInventory(s => s.spools)
+  const [showSpoolSelector, setShowSpoolSelector] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [stlGeometry, setStlGeometry] = useState<BufferGeometry | null>(null)
@@ -88,7 +95,16 @@ export function Calculator() {
           }
         }
         if (gcode.filamentUsedGrams > 0) {
-          store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(gcode.filamentUsedGrams.toFixed(2)) })
+          const w = parseFloat(gcode.filamentUsedGrams.toFixed(2))
+          if (store.fdmAmsEnabled) {
+            const idx = store.fdmAmsSlots.findIndex(s => s.enabled)
+            if (idx >= 0) {
+              const slot = { ...store.fdmAmsSlots[idx], weightUsedGrams: w }
+              store.setFdmAmsSlot(idx, slot)
+            }
+          } else {
+            store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: w })
+          }
         }
         setStlInfo({ volume: 0, faces: 0, vertices: 0 })
       } else {
@@ -102,8 +118,20 @@ export function Calculator() {
         setStlGeometry(geometry)
         const volume = volumeToCm3(analysis.volume)
         setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount })
-        const weight = estimateWeight(volume, store.fdmMaterial.density, 20, 10)
-        store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: parseFloat(weight.toFixed(2)) })
+        const density = store.fdmAmsEnabled
+          ? (store.fdmAmsSlots.find(s => s.enabled)?.density ?? store.fdmMaterial.density)
+          : store.fdmMaterial.density
+        const weight = estimateWeight(volume, density, 20, 10)
+        const w = parseFloat(weight.toFixed(2))
+        if (store.fdmAmsEnabled) {
+          const idx = store.fdmAmsSlots.findIndex(s => s.enabled)
+          if (idx >= 0) {
+            const slot = { ...store.fdmAmsSlots[idx], weightUsedGrams: w }
+            store.setFdmAmsSlot(idx, slot)
+          }
+        } else {
+          store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: w })
+        }
       }
     } catch {
       toast(t('stl.error'))
@@ -112,18 +140,18 @@ export function Calculator() {
   }, [store, t, isFDM])
 
   const handlePrinterSelect = (id: string) => {
-    const p = printers.find(p => p.id === id)
+    const p = catalogPrinters.find(p => p.id === id)
     if (p) {
-      store.setSelectedPrinter(p)
+      store.setSelectedPrinter(p as Parameters<typeof store.setSelectedPrinter>[0])
       store.setFdmPrintParams({ ...store.fdmPrintParams, printerPowerWatts: p.power })
       store.setFdmMachine({ ...store.fdmMachine, machineCost: p.value })
     }
   }
 
   const handleMarketplaceChange = (id: string) => {
-    const mp = marketplaces.find(m => m.id === id)
+    const mp = catalogMarketplaces.find(m => m.id === id)
     if (mp) {
-      store.setSelectedMarketplace(mp)
+      store.setSelectedMarketplace(mp as Parameters<typeof store.setSelectedMarketplace>[0])
       store.setFdmSales({ ...store.fdmSales, marketplaceFeePercent: mp.feePercent })
     }
   }
@@ -132,76 +160,135 @@ export function Calculator() {
     setter(value === '' ? 0 : parseFloat(value) || 0)
   }, [])
 
-  function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string, sectionId?: string) {
-    const keys = sectionId ? (SECTION_ENABLES[sectionId] ?? []) : []
-    const sectionEnabled = keys.length > 0 ? keys.every(k => store.enabledSections[k]) : undefined
-    const handleSectionToggle = () => {
-      const target = !sectionEnabled
-      keys.forEach(k => { if (!!store.enabledSections[k] !== target) store.toggleSection(k) })
-    }
+  function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string) {
     return (
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.07]">
-        <Icon className="w-5 h-5 text-indigo-400 shrink-0" />
-        <div className="flex-1">
-          <h3 className="text-base sm:text-[15px] font-bold text-slate-100 leading-tight">{title}</h3>
-          {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+      <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-white/[0.06]">
+        <Icon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xs font-bold text-slate-100 truncate">{title}</h3>
+          {subtitle && <p className="text-[10px] text-slate-500 truncate">{subtitle}</p>}
         </div>
-        {sectionEnabled !== undefined && (
-          <ToggleSwitch enabled={sectionEnabled} onToggle={handleSectionToggle} />
-        )}
       </div>
     )
   }
 
   function renderMaterialSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica', 'material')}
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
         {isFDM ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+          <>
+          {(store.selectedPrinter.maxFilaments ?? 1) > 1 && (
+            <div className="flex items-center justify-end gap-2 mb-3">
+              <span className="text-[10px] font-semibold text-sky-400 uppercase tracking-wide">AMS Multi-material</span>
+              <button
+                onClick={() => {
+                  const was = store.fdmAmsEnabled
+                  if (!was) {
+                    const slot0 = { ...store.fdmAmsSlots[0] }
+                    slot0.materialType = store.fdmMaterial.type
+                    slot0.costPerKg = store.fdmMaterial.costPerKg
+                    slot0.weightUsedGrams = store.fdmMaterial.weightUsed
+                    slot0.purgeWeightGrams = store.fdmMaterial.purgeWeight
+                    slot0.density = store.fdmMaterial.density
+                    slot0.spoolEfficiency = store.fdmMaterial.spoolEfficiency
+                    store.setFdmAmsSlot(0, slot0)
+                  }
+                  store.setFdmAmsEnabled(!was)
+                }}
+                aria-pressed={store.fdmAmsEnabled}
+                className={`relative w-9 h-4 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none shrink-0 ${store.fdmAmsEnabled ? 'bg-sky-600' : 'bg-white/10'}`}
+              >
+                <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-all duration-200 ${store.fdmAmsEnabled ? 'left-[18px]' : 'left-0.5'}`} />
+              </button>
+            </div>
+          )}
+          {store.fdmAmsEnabled ? (
+            <div className="space-y-2">
+              {store.fdmAmsSlots.map((slot, i) => (
+                <div key={i} className="glass rounded-xl p-3 border-l-4" style={{ borderLeftColor: slot.color }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-gray-400">Slot {i + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={slot.color}
+                        onChange={e => store.setFdmAmsSlot(i, { ...slot, color: e.target.value })}
+                        className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" />
+                      <button
+                        onClick={() => {
+                          const s = { ...slot, enabled: !slot.enabled }
+                          store.setFdmAmsSlot(i, s)
+                        }}
+                        className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${slot.enabled ? 'bg-sky-600/30 text-sky-300' : 'bg-white/5 text-gray-500'}`}
+                      >
+                        {slot.enabled ? 'Ativo' : 'Inativo'}
+                      </button>
+                    </div>
+                  </div>
+                  {slot.enabled && (
+                    <div className="space-y-2">
+                      <Select label=""
+                        value={slot.materialType}
+                        onChange={v => store.setFdmAmsSlot(i, { ...slot, materialType: v })}
+                        options={catalogMaterials.filter(m => m.type === 'fdm').map(m => ({ label: m.name, value: m.name }))}
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <InputGroup label="R$/kg" value={slot.costPerKg}
+                          onChange={v => store.setFdmAmsSlot(i, { ...slot, costPerKg: parseFloat(v) || 0 })}
+                          type="number" prefix="R$" />
+                        <InputGroup label="Peso (g)" value={slot.weightUsedGrams}
+                          onChange={v => store.setFdmAmsSlot(i, { ...slot, weightUsedGrams: parseFloat(v) || 0 })}
+                          type="number" unit="g" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <InputGroup label="Purga (g)" value={slot.purgeWeightGrams}
+                          onChange={v => store.setFdmAmsSlot(i, { ...slot, purgeWeightGrams: parseFloat(v) || 0 })}
+                          type="number" unit="g" />
+                        <InputGroup label="Dens." value={slot.density}
+                          onChange={v => store.setFdmAmsSlot(i, { ...slot, density: parseFloat(v) || 0 })}
+                          type="number" unit="g/cm³" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select label={t('calc.filamentType')} value={store.fdmMaterial.type}
               onChange={v => store.setFdmMaterial({ ...store.fdmMaterial, type: v })}
-              options={fdmMaterials.map(m => ({ label: m.name, value: m.name }))} />
-            <InputGroup label={t('calc.costPerKg')} value={store.fdmMaterial.costPerKg}
-              onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, costPerKg: val }))}
-              type="number" prefix="R$" />
-            <div className="sm:col-span-2 xl:col-span-4">
-              <button
-                type="button"
-                onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
-                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileDrop(f) }}
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed rounded-xl p-5 sm:p-6 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex flex-col items-center gap-2"
-                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(79,70,229,0.4)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
-              >
-                <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
-                <Upload className="w-5 h-5 text-slate-500" />
-                <p className="text-sm text-slate-300">{t('product.uploadStl')}</p>
-                {stlLoading && <p className="text-xs text-indigo-400">{t('stl.loading')}</p>}
-              </button>
-              {stlGeometry && (
-                <div className="mt-3 h-52">
-                  <Suspense fallback={<div className="text-xs text-gray-400">{t('common.loading')}</div>}>
-                    <StlPreview geometry={stlGeometry} />
-                  </Suspense>
-                </div>
+              options={catalogMaterials.filter(m => m.type === 'fdm').map(m => ({ label: m.name, value: m.name }))} />
+            <div className="relative">
+              <InputGroup label={t('calc.costPerKg')} value={store.fdmMaterial.costPerKg}
+                onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, costPerKg: val }))}
+                type="number" prefix="R$" />
+              {inventorySpools.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSpoolSelector(!showSpoolSelector)}
+                  className="absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 transition-colors"
+                >
+                  Inventário
+                </button>
               )}
-              {stlInfo && (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3 text-xs sm:text-sm">
-                  <div className="glass rounded-lg p-3 text-center">
-                    <p className="text-gray-400">{t('stl.volume')}</p>
-                    <p className="font-semibold text-purple-400 text-sm sm:text-base">{stlInfo.volume.toFixed(1)} cm³</p>
-                  </div>
-                  <div className="glass rounded-lg p-3 text-center">
-                    <p className="text-gray-400">{t('stl.faces')}</p>
-                    <p className="font-semibold text-gray-200 text-sm sm:text-base">{stlInfo.faces}</p>
-                  </div>
-                  <div className="glass rounded-lg p-3 text-center lg:col-span-1 col-span-2">
-                    <p className="text-gray-400">{t('stl.vertices')}</p>
-                    <p className="font-semibold text-gray-200 text-sm sm:text-base">{stlInfo.vertices}</p>
-                  </div>
+              {showSpoolSelector && (
+                <div className="absolute z-20 mt-1 w-full glass rounded-xl p-2 max-h-48 overflow-y-auto shadow-xl">
+                  {inventorySpools
+                    .filter(s => s.material.toLowerCase() === store.fdmMaterial.type.toLowerCase() || showSpoolSelector)
+                    .slice(0, 10)
+                    .map(spool => (
+                      <button
+                        key={spool.id}
+                        type="button"
+                        onClick={() => { selectSpool(spool); setShowSpoolSelector(false) }}
+                        className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-white/10 transition-colors flex justify-between"
+                      >
+                        <span className="text-slate-200">{spool.brand} - {spool.color}</span>
+                        <span className="text-indigo-400">R$ {spool.costPerKg.toFixed(2)}/kg</span>
+                      </button>
+                    ))}
+                  {inventorySpools.length === 0 && (
+                    <p className="text-xs text-slate-500 text-center py-2">Nenhum carretel no inventário</p>
+                  )}
                 </div>
               )}
             </div>
@@ -218,11 +305,53 @@ export function Calculator() {
               onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, density: val }))}
               type="number" unit="g/cm³" />
           </div>
+          )}
+          <div className="sm:col-span-2 mt-3">
+            <button
+              type="button"
+              onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
+              onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileDrop(f) }}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex flex-col items-center gap-1.5"
+              style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(79,70,229,0.4)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+            >
+              <input ref={fileInputRef} type="file" accept=".stl,.obj,.3mf,.gcode" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f) }} className="hidden" />
+              <Upload className="w-4 h-4 text-slate-500" />
+              <p className="text-xs text-slate-300">{t('product.uploadStl')}</p>
+              {stlLoading && <p className="text-[10px] text-indigo-400">{t('stl.loading')}</p>}
+            </button>
+            {stlGeometry && (
+              <div className="mt-2 h-40">
+                <Suspense fallback={<div className="text-xs text-gray-400">{t('common.loading')}</div>}>
+                  <StlPreview geometry={stlGeometry} />
+                </Suspense>
+              </div>
+            )}
+            {stlInfo && (
+              <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+                <div className="glass rounded-lg p-2 text-center">
+                  <p className="text-gray-500">{t('stl.volume')}</p>
+                  <p className="font-semibold text-purple-400">{stlInfo.volume.toFixed(1)} cm³</p>
+                </div>
+                <div className="glass rounded-lg p-2 text-center">
+                  <p className="text-gray-500">{t('stl.faces')}</p>
+                  <p className="font-semibold text-gray-200">{stlInfo.faces}</p>
+                </div>
+                <div className="glass rounded-lg p-2 text-center">
+                  <p className="text-gray-500">{t('stl.vertices')}</p>
+                  <p className="font-semibold text-gray-200">{stlInfo.vertices}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          </>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select label={t('calc.resinType')} value={store.resinMaterial.type}
               onChange={v => store.setResinMaterial({ ...store.resinMaterial, type: v })}
-              options={resinMaterials.map(m => ({ label: m.name, value: m.name }))} />
+              options={catalogMaterials.filter(m => m.type === 'resin').map(m => ({ label: m.name, value: m.name }))} />
             <InputGroup label={t('calc.costPerLiter')} value={store.resinMaterial.costPerLiter}
               onChange={v => handleInput(v, val => store.setResinMaterial({ ...store.resinMaterial, costPerLiter: val }))}
               type="number" prefix="R$" />
@@ -240,9 +369,9 @@ export function Calculator() {
 
   function renderPrintSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora', 'print')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
             onChange={v => handleInput(v, val => isFDM
@@ -262,14 +391,14 @@ export function Calculator() {
               : store.setResinPrintParams({ ...store.resinPrintParams, energyCostPerKwh: val })
             )} type="number" unit="R$/kWh" step="0.01" />
           {isFDM && (
-            <div className="sm:col-span-2 xl:col-span-3">
+            <div className="sm:col-span-2">
               <Select label={t('calc.printer')} value={store.selectedPrinter.id}
               onChange={handlePrinterSelect}
-              options={printers.map(p => ({ label: p.name, value: p.id, image: p.image, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))}
+              options={catalogPrinters.map(p => ({ label: p.name, value: p.id, image: p.image, subtitle: `${p.power}W · R$ ${p.value}`, group: p.brand }))}
               groups search />
             </div>
           )}
-          <div className="sm:col-span-2 xl:col-span-3 glass rounded-xl p-4 sm:p-5 space-y-4">
+            <div className="sm:col-span-2 glass rounded-xl p-4 sm:p-5 space-y-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <span className="text-xs sm:text-sm font-medium text-gray-400">{t('calc.failure')}</span>
               <div className="flex flex-wrap gap-2">
@@ -318,11 +447,11 @@ export function Calculator() {
 
   function renderHardwareSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8 space-y-6">
-        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP', 'hardware')}
+      <div className="glass rounded-2xl p-4 sm:p-5 space-y-6">
+        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
         {isFDM && (
           <>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-semibold text-sky-400">{t('calc.nozzle')}</span>
@@ -395,7 +524,7 @@ export function Calculator() {
                 <span>🖥️</span>
                 <span className="text-sm font-semibold text-white">{t('calc.resinHardware')}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <InputGroup label={t('calc.lcdCost')} value={store.resinHardware.lcdCost}
                   onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdCost: val }))} type="number" prefix="R$" />
                 <InputGroup label={t('calc.lcdLife')} value={store.resinHardware.lcdLifespanHours}
@@ -414,9 +543,9 @@ export function Calculator() {
 
   function renderMachineSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção', 'machine')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, machineCost: val }) : store.setResinMachine({ ...store.resinMachine, machineCost: val }))} type="number" prefix="R$" />
@@ -426,13 +555,13 @@ export function Calculator() {
           <InputGroup label={t('calc.hoursPerMonth')}
             value={isFDM ? store.fdmMachine.hoursPerMonth : store.resinMachine.hoursPerMonth}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, hoursPerMonth: val }) : store.setResinMachine({ ...store.resinMachine, hoursPerMonth: val }))} type="number" unit="h/mês" />
-          <div className="sm:col-span-2 xl:col-span-3 flex items-center justify-between glass rounded-xl p-4 sm:p-5">
+          <div className="sm:col-span-2 flex items-center justify-between glass rounded-xl p-4 sm:p-5">
             <span className="text-xs text-gray-400">{t('calc.maintenance')}</span>
             <ToggleSwitch enabled={isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled}
               onToggle={v => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceEnabled: v }) : store.setResinMachine({ ...store.resinMachine, maintenanceEnabled: v })} />
           </div>
           {(isFDM ? store.fdmMachine.maintenanceEnabled : store.resinMachine.maintenanceEnabled) && (
-            <div className="sm:col-span-2 xl:col-span-3">
+            <div className="sm:col-span-2">
               <InputGroup label={t('calc.maintenanceCost')}
                 value={isFDM ? store.fdmMachine.maintenanceCost : store.resinMachine.maintenanceCost}
                 onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, maintenanceCost: val }) : store.setResinMachine({ ...store.resinMachine, maintenanceCost: val }))} type="number" prefix="R$/mês" />
@@ -445,9 +574,9 @@ export function Calculator() {
 
   function renderLaborSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária', 'labor')}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, setupTimeMinutes: val }) : store.setResinLabor({ ...store.resinLabor, setupTimeMinutes: val }))} type="number" unit="min" />
@@ -464,9 +593,9 @@ export function Calculator() {
 
   function renderOpsSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo', 'ops')}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
               <span className="text-xs font-semibold text-gray-300">{t('calc.ppe')}</span>
@@ -503,10 +632,10 @@ export function Calculator() {
 
   function renderSalesSection() {
     return (
-      <div className="glass rounded-2xl p-6 sm:p-8">
-        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem', 'sales')}
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputGroup label={t('calc.quantity')}
               value={store.quantity}
               onChange={v => handleInput(v, val => store.setQuantity(val > 0 ? val : 1))} type="number" unit="un" />
@@ -517,7 +646,7 @@ export function Calculator() {
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix="R$" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputGroup label={t('calc.packaging')}
               value={isFDM ? store.fdmSales.packagingCost : store.resinSales.packagingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, packagingCost: val }) : store.setResinSales({ ...store.resinSales, packagingCost: val }))} type="number" prefix="R$" />
@@ -525,10 +654,10 @@ export function Calculator() {
               value={isFDM ? store.fdmSales.shippingCost : store.resinSales.shippingCost}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix="R$" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select label={t('calc.marketplace')} value={store.selectedMarketplace.id}
               onChange={handleMarketplaceChange}
-              options={marketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$ ${m.feeFixed}` }))} />
+              options={catalogMarketplaces.map(m => ({ label: m.name, value: m.id, subtitle: `${m.feePercent}% + R$ ${m.feeFixed}` }))} />
             <InputGroup label={t('calc.taxPercent')}
               value={isFDM ? store.fdmSales.taxPercent : store.resinSales.taxPercent}
               onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, taxPercent: val }) : store.setResinSales({ ...store.resinSales, taxPercent: val }))} type="number" unit="%" />
@@ -600,29 +729,28 @@ export function Calculator() {
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-4">
-          {/* FDM / Resina + Quick Mode row */}
-          <div className="flex items-center gap-3">
-            <div className="segmented-control flex-1">
-              <button onClick={() => store.setActiveTab('fdm')}
-                className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
-                <Printer className="w-4 h-4" />
-                {t('calc.fdm')}
-              </button>
-              <button onClick={() => store.setActiveTab('resin')}
-                className={`segmented-btn focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none ${!isFDM ? 'active-resin' : ''}`}>
-                <FlaskConical className="w-4 h-4" />
-                {t('calc.resin')}
-              </button>
-            </div>
-            {/* Quick Mode */}
-            <div className="flex items-center gap-2.5 glass rounded-xl px-3.5 py-2.5 shrink-0">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t('calc.quickMode')}</span>
-              <button onClick={() => store.setQuickMode(!store.quickMode)}
-                aria-pressed={store.quickMode}
-                className={`relative w-10 h-5 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
-                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-5' : 'left-0.5'}`} />
-              </button>
-            </div>
+          {/* FDM / Resina tabs */}
+          <div className="segmented-control">
+            <button onClick={() => store.setActiveTab('fdm')}
+              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isFDM ? 'active-fdm' : ''}`}>
+              <Printer className="w-4 h-4" />
+              {t('calc.fdm')}
+            </button>
+            <button onClick={() => store.setActiveTab('resin')}
+              className={`segmented-btn focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none ${!isFDM ? 'active-resin' : ''}`}>
+              <FlaskConical className="w-4 h-4" />
+              {t('calc.resin')}
+            </button>
+          </div>
+
+          {/* Quick Mode */}
+          <div className="flex items-center justify-end gap-2">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">{t('calc.quickMode')}</span>
+            <button onClick={() => store.setQuickMode(!store.quickMode)}
+              aria-pressed={store.quickMode}
+              className={`relative w-9 h-4 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none shrink-0 ${store.quickMode ? 'bg-purple-600' : 'bg-white/10'}`}>
+              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-all duration-200 ${store.quickMode ? 'left-[18px]' : 'left-0.5'}`} />
+            </button>
           </div>
 
           {/* Product Name */}
@@ -662,7 +790,33 @@ export function Calculator() {
             <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>
             <span className="text-amber-400"><span className="text-slate-500 mr-1">Lucro</span>{fmtCurrency(results.profit)}</span>
           </div>
-          <button onClick={() => store.addToHistory()} className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[9px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
+          <button onClick={() => {
+            const r = store.results
+            if (!r) return
+            store.addToHistory()
+            const name = store.productName.trim() || (store.activeTab === 'fdm'
+              ? `${store.fdmMaterial.type} - ${store.fdmMaterial.weightUsed}g`
+              : `${store.resinMaterial.type} - ${store.resinMaterial.volumeUsedMl}ml`)
+            const snapshot: import('@/types').CalculationSnapshot = {
+              id: Date.now().toString(), timestamp: Date.now(), type: store.activeTab, summary: name,
+              fdmMaterial: store.fdmMaterial, fdmPrintParams: store.fdmPrintParams,
+              fdmMachine: store.fdmMachine, fdmHardware: store.fdmHardware, fdmFinishing: store.fdmFinishing,
+              fdmLabor: store.fdmLabor, fdmExtras: store.fdmExtras, fdmSales: store.fdmSales,
+              fdmOps: store.fdmOps, fdmSoft: store.fdmSoft,
+              resinMaterial: store.resinMaterial, resinPrintParams: store.resinPrintParams,
+              resinPostProcess: store.resinPostProcess, resinMachine: store.resinMachine,
+              resinHardware: store.resinHardware, resinLabor: store.resinLabor,
+              resinExtras: store.resinExtras, resinSales: store.resinSales,
+              resinOps: store.resinOps, resinSoft: store.resinSoft,
+              fdmAmsEnabled: store.fdmAmsEnabled || undefined,
+              fdmAmsSlots: store.fdmAmsSlots,
+              selectedPrinterId: store.selectedPrinter.id, selectedMarketplaceId: store.selectedMarketplace.id,
+              productName: store.productName, quantity: store.quantity, infillPercent: store.infillPercent,
+              targetMarginMode: store.targetMarginMode, enabledSections: store.enabledSections,
+              results: r,
+            }
+            useProductStore.getState().save(name, r, snapshot)
+          }} className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[9px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
             <FolderOpen className="w-2.5 h-2.5" />
             Salvar
           </button>

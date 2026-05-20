@@ -4,6 +4,7 @@ import type {
   MachineCosts, LaborCosts, AdditionalCosts, SalesParameters,
   OperationalCosts, SoftwareCosts, FDMHardware, FDMFinishing,
   PostProcessingResin, ResinHardware, CalculationResult,
+  CalculationSnapshot, AMSSlot,
 } from '@/types'
 import { marketplaces } from '@/lib/marketplace'
 import { printers } from '@/lib/printers'
@@ -12,6 +13,35 @@ import { calculateFDM, calculateResin } from '@/lib/calculator'
 
 type Marketplace = (typeof marketplaces)[number]
 type PrinterProfile = (typeof printers)[number]
+
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+function debouncedAutoSave(getState: () => CalculatorState) {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    const s = getState()
+    const data = {
+      activeTab: s.activeTab,
+      fdmMaterial: s.fdmMaterial, fdmPrintParams: s.fdmPrintParams,
+      fdmMachine: s.fdmMachine, fdmHardware: s.fdmHardware, fdmFinishing: s.fdmFinishing,
+      fdmLabor: s.fdmLabor, fdmExtras: s.fdmExtras, fdmSales: s.fdmSales,
+      fdmOps: s.fdmOps, fdmSoft: s.fdmSoft,
+      resinMaterial: s.resinMaterial, resinPrintParams: s.resinPrintParams,
+      resinPostProcess: s.resinPostProcess, resinMachine: s.resinMachine,
+      resinHardware: s.resinHardware, resinLabor: s.resinLabor,
+      resinExtras: s.resinExtras, resinSales: s.resinSales,
+      resinOps: s.resinOps, resinSoft: s.resinSoft,
+      selectedPrinterId: s.selectedPrinter.id,
+      selectedMarketplaceId: s.selectedMarketplace.id,
+      fdmAmsEnabled: s.fdmAmsEnabled,
+      fdmAmsSlots: s.fdmAmsSlots,
+      productName: s.productName, quantity: s.quantity,
+      infillPercent: s.infillPercent, targetMarginMode: s.targetMarginMode,
+      enabledSections: s.enabledSections,
+    }
+    localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
+  }, 800)
+}
 
 const DEFAULT_FDM_MATERIAL: MaterialStateFDM = { type: 'PLA', weightUsed: 50, purgeWeight: 0, costPerKg: 125, density: 1.24, spoolEfficiency: 98 }
 const DEFAULT_FDM_PARAMS: PrintParameters = { printTimeHours: 5, printerPowerWatts: 250, energyCostPerKwh: 0.80, failureMode: 'percent', failureValue: 10, riskMultiplier: 1 }
@@ -34,6 +64,18 @@ const DEFAULT_RESIN_OPS: OperationalCosts = { enabled: true, ppeCostPerPrint: 2.
 const DEFAULT_RESIN_SOFT: SoftwareCosts = { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 }
 const DEFAULT_RESIN_EXTRAS: AdditionalCosts = { extrasCost: 0 }
 const DEFAULT_RESIN_SALES: SalesParameters = { packagingCost: 2, shippingCost: 0, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 50 }
+
+const DEFAULT_AMS_SLOTS: AMSSlot[] = Array.from({ length: 4 }, (_, i) => ({
+  enabled: i === 0,
+  materialType: 'PLA',
+  costPerKg: 125,
+  weightUsedGrams: 50,
+  purgeWeightGrams: 0,
+  transitionPurgeGrams: 3,
+  density: 1.24,
+  spoolEfficiency: 98,
+  color: ['#cccccc', '#f87171', '#60a5fa', '#34d399'][i],
+}))
 
 interface SavedCalculation {
   id: string
@@ -96,6 +138,11 @@ interface CalculatorState {
   selectedMarketplace: Marketplace
   setSelectedMarketplace: (m: Marketplace) => void
 
+  fdmAmsEnabled: boolean
+  fdmAmsSlots: AMSSlot[]
+  setFdmAmsEnabled: (v: boolean) => void
+  setFdmAmsSlot: (index: number, slot: AMSSlot) => void
+
   productName: string
   setProductName: (name: string) => void
   quickMode: boolean
@@ -111,6 +158,7 @@ interface CalculatorState {
   results: CalculationResult | null
   history: SavedCalculation[]
   addToHistory: () => void
+  loadHistoryItem: (snapshot: CalculationSnapshot) => void
   clearHistory: () => void
   saveSettings: () => void
 }
@@ -131,6 +179,22 @@ const loadHistory = (): SavedCalculation[] => {
     const saved = localStorage.getItem('open3dcalc_history_v2')
     return saved ? JSON.parse(saved) : []
   } catch { return [] }
+}
+
+const HISTORY_SNAPSHOTS_KEY = 'open3dcalc_history_snapshots'
+
+function loadHistorySnapshots(): Map<string, CalculationSnapshot> {
+  if (typeof window === 'undefined') return new Map()
+  try {
+    const raw = localStorage.getItem(HISTORY_SNAPSHOTS_KEY)
+    if (!raw) return new Map()
+    const arr: [string, CalculationSnapshot][] = JSON.parse(raw)
+    return new Map(arr)
+  } catch { return new Map() }
+}
+
+function saveHistorySnapshots(snapshots: Map<string, CalculationSnapshot>) {
+  localStorage.setItem(HISTORY_SNAPSHOTS_KEY, JSON.stringify([...snapshots]))
 }
 
 type ComputeStoreInput = {
@@ -157,6 +221,8 @@ type ComputeStoreInput = {
   resinHardware: ResinHardware
   quantity: number
   enabledSections: Record<string, boolean>
+  fdmAmsEnabled?: boolean
+  fdmAmsSlots?: AMSSlot[]
 }
 
 function computeStoreResults(s: ComputeStoreInput): CalculationResult {
@@ -168,9 +234,24 @@ function computeStoreResults(s: ComputeStoreInput): CalculationResult {
       s.fdmLabor, s.fdmExtras, s.fdmSales, s.fdmOps, s.fdmSoft,
       s.fdmHardware, s.fdmFinishing,
     )
+    let amsMaterialCost = 0
+    if (s.fdmAmsEnabled && s.fdmAmsSlots) {
+      const enabledSlots = s.fdmAmsSlots.filter(sl => sl.enabled)
+      const activeCount = enabledSlots.filter(sl => sl.weightUsedGrams > 0).length
+      for (const slot of enabledSlots) {
+        const materialCost = (slot.weightUsedGrams / 1000) * slot.costPerKg
+        const purgeCost = (slot.purgeWeightGrams / 1000) * slot.costPerKg
+        amsMaterialCost += materialCost + purgeCost
+      }
+      if (activeCount > 1) {
+        const transitions = activeCount * (activeCount - 1)
+        const avgCost = enabledSlots.reduce((a, s) => a + s.costPerKg, 0) / enabledSlots.length
+        amsMaterialCost += (transitions * (enabledSlots[0]?.transitionPurgeGrams ?? 3) / 1000) * avgCost
+      }
+    }
     const filtered = {
       ...result,
-      materialCost: es.material ? result.materialCost : 0,
+      materialCost: es.material ? (s.fdmAmsEnabled && s.fdmAmsSlots ? amsMaterialCost : result.materialCost) : 0,
       energyCost: es.energy ? result.energyCost : 0,
       machineCost: es.machine ? result.machineCost : 0,
       hardwareCost: es.hardware ? result.hardwareCost : 0,
@@ -245,6 +326,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
       const results = computeStoreResults(merged)
       return { ...nextState, results }
     })
+    debouncedAutoSave(get)
   }
 
   const initialValues = {
@@ -273,6 +355,9 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
 
     selectedPrinter: printers[0],
     selectedMarketplace: marketplaces[0],
+
+    fdmAmsEnabled: false,
+    fdmAmsSlots: DEFAULT_AMS_SLOTS.map(s => ({ ...s })),
 
     productName: '',
     quickMode: false,
@@ -317,8 +402,19 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     setResinOps: (v) => setWithCompute({ resinOps: v }),
     setResinSoft: (v) => setWithCompute({ resinSoft: v }),
 
-    setSelectedPrinter: (selectedPrinter) => setWithCompute({ selectedPrinter }),
+    setSelectedPrinter: (selectedPrinter) => {
+      const hasAms = (selectedPrinter.maxFilaments ?? 1) > 1
+      const wasAmsEnabled = get().fdmAmsEnabled
+      setWithCompute({ selectedPrinter, fdmAmsEnabled: hasAms && wasAmsEnabled })
+    },
     setSelectedMarketplace: (selectedMarketplace) => setWithCompute({ selectedMarketplace }),
+
+    setFdmAmsEnabled: (fdmAmsEnabled) => setWithCompute({ fdmAmsEnabled }),
+    setFdmAmsSlot: (index, slot) => {
+      const slots = [...get().fdmAmsSlots]
+      slots[index] = slot
+      setWithCompute({ fdmAmsSlots: slots })
+    },
 
     setProductName: (productName) => setWithCompute({ productName }),
     setQuickMode: (quickMode) => setWithCompute({ quickMode }),
@@ -340,8 +436,9 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
       const summary = s.productName.trim() || (s.activeTab === 'fdm'
         ? `${s.fdmMaterial.type} - ${s.fdmMaterial.weightUsed}g`
         : `${s.resinMaterial.type} - ${s.resinMaterial.volumeUsedMl}ml`)
+      const id = Date.now().toString()
       const item: SavedCalculation = {
-        id: Date.now().toString(),
+        id,
         timestamp: Date.now(),
         type: s.activeTab,
         summary,
@@ -351,11 +448,85 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
       }
       const newHistory = [item, ...s.history].slice(0, 20)
       localStorage.setItem('open3dcalc_history_v2', JSON.stringify(newHistory))
+
+      const snapshot: CalculationSnapshot = {
+        id,
+        timestamp: Date.now(),
+        type: s.activeTab,
+        summary,
+        fdmAmsEnabled: s.fdmAmsEnabled || undefined,
+        fdmAmsSlots: s.fdmAmsSlots,
+        fdmMaterial: s.fdmMaterial,
+        fdmPrintParams: s.fdmPrintParams,
+        fdmMachine: s.fdmMachine,
+        fdmHardware: s.fdmHardware,
+        fdmFinishing: s.fdmFinishing,
+        fdmLabor: s.fdmLabor,
+        fdmExtras: s.fdmExtras,
+        fdmSales: s.fdmSales,
+        fdmOps: s.fdmOps,
+        fdmSoft: s.fdmSoft,
+        resinMaterial: s.resinMaterial,
+        resinPrintParams: s.resinPrintParams,
+        resinPostProcess: s.resinPostProcess,
+        resinMachine: s.resinMachine,
+        resinHardware: s.resinHardware,
+        resinLabor: s.resinLabor,
+        resinExtras: s.resinExtras,
+        resinSales: s.resinSales,
+        resinOps: s.resinOps,
+        resinSoft: s.resinSoft,
+        selectedPrinterId: s.selectedPrinter.id,
+        selectedMarketplaceId: s.selectedMarketplace.id,
+        productName: s.productName,
+        quantity: s.quantity,
+        infillPercent: s.infillPercent,
+        targetMarginMode: s.targetMarginMode,
+        enabledSections: s.enabledSections,
+        results: r,
+      }
+      const snapshots = loadHistorySnapshots()
+      snapshots.set(id, snapshot)
+      saveHistorySnapshots(snapshots)
       set({ history: newHistory })
+    },
+
+    loadHistoryItem: (snapshot: CalculationSnapshot) => {
+      setWithCompute({
+        activeTab: snapshot.type,
+        fdmAmsEnabled: snapshot.fdmAmsEnabled ?? false,
+        fdmAmsSlots: snapshot.fdmAmsSlots ?? DEFAULT_AMS_SLOTS.map(s => ({ ...s })),
+        fdmMaterial: snapshot.fdmMaterial,
+        fdmPrintParams: snapshot.fdmPrintParams,
+        fdmMachine: snapshot.fdmMachine,
+        fdmHardware: snapshot.fdmHardware,
+        fdmFinishing: snapshot.fdmFinishing,
+        fdmLabor: snapshot.fdmLabor,
+        fdmExtras: snapshot.fdmExtras,
+        fdmSales: snapshot.fdmSales,
+        fdmOps: snapshot.fdmOps,
+        fdmSoft: snapshot.fdmSoft,
+        resinMaterial: snapshot.resinMaterial,
+        resinPrintParams: snapshot.resinPrintParams,
+        resinPostProcess: snapshot.resinPostProcess,
+        resinMachine: snapshot.resinMachine,
+        resinHardware: snapshot.resinHardware,
+        resinLabor: snapshot.resinLabor,
+        resinExtras: snapshot.resinExtras,
+        resinSales: snapshot.resinSales,
+        resinOps: snapshot.resinOps,
+        resinSoft: snapshot.resinSoft,
+        productName: snapshot.productName,
+        quantity: snapshot.quantity,
+        infillPercent: snapshot.infillPercent,
+        targetMarginMode: snapshot.targetMarginMode,
+        enabledSections: snapshot.enabledSections,
+      })
     },
 
     clearHistory: () => {
       localStorage.removeItem('open3dcalc_history_v2')
+      localStorage.removeItem('open3dcalc_history_snapshots')
       set({ history: [] })
     },
 
@@ -371,6 +542,8 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
         resinHardware: s.resinHardware, resinLabor: s.resinLabor,
         resinExtras: s.resinExtras, resinSales: s.resinSales,
         resinOps: s.resinOps, resinSoft: s.resinSoft,
+        fdmAmsEnabled: s.fdmAmsEnabled,
+        fdmAmsSlots: s.fdmAmsSlots,
         quantity: s.quantity, infillPercent: s.infillPercent,
       }
       localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/Header/Header'
 import { Calculator } from '@/components/Calculator/Calculator'
@@ -7,6 +7,9 @@ import { HistoryTab } from '@/components/Calculator/HistoryTab/HistoryTab'
 import { Dashboard } from '@/components/Dashboard/Dashboard'
 import { InfillCalculator } from '@/components/Calculator/InfillCalculator'
 import { FilamentInventory } from '@/components/Catalog/FilamentInventory'
+import { restoreAutoSnapshot } from '@/stores/storeBridge'
+import { useProductStore } from '@/stores/productStore'
+import { useCalculatorStore } from '@/stores/calculatorStore'
 import {
   Calculator as CalculatorIcon,
   Clock,
@@ -30,6 +33,37 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
 function App() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('calculator')
+
+  useEffect(() => {
+    restoreAutoSnapshot()
+    useProductStore.getState().load()
+
+    const handleBeforeUnload = () => {
+      const calc = useCalculatorStore.getState()
+      const data = {
+        activeTab: calc.activeTab,
+        fdmMaterial: calc.fdmMaterial, fdmPrintParams: calc.fdmPrintParams,
+        fdmMachine: calc.fdmMachine, fdmHardware: calc.fdmHardware, fdmFinishing: calc.fdmFinishing,
+        fdmLabor: calc.fdmLabor, fdmExtras: calc.fdmExtras, fdmSales: calc.fdmSales,
+        fdmOps: calc.fdmOps, fdmSoft: calc.fdmSoft,
+        resinMaterial: calc.resinMaterial, resinPrintParams: calc.resinPrintParams,
+        resinPostProcess: calc.resinPostProcess, resinMachine: calc.resinMachine,
+        resinHardware: calc.resinHardware, resinLabor: calc.resinLabor,
+        resinExtras: calc.resinExtras, resinSales: calc.resinSales,
+        resinOps: calc.resinOps, resinSoft: calc.resinSoft,
+        selectedPrinterId: calc.selectedPrinter.id,
+        selectedMarketplaceId: calc.selectedMarketplace.id,
+        fdmAmsEnabled: calc.fdmAmsEnabled,
+        fdmAmsSlots: calc.fdmAmsSlots,
+        productName: calc.productName, quantity: calc.quantity,
+        infillPercent: calc.infillPercent, targetMarginMode: calc.targetMarginMode,
+        enabledSections: calc.enabledSections,
+      }
+      localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -76,7 +110,7 @@ function App() {
             {activeTab === 'infill'     && <InfillCalculator />}
             {activeTab === 'inventory'  && <FilamentInventory />}
             {activeTab === 'catalog'    && <CatalogTab />}
-            {activeTab === 'history'    && <HistoryTab />}
+            {activeTab === 'history'    && <HistoryTab onLoadToCalculator={() => setActiveTab('calculator')} />}
           </div>
         </main>
       </div>

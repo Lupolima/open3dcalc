@@ -36,9 +36,9 @@ export function InputGroup({
           </div>
         )}
       </div>
-      <div className="relative flex items-center">
+      <div className="flex items-center gap-1.5">
         {prefix && (
-          <span className="absolute left-3 text-gray-500 text-[11px] font-mono pointer-events-none">{prefix}</span>
+          <span className="text-gray-500 text-[11px] font-mono shrink-0">{prefix}</span>
         )}
         <input
           id={id}
@@ -47,16 +47,14 @@ export function InputGroup({
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           step={step}
-          className={`w-full bg-white/[0.04] border rounded-xl text-[0.95rem] text-white min-h-[48px] px-3 transition-all placeholder:text-gray-400/70 focus:outline-none focus:ring-2 ${
-            prefix ? 'pl-9' : ''
-          } ${unit ? 'pr-16' : ''} ${
+          className={`flex-1 min-w-0 bg-white/[0.04] border rounded-lg text-sm text-white h-9 px-2.5 transition-all placeholder:text-gray-400/70 focus:outline-none focus:ring-2 ${
             error
               ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/50'
               : 'border-white/10 hover:border-white/20 focus:border-indigo-500/60 focus:ring-indigo-500'
           }`}
         />
         {unit && (
-          <span className="absolute right-3 text-[11px] font-mono text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-md pointer-events-none">{unit}</span>
+          <span className="text-[11px] font-mono text-gray-500 w-8 shrink-0">{unit}</span>
         )}
       </div>
       {error && (
