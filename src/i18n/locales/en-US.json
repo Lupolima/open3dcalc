@@ -307,6 +307,8 @@
     "compareField": "Field",
     "valueA": "Record A",
     "valueB": "Record B",
+    "compareBetter": "Better",
+    "compareWorse": "Worse",
     "noResults": "No results found"
   },
   "breakdown": {
@@ -356,10 +358,10 @@
     "exportQuote": "Export Quote",
     "exportQuoteSuccess": "Quote exported successfully",
     "deductFromInventory": "Deduct from Inventory",
-    "deductConfirm": "Deduct {weight}g from spool {spool}?",
+    "deductConfirm": "Deduct {{weight}}g from spool {{spool}}?",
     "deductSuccess": "Weight deducted successfully!",
     "deductSelect": "Select spool to deduct from",
-    "deductAvailable": "{weight}g available"
+    "deductAvailable": "{{weight}}g available"
   },
   "tooltip": {
     "costPerKg": "Average price per kg of filament. PLA ~R$90, PETG ~R$110, ABS ~R$100.",

@@ -125,6 +125,7 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([])
+  const [showComparison, setShowComparison] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
 
@@ -160,7 +161,11 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
     reader.onload = (ev) => {
       try {
         const result = store.importJson(ev.target?.result as string)
-        setImportResult(t('history.importSuccess', { imported: result.imported, skipped: result.skipped }))
+        if (result.imported === 0 && result.skipped === 0) {
+          setImportResult(t('history.importError'))
+        } else {
+          setImportResult(t('history.importSuccess', { imported: result.imported, skipped: result.skipped }))
+        }
       } catch {
         setImportResult(t('history.importError'))
       }
@@ -171,8 +176,8 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
 
   useEffect(() => {
     if (!importResult) return
-    const t = setTimeout(() => setImportResult(null), 3000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setImportResult(null), 3000)
+    return () => clearTimeout(timer)
   }, [importResult])
 
   const compareEntries = useMemo(() => {
@@ -227,7 +232,7 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
           <option value="profit">{t('history.sort.profit')}</option>
           <option value="name">{t('history.sort.name')}</option>
         </select>
-          <button onClick={() => {}} disabled={selectedForCompare.length !== 2}
+          <button onClick={() => setShowComparison(true)} disabled={selectedForCompare.length !== 2}
             className={`px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center gap-1.5 ${
               selectedForCompare.length === 2 ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-white/5 text-gray-500 cursor-not-allowed'
             }`}
@@ -310,8 +315,8 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
       )}
 
       <DetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
-      {compareEntries.length === 2 && (
-        <ComparisonModal entryA={compareEntries[0]} entryB={compareEntries[1]} onClose={() => setSelectedForCompare([])} />
+      {compareEntries.length === 2 && showComparison && (
+        <ComparisonModal entryA={compareEntries[0]} entryB={compareEntries[1]} onClose={() => { setShowComparison(false); setSelectedForCompare([]) }} />
       )}
       <ConfirmDialog
         open={confirmDeleteId !== null}

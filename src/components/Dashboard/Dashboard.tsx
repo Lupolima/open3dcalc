@@ -29,7 +29,7 @@ function saveDashboardSettings(data: Record<string, unknown>) {
 }
 
 export function Dashboard() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const store = useCalculatorStore()
   const results = store.results
   const fixedCosts = store.fixedCosts
@@ -89,11 +89,12 @@ export function Dashboard() {
     const sorted = [...historyEntries]
       .sort((a, b) => a.timestamp - b.timestamp)
       .slice(-10)
+    const locale = i18n.resolvedLanguage || i18n.language
     return sorted.map(e => ({
-      date: new Date(e.timestamp).toLocaleDateString(),
+      date: new Date(e.timestamp).toLocaleDateString(locale),
       profit: Math.round(e.profit * 100) / 100,
     }))
-  }, [historyEntries])
+  }, [historyEntries, i18n.resolvedLanguage, i18n.language])
 
   const printVsBuy = results && buyPrice ? {
     printCost: results.totalCost,
@@ -312,7 +313,7 @@ export function Dashboard() {
                   tick={{ fontSize: 10, fill: '#64748b' }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={v => formatMoney(v).replace(/[^0-9.,]/g, '')}
+                  tickFormatter={v => new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { notation: 'compact', maximumFractionDigits: 1 }).format(v)}
                   width={50}
                 />
                 <Tooltip

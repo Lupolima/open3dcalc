@@ -307,6 +307,8 @@
     "compareField": "Campo",
     "valueA": "Registro A",
     "valueB": "Registro B",
+    "compareBetter": "Melhor",
+    "compareWorse": "Pior",
     "noResults": "Nenhum resultado encontrado"
   },
   "breakdown": {
@@ -356,10 +358,10 @@
     "exportQuote": "Exportar Cotação",
     "exportQuoteSuccess": "Cotação exportada com sucesso",
     "deductFromInventory": "Deduzir do Estoque",
-    "deductConfirm": "Deduzir {weight}g do carretel {spool}?",
+    "deductConfirm": "Deduzir {{weight}}g do carretel {{spool}}?",
     "deductSuccess": "Peso deduzido com sucesso!",
     "deductSelect": "Selecionar carretel para deduzir",
-    "deductAvailable": "{weight}g disponíveis"
+    "deductAvailable": "{{weight}}g disponíveis"
   },
   "tooltip": {
     "costPerKg": "Preço médio do kg do filamento. PLA ~R$90, PETG ~R$110, ABS ~R$100.",

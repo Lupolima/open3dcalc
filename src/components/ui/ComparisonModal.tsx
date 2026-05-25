@@ -196,11 +196,11 @@ export function ComparisonModal({ entryA, entryB, onClose }: ComparisonModalProp
         <div className="mt-5 flex items-center justify-center gap-6 text-xs text-gray-500 border-t border-white/10 pt-4">
           <span className="flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            {t('history.compareBetter') || 'Melhor'}
+            {t('history.compareBetter')}
           </span>
           <span className="flex items-center gap-1.5">
             <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-            {t('history.compareWorse') || 'Pior'}
+            {t('history.compareWorse')}
           </span>
         </div>
       </div>

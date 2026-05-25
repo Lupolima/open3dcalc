@@ -47,7 +47,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
   const unitWeight = results?.unitWeight ?? 0
 
   const availableSpools = useMemo(() =>
-    spools.filter(s => s.status === 'in_stock' && s.material === currentMaterial && s.weightGrams >= unitWeight),
+    spools.filter(s => s.status === 'in_stock' && s.material.toLowerCase() === currentMaterial.toLowerCase() && s.weightGrams >= unitWeight),
     [spools, currentMaterial, unitWeight],
   )
 
@@ -69,8 +69,8 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
   // Auto-hide success message
   useEffect(() => {
     if (!deductSuccess) return
-    const t = setTimeout(() => setDeductSuccess(false), 3000)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setDeductSuccess(false), 3000)
+    return () => clearTimeout(timer)
   }, [deductSuccess])
 
   const handleDeductClick = (spool: FilamentSpool) => {
@@ -253,8 +253,8 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
         </button>
       </div>
 
-      {/* Deduct from Inventory */}
-      <div className="relative">
+      {/* Deduct from Inventory — FDM only */}
+      {isFDM && <div className="relative">
         <button
           ref={inventoryBtnRef}
           onClick={() => setShowInventoryDropdown(prev => !prev)}
@@ -313,7 +313,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
             )}
           </div>
         )}
-      </div>
+      </div>}
     </>
   )
 
