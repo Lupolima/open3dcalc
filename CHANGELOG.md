@@ -1,8 +1,33 @@
 # Changelog
 
+## [1.2.0] — 2026-05-25
+
+### ✨ Novo
+
+- **Estrutura de Colaboração** — documentação completa de contribuição, templates de PR e issues, políticas de branch.
+- **CONTRIBUTING.md** — guia completo com fluxo fork → branch → commit → PR → review → merge.
+- **PULL_REQUEST_TEMPLATE.md** — template com checklist de qualidade para todos os PRs.
+- **Issue Templates** — formulários estruturados para bug report e feature request.
+- **SECURITY.md** — política de segurança e processo de report de vulnerabilidades.
+- **CODEOWNERS** — revisão automática do mantenedor para todo o código.
+- **MAINTAINERS.md** — documentação de papéis e responsabilidades.
+- **README.md** — seção "Contribuindo" revisada com tabela de políticas.
+
+### 🔧 Técnico
+
+- CI/CD aprimorado com jobs paralelos (lint, typecheck, test, build) e relatório de coverage.
+- Husky + commitlint + lint-staged para validação automática de commits.
+
+### 📚 Qualidade
+
+- Política de branches e proteção de main documentada.
+- Regras claras de code review e merge.
+- Conventional Commits padronizados e validados.
+
 ## [1.1.0] — 2026-05-20
 
 ### ✨ Novo
+
 - **AMS Multi-material** — suporte a impressoras multifilamento (Bambu Lab AMS, Prusa XL). Até 4 slots com material, cor, peso, purga e densidade individuais. Cálculo automático de custo total incluindo purga por transição entre materiais.
 - **Inventário → Calculadora** — selecione carretéis do inventário para preencher automaticamente tipo e custo/kg na calculadora.
 - **Catálogo → Calculadora** — impressoras, materiais e marketplaces customizados no Catálogo aparecem nos selects da calculadora.
@@ -12,6 +37,7 @@
 - **StoreBridge** — camada de orquestração entre stores (catálogo, inventário, calculadora, histórico).
 
 ### 🎨 UX
+
 - Unidades (g, %, R$/kg, etc.) movidas para fora das caixas de input — visual mais limpo.
 - Headers de seção simplificados — remoção dos toggles "setinha" que ocupavam espaço.
 - Grids responsivos — no máximo 2 itens por linha em todos os formulários.
@@ -19,6 +45,7 @@
 - Modo rápido movido para linha própria abaixo dos abas FDM/Resina.
 
 ### 🔧 Técnico
+
 - `types/index.ts`: novo tipo `AMSSlot`, `PrinterProfile.maxFilaments`, `CalculationSnapshot` com suporte a AMS.
 - `stores/calculatorStore.ts`: auto-save com debounce, `loadHistoryItem()`, `fdmAmsEnabled`/`fdmAmsSlots` + setters.
 - `stores/storeBridge.ts`: `selectSpool()`, `restoreAutoSnapshot()`.

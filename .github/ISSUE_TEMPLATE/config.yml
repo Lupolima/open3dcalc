@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Dúvidas
+    url: https://github.com/ils15/open3dcalc/discussions
+    about: Use Discussions para perguntas gerais e suporte

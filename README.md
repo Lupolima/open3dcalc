@@ -56,6 +56,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 ## ✨ Funcionalidades
 
 ### Core
+
 - ✅ **Cálculo FDM completo** — filamento, purga, eficiência do carretel, bico, mesa, acabamento
 - ✅ **AMS multi-material** — até 4 filamentos simultâneos com slots individuais, cálculo de purga por troca
 - ✅ **Cálculo Resina completo** — resina, lavagem, cura UV, LCD, FEP
@@ -70,6 +71,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - ✅ **Custo por grama** — exibido automaticamente nos resultados
 
 ### Dashboard
+
 - 📊 **KPIs em tempo real** — custo total, preço de venda, lucro, ROI
 - 📈 **Gráfico de pizza** — distribuição visual dos custos
 - 💰 **Projeção mensal** — input prints/mês → receita, custo, lucro mensal e anual
@@ -77,6 +79,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - 🔄 **Print vs Buy** — compare custo de imprimir vs comprar pronto
 
 ### Ferramentas
+
 - 🔲 **Infill Calculator** — veja como % de infill afeta peso, custo e tempo
 - 🧵 **Inventário de Filamentos** — rastreie carretéis com barras de progresso e alertas
 - 📋 **SKU Manager** — salve configurações com tags, categorias e favoritos
@@ -85,6 +88,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - 🔌 **API JSON** — payload padronizado para sistemas externos
 
 ### UX
+
 - 🌐 **i18n** — Português (BR) e Inglês (US)
 - 📱 **Responsivo** — mobile-first com navegação inferior
 - 📲 **PWA** — instalável como app nativo
@@ -116,6 +120,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 ### Calculadora Resina
 
 Mesmo fluxo do FDM, mas com campos específicos:
+
 - Volume de resina (ml) em vez de peso
 - Lavagem (álcool) e cura UV
 - Hardware LCD/FEP em vez de bico/mesa
@@ -172,20 +177,20 @@ Gerencie impressoras, materiais e marketplaces:
 
 Clique no painel **"Seções do Cálculo"** para marcar/desmarcar quais custos incluir:
 
-| Seção | Ícone | Descrição |
-|---|---|---|
-| Material | 🧵 | Custo do filamento/resina + purga |
-| Energia | ⚡ | Custo de energia elétrica |
-| Máquina | 🖨️ | Depreciação + manutenção |
-| Hardware | 🔧 | Bico, mesa, LCD, FEP |
-| Consumíveis | 🛡️ | EPIs por print |
-| Mão de Obra | 👷 | Setup + pós-processamento |
-| Software | 💻 | Slicer + modelo STL |
-| Falhas | ⚠️ | Buffer de falhas (%) |
-| Extras | 📦 | Custos adicionais livres |
-| Acabamento | 🎨 | Lixas, primer, tintas |
-| Embalagem | 📋 | Custo de embalagem |
-| Frete | 🚚 | Custo de envio |
+| Seção       | Ícone | Descrição                         |
+| ----------- | ----- | --------------------------------- |
+| Material    | 🧵    | Custo do filamento/resina + purga |
+| Energia     | ⚡    | Custo de energia elétrica         |
+| Máquina     | 🖨️    | Depreciação + manutenção          |
+| Hardware    | 🔧    | Bico, mesa, LCD, FEP              |
+| Consumíveis | 🛡️    | EPIs por print                    |
+| Mão de Obra | 👷    | Setup + pós-processamento         |
+| Software    | 💻    | Slicer + modelo STL               |
+| Falhas      | ⚠️    | Buffer de falhas (%)              |
+| Extras      | 📦    | Custos adicionais livres          |
+| Acabamento  | 🎨    | Lixas, primer, tintas             |
+| Embalagem   | 📋    | Custo de embalagem                |
+| Frete       | 🚚    | Custo de envio                    |
 
 Seções desmarcadas são zeradas no cálculo final.
 
@@ -195,12 +200,12 @@ Seções desmarcadas são zeradas no cálculo final.
 
 ### Formatos Suportados
 
-| Formato | Extensão | Parser |
-|---|---|---|
-| STL | `.stl` | Three.js STLLoader |
-| OBJ | `.obj` | Three.js OBJLoader |
-| 3MF | `.3mf` | ZIP + XML nativo |
-| G-code | `.gcode` | Parser de comentários + comandos |
+| Formato | Extensão | Parser                           |
+| ------- | -------- | -------------------------------- |
+| STL     | `.stl`   | Three.js STLLoader               |
+| OBJ     | `.obj`   | Three.js OBJLoader               |
+| 3MF     | `.3mf`   | ZIP + XML nativo                 |
+| G-code  | `.gcode` | Parser de comentários + comandos |
 
 ### O que é extraído
 
@@ -217,14 +222,14 @@ Seções desmarcadas são zeradas no cálculo final.
 
 ## 🏪 Marketplaces
 
-| Marketplace | Comissão | Taxa Fixa | Frete Grátis |
-|---|---|---|---|
-| Venda Direta | 0% | R$ 0 | Não |
-| Shopee (até R$79) | 20% | R$ 4 | Sim |
-| Shopee (R$80+) | 14% | R$ 16 | Sim |
-| Mercado Livre | 16% | R$ 6,50 | Sim |
-| Amazon | 15% | R$ 0 | Não |
-| Etsy | 6,5% | R$ 3 | Não |
+| Marketplace       | Comissão | Taxa Fixa | Frete Grátis |
+| ----------------- | -------- | --------- | ------------ |
+| Venda Direta      | 0%       | R$ 0      | Não          |
+| Shopee (até R$79) | 20%      | R$ 4      | Sim          |
+| Shopee (R$80+)    | 14%      | R$ 16     | Sim          |
+| Mercado Livre     | 16%      | R$ 6,50   | Sim          |
+| Amazon            | 15%      | R$ 0      | Não          |
+| Etsy              | 6,5%     | R$ 3      | Não          |
 
 > **Nota:** Taxas Shopee atualizadas em Março/2026 com nova estrutura por faixas de preço.
 
@@ -233,14 +238,17 @@ Seções desmarcadas são zeradas no cálculo final.
 ## 📤 Exportação
 
 ### PDF
+
 - Relatório detalhado com todas as seções de custo
 - Download automático como `open3dcalc_relatorio.pdf`
 
 ### CSV
+
 - Dados tabulares para abrir no Excel/Google Sheets
 - Download como `open3dcalc_resultado.csv`
 
 ### JSON (API)
+
 - Payload padronizado para integração com sistemas externos
 - Inclui custos, pricing, print info e metadados
 
@@ -270,56 +278,77 @@ npm run storybook
 ```
 
 ### Requisitos
+
 - Node.js 18+
 - npm 9+
 
 ### Scripts Disponíveis
-| Comando | Descrição |
-|---|---|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run preview` | Preview do build |
-| `npm run test` | Testes com Vitest |
-| `npm run lint` | Linting com ESLint |
-| `npm run storybook` | Storybook |
+
+| Comando             | Descrição                   |
+| ------------------- | --------------------------- |
+| `npm run dev`       | Servidor de desenvolvimento |
+| `npm run build`     | Build de produção           |
+| `npm run preview`   | Preview do build            |
+| `npm run test`      | Testes com Vitest           |
+| `npm run lint`      | Linting com ESLint          |
+| `npm run typecheck` | TypeScript type checking    |
+| `npm run storybook` | Storybook                   |
 
 ---
 
 ## 🛠 Tecnologias
 
-| Categoria | Tecnologia |
-|---|---|
-| Framework | React 19 |
-| Build | Vite 8 |
-| Linguagem | TypeScript ~6.0 |
-| CSS | Tailwind CSS 4 |
-| State | Zustand 5 |
-| 3D | Three.js + React Three Fiber + Drei |
-| Charts | Recharts 2 |
-| Animações | Framer Motion 12 |
-| Ícones | Lucide React |
-| i18n | i18next + react-i18next |
-| PDF | @react-pdf/renderer |
-| Testes | Vitest + Testing Library |
-| Docs | Storybook |
-| PWA | vite-plugin-pwa |
-| CI/CD | GitHub Actions |
+| Categoria | Tecnologia                          |
+| --------- | ----------------------------------- |
+| Framework | React 19                            |
+| Build     | Vite 8                              |
+| Linguagem | TypeScript ~6.0                     |
+| CSS       | Tailwind CSS 4                      |
+| State     | Zustand 5                           |
+| 3D        | Three.js + React Three Fiber + Drei |
+| Charts    | Recharts 2                          |
+| Animações | Framer Motion 12                    |
+| Ícones    | Lucide React                        |
+| i18n      | i18next + react-i18next             |
+| PDF       | @react-pdf/renderer                 |
+| Testes    | Vitest + Testing Library            |
+| Docs      | Storybook                           |
+| PWA       | vite-plugin-pwa                     |
+| CI/CD     | GitHub Actions                      |
 
 ---
 
 ## 🤝 Contribuindo
 
-1. Fork o repositório
-2. Crie uma branch (`git checkout -b feature/minha-feature`)
-3. Commit suas mudanças (`git commit -m 'feat: minha feature'`)
-4. Push para a branch (`git push origin feature/minha-feature`)
-5. Abra um Pull Request
+Contribuições são bem-vindas! Veja nosso guia completo em [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Guidelines
-- Siga o estilo de código existente
-- Adicione testes para novas funcionalidades
-- Mantenha i18n em pt-BR e en-US
-- Documente novas features no README
+### Fluxo rápido
+
+1. **Fork** o repositório
+2. **Branch** (`git checkout -b feature/minha-feature`)
+3. **Commit** seguindo [Conventional Commits](https://www.conventionalcommits.org/)
+4. **Testes** — rode `npm run lint`, `npm run typecheck`, `npm run test:run`, `npm run build`
+5. **PR** — abra um Pull Request seguindo o template
+6. **Review** — aguarde aprovação de um mantenedor
+7. **Merge** — squash merge na main
+
+### Políticas
+
+| Regra                   | Detalhe                                                     |
+| ----------------------- | ----------------------------------------------------------- |
+| ✅ PR obrigatório       | Nenhum push direto na `main`                                |
+| ✅ 1 approval mínimo    | Code review obrigatório                                     |
+| ✅ CI obrigatório       | Lint, typecheck, testes e build                             |
+| ✅ Conventional Commits | `feat:`, `fix:`, `docs:`, etc.                              |
+| ✅ Branches             | `feature/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/` |
+
+### Reportando bugs
+
+Use o template de [Bug Report](https://github.com/ils15/open3dcalc/issues/new?labels=bug&template=bug_report.yml) com descrição clara e passos para reproduzir.
+
+### Código de Conduta
+
+Todo contribuidor deve seguir nosso [Código de Conduta](CODE_OF_CONDUCT.md).
 
 ---
 

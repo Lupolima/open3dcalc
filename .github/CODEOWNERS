@@ -1,0 +1,7 @@
+# Review automático do mantenedor para QUALQUER alteração
+* @ils15
+
+# Áreas sensíveis — revisão adicional obrigatória
+/src/lib/calculator.ts @ils15
+/src/stores/ @ils15
+/src/lib/ @ils15

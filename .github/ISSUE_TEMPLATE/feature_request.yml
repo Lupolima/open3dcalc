@@ -1,0 +1,39 @@
+name: ✨ Feature Request
+description: Sugira uma ideia para o Open3DCalc
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Obrigado pela sugestão! Conte-nos sua ideia para melhorar o Open3DCalc.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema Relacionado
+      description: O problema que você está tentando resolver (se aplicável)
+      placeholder: Fico frustrado quando não consigo comparar dois cálculos lado a lado...
+    validations:
+      required: false
+  - type: textarea
+    id: solucao
+    attributes:
+      label: Solução Desejada
+      description: Descreva a funcionalidade que você gostaria de ver
+      placeholder: Um botão "Comparar" que permite selecionar 2 registros do histórico...
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas Consideradas
+      description: Que alternativas você já considerou?
+      placeholder: Tentei exportar os dois para CSV e comparar manualmente...
+    validations:
+      required: false
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto Adicional
+      description: Mockups, screenshots, exemplos de outros apps
+    validations:
+      required: false
