@@ -1,20 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
+import { useHistoryStore } from '@/stores/historyStore'
 import { InputGroup } from '@/components/ui/InputGroup'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { useCurrency } from '@/hooks/useCurrency'
+
+const DASHBOARD_KEY = 'open3dcalc_dashboard_v1'
 
 const COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#14b8a6']
 
+function loadDashboardSettings() {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(DASHBOARD_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveDashboardSettings(data: Record<string, unknown>) {
+  try {
+    localStorage.setItem(DASHBOARD_KEY, JSON.stringify(data))
+  } catch {
+    // Silently fail if localStorage is unavailable
+  }
+}
+
 export function Dashboard() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const store = useCalculatorStore()
   const results = store.results
+  const fixedCosts = store.fixedCosts
   const { format: formatMoney, symbol: currencySymbol } = useCurrency()
-  const [printsPerMonth, setPrintsPerMonth] = useState(30)
-  const [buyPrice, setBuyPrice] = useState('')
-  const [targetSellPrice, setTargetSellPrice] = useState('')
+  const historyEntries = useHistoryStore(s => s.entries)
+
+  // Load saved values on mount
+  const saved = useMemo(() => loadDashboardSettings(), [])
+
+  const [printsPerMonth, setPrintsPerMonth] = useState(() => (saved.printsPerMonth as number) ?? 30)
+  const [buyPrice, setBuyPrice] = useState(() => (saved.buyPrice as string) ?? '')
+  const [targetSellPrice, setTargetSellPrice] = useState(() => (saved.targetSellPrice as string) ?? '')
+
+  // Persist to localStorage on change
+  useEffect(() => {
+    saveDashboardSettings({ printsPerMonth, buyPrice, targetSellPrice })
+  }, [printsPerMonth, buyPrice, targetSellPrice])
 
   const handleInput = (value: string, setter: (v: number) => void) => {
     setter(value === '' ? 0 : parseFloat(value) || 0)
@@ -26,6 +58,43 @@ export function Dashboard() {
     profit: results.profit * printsPerMonth,
     annualProfit: results.profit * printsPerMonth * 12,
   } : null
+
+  // Break-even calculation
+  const breakEven = results && fixedCosts.enabled && fixedCosts.monthlyCost > 0 ? {
+    variableCostPerUnit: results.totalCost,
+    sellPrice: results.sellPrice,
+    marginPerUnit: results.sellPrice - results.totalCost,
+    monthlyFixedCost: fixedCosts.monthlyCost,
+  } : null
+
+  const breakEvenUnits = breakEven && breakEven.marginPerUnit > 0
+    ? Math.ceil(breakEven.monthlyFixedCost / breakEven.marginPerUnit)
+    : null
+
+  const breakEvenRevenue = breakEvenUnits !== null && breakEven
+    ? breakEvenUnits * breakEven.sellPrice
+    : null
+
+  // Average margin from history
+  const avgMargin = useMemo(() => {
+    const margins = historyEntries
+      .filter(e => e.sellPrice > 0)
+      .map(e => (e.profit / e.sellPrice) * 100)
+    if (margins.length === 0) return null
+    return margins.reduce((a, b) => a + b, 0) / margins.length
+  }, [historyEntries])
+
+  // Profit trend data
+  const trendData = useMemo(() => {
+    const sorted = [...historyEntries]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(-10)
+    const locale = i18n.resolvedLanguage || i18n.language
+    return sorted.map(e => ({
+      date: new Date(e.timestamp).toLocaleDateString(locale),
+      profit: Math.round(e.profit * 100) / 100,
+    }))
+  }, [historyEntries, i18n.resolvedLanguage, i18n.language])
 
   const printVsBuy = results && buyPrice ? {
     printCost: results.totalCost,
@@ -162,6 +231,116 @@ export function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Break-Even Card */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('dashboard.breakEven')}</h3>
+        {breakEven ? (
+          breakEvenUnits !== null ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="glass rounded-xl p-4 text-center">
+                <p className="text-[10px] text-gray-500">{t('dashboard.breakEvenUnits')}</p>
+                <p className="text-lg font-extrabold text-cyan-400">{breakEvenUnits} {t('common.units')}</p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {formatMoney(breakEven.monthlyFixedCost)} / {formatMoney(breakEven.marginPerUnit)}
+                </p>
+              </div>
+              <div className="glass rounded-xl p-4 text-center">
+                <p className="text-[10px] text-gray-500">{t('dashboard.breakEvenRevenue')}</p>
+                <p className="text-lg font-extrabold text-emerald-400">
+                  {breakEvenRevenue !== null ? formatMoney(breakEvenRevenue) : '---'}
+                </p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {breakEvenUnits} x {formatMoney(breakEven.sellPrice)}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="glass rounded-xl p-4 text-center">
+              <p className="text-xs text-red-400">{t('dashboard.cantBreakEven')}</p>
+              <p className="text-[10px] text-gray-500 mt-1">
+                {t('breakdown.material')}: {formatMoney(breakEven.variableCostPerUnit)} / {t('dashboard.salePrice')}: {formatMoney(breakEven.sellPrice)}
+              </p>
+            </div>
+          )
+        ) : (
+          <p className="text-xs text-gray-500 text-center py-2">
+            {t('calc.fixedCost.title')} {t('common.noData')}
+          </p>
+        )}
+      </div>
+
+      {/* Average Margin Card */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('dashboard.avgMargin')}</h3>
+        {avgMargin !== null ? (
+          <div className="text-center">
+            <p className={`text-3xl font-black ${avgMargin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {avgMargin >= 0 ? '+' : ''}{avgMargin.toFixed(1)}%
+            </p>
+            <p className="text-[10px] text-gray-500 mt-1">
+              {t('calc.history')}: {historyEntries.length} {t('common.entries')}
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 text-center py-2">{t('dashboard.noHistory')}</p>
+        )}
+      </div>
+
+      {/* Profit Trend Chart */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="text-sm font-bold text-white mb-4">{t('dashboard.trend')}</h3>
+        {trendData.length > 1 ? (
+          <div className="w-full h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { notation: 'compact', maximumFractionDigits: 1 }).format(v)}
+                  width={50}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#1e293b',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                  formatter={(value: number) => formatMoney(value)}
+                  labelStyle={{ color: '#94a3b8' }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#818cf8"
+                  strokeWidth={2}
+                  fill="url(#profitGradient)"
+                  dot={{ fill: '#818cf8', r: 3, strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: '#a5b4fc', strokeWidth: 0 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 text-center py-8">{t('dashboard.noHistory')}</p>
+        )}
       </div>
 
       {/* Target Margin Mode */}

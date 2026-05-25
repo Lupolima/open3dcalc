@@ -15,7 +15,14 @@
     "totalCost": "Custo Total",
     "salePrice": "Preço de Venda",
     "profit": "Lucro Líquido",
-    "roi": "ROI"
+    "roi": "ROI",
+    "breakEven": "Ponto de Equilíbrio",
+    "breakEvenUnits": "Unidades necessárias",
+    "breakEvenRevenue": "Receita no equilíbrio",
+    "avgMargin": "Margem Média",
+    "trend": "Tendência de Lucro",
+    "noHistory": "Sem dados de histórico",
+    "cantBreakEven": "Preço não cobre custos"
   },
   "calc": {
     "fdm": "Impressão FDM",
@@ -291,6 +298,17 @@
     "delete": "Excluir",
     "deleteConfirm": "Excluir este produto?",
     "exportJson": "Exportar Dados (JSON)",
+    "importJson": "Importar JSON",
+    "importSuccess": "{{imported}} importados, {{skipped}} ignorados",
+    "importError": "Erro ao importar arquivo",
+    "compare": "Comparar",
+    "compareTitle": "Comparativo",
+    "compareSelect": "Selecione 2 registros para comparar",
+    "compareField": "Campo",
+    "valueA": "Registro A",
+    "valueB": "Registro B",
+    "compareBetter": "Melhor",
+    "compareWorse": "Pior",
     "noResults": "Nenhum resultado encontrado"
   },
   "breakdown": {
@@ -332,11 +350,18 @@
     "hours": "h",
     "minutes": "min",
     "watt": "W",
-    "noData": "Nenhum dado disponível"
+    "noData": "Nenhum dado disponível",
+    "units": "unidades",
+    "entries": "entradas"
   },
   "results": {
     "exportQuote": "Exportar Cotação",
-    "exportQuoteSuccess": "Cotação exportada com sucesso"
+    "exportQuoteSuccess": "Cotação exportada com sucesso",
+    "deductFromInventory": "Deduzir do Estoque",
+    "deductConfirm": "Deduzir {{weight}}g do carretel {{spool}}?",
+    "deductSuccess": "Peso deduzido com sucesso!",
+    "deductSelect": "Selecionar carretel para deduzir",
+    "deductAvailable": "{{weight}}g disponíveis"
   },
   "tooltip": {
     "costPerKg": "Preço médio do kg do filamento. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
