@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistoryStore } from '@/stores/historyStore'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { ComparisonModal } from '@/components/ui/ComparisonModal'
 import { useCurrency } from '@/hooks/useCurrency'
 import type { HistoryEntry } from '@/types'
 import {
   X, Layers, Zap, Printer, Wrench, HardHat, Monitor,
   Paintbrush, DollarSign, Store, Tags, TrendingUp, Search, FileJson,
-  RotateCcw,
+  Upload, CheckSquare, RotateCcw,
 } from 'lucide-react'
 
 interface DetailModalProps {
@@ -123,6 +124,9 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
   const [search, setSearch] = useState('')
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importResult, setImportResult] = useState<string | null>(null)
 
   // Sync local search state with store
   useEffect(() => {
@@ -148,6 +152,41 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
     a.click()
     URL.revokeObjectURL(url)
   }, [store])
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const result = store.importJson(ev.target?.result as string)
+        setImportResult(t('history.importSuccess', { imported: result.imported, skipped: result.skipped }))
+      } catch {
+        setImportResult(t('history.importError'))
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  useEffect(() => {
+    if (!importResult) return
+    const t = setTimeout(() => setImportResult(null), 3000)
+    return () => clearTimeout(t)
+  }, [importResult])
+
+  const compareEntries = useMemo(() => {
+    if (selectedForCompare.length !== 2) return []
+    return selectedForCompare.map(id => store.getEntry(id)).filter(Boolean) as HistoryEntry[]
+  }, [selectedForCompare, store])
+
+  const toggleCompare = (id: string) => {
+    setSelectedForCompare(prev => {
+      if (prev.includes(id)) return prev.filter(i => i !== id)
+      if (prev.length >= 2) return prev
+      return [...prev, id]
+    })
+  }
 
   // Filter type tabs
   const filterTabs = [
@@ -188,6 +227,13 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
           <option value="profit">{t('history.sort.profit')}</option>
           <option value="name">{t('history.sort.name')}</option>
         </select>
+          <button onClick={() => {}} disabled={selectedForCompare.length !== 2}
+            className={`px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center gap-1.5 ${
+              selectedForCompare.length === 2 ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-white/5 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <CheckSquare className="w-3.5 h-3.5" /> {t('history.compare')} ({selectedForCompare.length}/2)
+          </button>
       </div>
 
       <div className="relative mb-4">
@@ -206,7 +252,9 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
       ) : (
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {filtered.map(entry => (
-            <div key={entry.id} className="glass rounded-xl p-3 flex items-center justify-between hover:bg-white/5 transition-colors">
+            <div key={entry.id} className={`glass rounded-xl p-3 flex items-center gap-3 hover:bg-white/5 transition-colors ${selectedForCompare.includes(entry.id) ? 'ring-2 ring-indigo-500/50' : ''}`}>
+              <input type="checkbox" checked={selectedForCompare.includes(entry.id)} onChange={() => toggleCompare(entry.id)}
+                className="accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer" />
               <div>
                 <p className="text-sm font-semibold">{entry.name}</p>
                 <p className="text-xs text-gray-500">
@@ -244,15 +292,27 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
         </div>
       )}
 
-      <button
-        onClick={handleExport}
-        className="w-full mt-4 py-2.5 rounded-xl text-sm glass text-gray-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-2"
-      >
-        <FileJson className="w-4 h-4" />
-        {t('history.exportJson')}
-      </button>
+      <div className="flex gap-2 mt-4">
+        <button onClick={handleExport}
+          className="flex-1 py-2.5 rounded-xl text-sm glass text-gray-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-2"
+        >
+          <FileJson className="w-4 h-4" /> {t('history.exportJson')}
+        </button>
+        <button onClick={() => fileInputRef.current?.click()}
+          className="flex-1 py-2.5 rounded-xl text-sm glass text-gray-400 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-2"
+        >
+          <Upload className="w-4 h-4" /> {t('history.importJson')}
+        </button>
+      </div>
+      <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
+      {importResult && (
+        <div className="mt-2 text-xs text-center text-emerald-400 animate-fade-in">{importResult}</div>
+      )}
 
       <DetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
+      {compareEntries.length === 2 && (
+        <ComparisonModal entryA={compareEntries[0]} entryB={compareEntries[1]} onClose={() => setSelectedForCompare([])} />
+      )}
       <ConfirmDialog
         open={confirmDeleteId !== null}
         title="Remover produto"
