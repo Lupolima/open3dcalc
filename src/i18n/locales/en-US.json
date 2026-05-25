@@ -15,7 +15,14 @@
     "totalCost": "Total Cost",
     "salePrice": "Sale Price",
     "profit": "Net Profit",
-    "roi": "ROI"
+    "roi": "ROI",
+    "breakEven": "Break-Even Point",
+    "breakEvenUnits": "Units needed",
+    "breakEvenRevenue": "Revenue at break-even",
+    "avgMargin": "Average Margin",
+    "trend": "Profit Trend",
+    "noHistory": "No history data",
+    "cantBreakEven": "Price doesn't cover costs"
   },
   "calc": {
     "fdm": "FDM Printing",
@@ -291,6 +298,15 @@
     "delete": "Delete",
     "deleteConfirm": "Delete this product?",
     "exportJson": "Export Data (JSON)",
+    "importJson": "Import JSON",
+    "importSuccess": "{{imported}} imported, {{skipped}} skipped",
+    "importError": "Error importing file",
+    "compare": "Compare",
+    "compareTitle": "Comparison",
+    "compareSelect": "Select 2 records to compare",
+    "compareField": "Field",
+    "valueA": "Record A",
+    "valueB": "Record B",
     "noResults": "No results found"
   },
   "breakdown": {
@@ -332,11 +348,18 @@
     "hours": "h",
     "minutes": "min",
     "watt": "W",
-    "noData": "No data available"
+    "noData": "No data available",
+    "units": "units",
+    "entries": "entries"
   },
   "results": {
     "exportQuote": "Export Quote",
-    "exportQuoteSuccess": "Quote exported successfully"
+    "exportQuoteSuccess": "Quote exported successfully",
+    "deductFromInventory": "Deduct from Inventory",
+    "deductConfirm": "Deduct {weight}g from spool {spool}?",
+    "deductSuccess": "Weight deducted successfully!",
+    "deductSelect": "Select spool to deduct from",
+    "deductAvailable": "{weight}g available"
   },
   "tooltip": {
     "costPerKg": "Average price per kg of filament. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
