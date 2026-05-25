@@ -8,8 +8,9 @@ import { Dashboard } from '@/components/Dashboard/Dashboard'
 import { InfillCalculator } from '@/components/Calculator/InfillCalculator'
 import { FilamentInventory } from '@/components/Catalog/FilamentInventory'
 import { restoreAutoSnapshot } from '@/stores/storeBridge'
-import { useProductStore } from '@/stores/productStore'
+import { useHistoryStore } from '@/stores/historyStore'
 import { useCalculatorStore } from '@/stores/calculatorStore'
+import type { CalculationResult, CalculationSnapshot } from '@/types'
 import {
   Calculator as CalculatorIcon,
   Clock,
@@ -20,6 +21,21 @@ import {
 } from 'lucide-react'
 
 type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory'
+type LegacyProduct = {
+  name?: string
+  result?: CalculationResult
+  snapshot?: Partial<CalculationSnapshot> | null
+}
+
+type LegacyHistoryItem = {
+  type?: 'fdm' | 'resin'
+  summary?: string
+  totalCost?: number
+  sellPrice?: number
+  profit?: number
+  result?: CalculationResult
+  snapshot?: CalculationSnapshot | null
+}
 
 const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[] = [
   { id: 'calculator', icon: <CalculatorIcon className="w-[18px] h-[18px]" />, labelKey: 'nav.calculator', label: 'Calculadora' },
@@ -36,7 +52,86 @@ function App() {
 
   useEffect(() => {
     restoreAutoSnapshot()
-    useProductStore.getState().load()
+
+    // Migração de dados antigos para historyStore
+    const migrateOldData = () => {
+      const historyStore = useHistoryStore.getState()
+      const existing = historyStore.entries.length
+
+      // Se já migrou antes, não repete
+      if (localStorage.getItem('open3dcalc_migration_done_v2')) return
+
+      // Só migra se historyStore estiver vazia (evita duplicação)
+      if (existing > 0) return
+
+      // Migrar productStore antigo
+      try {
+        const oldProducts = localStorage.getItem('open3dcalc_products')
+        if (oldProducts) {
+          const parsed = JSON.parse(oldProducts) as unknown
+          if (Array.isArray(parsed)) {
+            parsed.forEach((p) => {
+              const product = p as LegacyProduct
+              if (!product.result) return
+              const type = product.snapshot?.type ?? 'fdm'
+              const summary = product.snapshot?.summary || product.name || 'Produto'
+              const totalCost = Number(product.result?.totalCost || 0)
+              const sellPrice = Number(product.result?.sellPrice || 0)
+              historyStore.addEntry({
+                type,
+                name: product.name || 'Produto',
+                summary,
+                totalCost,
+                sellPrice,
+                profit: sellPrice - totalCost,
+                result: product.result,
+                snapshot: (product.snapshot as CalculationSnapshot) || null,
+              })
+            })
+          }
+          localStorage.removeItem('open3dcalc_products')
+        }
+      } catch (error) {
+        console.warn('Failed to migrate open3dcalc_products', error)
+      }
+
+      // Migrar calculatorStore.history antigo (v1)
+      try {
+        const oldHistory = localStorage.getItem('open3dcalc_history_v2')
+        if (oldHistory) {
+          const parsed = JSON.parse(oldHistory) as unknown
+          if (Array.isArray(parsed)) {
+            parsed.forEach((item) => {
+              const legacyItem = item as LegacyHistoryItem
+              historyStore.addEntry({
+                type: legacyItem.type || 'fdm',
+                name: legacyItem.summary || 'Histórico',
+                summary: legacyItem.summary || '',
+                totalCost: legacyItem.totalCost || 0,
+                sellPrice: legacyItem.sellPrice || 0,
+                profit: legacyItem.profit || 0,
+                result: legacyItem.result || {
+                  materialCost: 0, energyCost: 0, machineCost: 0,
+                  hardwareCost: 0, consumablesCost: 0, laborCost: 0,
+                  softwareCost: 0, failureCost: 0, extrasCost: 0,
+                  postProcessingCost: 0, subtotal: 0, totalCost: 0,
+                  sellPrice: 0, profit: 0, marketplaceFee: 0, taxAmount: 0,
+                  costPerGram: 0, costPerUnit: 0, unitWeight: 0,
+                  estimatedPrintTime: 0, targetMarginPercent: 0,
+                  breakEvenPrice: 0, actualMargin: 0,
+                },
+                snapshot: legacyItem.snapshot || null,
+              })
+            })
+            localStorage.removeItem('open3dcalc_history_v2')
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to migrate open3dcalc_history_v2', error)
+      }
+    }
+
+    migrateOldData()
 
     const handleBeforeUnload = () => {
       const calc = useCalculatorStore.getState()

@@ -36,7 +36,19 @@
     "printerPower": "Potência da Impressora",
     "energyCost": "Custo da Energia",
     "printer": "Impressora",
-    "failure": "Risco e Falhas",
+    "failure": {
+      "title": "Risco e Falhas",
+      "description": "Custos com falhas de impressão",
+      "enableFailure": "Ativar custo de falha",
+      "mode": "Modo de falha",
+      "modePercent": "Percentual",
+      "modeFixed": "Fixo (R$)",
+      "value": "Valor da falha",
+      "valuePercent": "% de falha sobre custo base",
+      "valueFixed": "Custo fixo por falha",
+      "riskMultiplier": "Multiplicador de risco",
+      "riskMultiplierTooltip": "Aplica um multiplicador sobre o custo total para cenários de alto risco"
+    },
     "noFailure": "Sem taxa",
     "failureValue": "Valor",
     "riskMultiplier": "Multiplicador de Risco",
@@ -115,6 +127,47 @@
     "monthlyRevenue": "Receita Mensal",
     "monthlyCost": "Custo Mensal",
     "monthlyProfit": "Lucro Mensal",
+    "fixedCost": {
+      "title": "Custos Fixos",
+      "description": "Custos fixos mensais da oficina",
+      "monthlyCost": "Custo Fixo Mensal",
+      "monthlyCostTooltip": "Internet, aluguel, energia base, manutenção da oficina",
+      "monthlyHours": "Horas por Mês",
+      "monthlyHoursTooltip": "Horas estimadas de operação da impressora por mês"
+    },
+    "chartLabels": {
+      "energy": "Energia",
+      "machine": "Máquina",
+      "finishing": "Acabamento",
+      "consumables": "Consumíveis",
+      "software": "Software",
+      "labor": "Mão de Obra",
+      "failure": "Falha",
+      "extras": "Extras"
+    },
+    "sectionShort": {
+      "material": "Material",
+      "print": "Parâmetros",
+      "failure": "Falhas",
+      "hardware": "Hardware",
+      "machine": "Máquina",
+      "fixedCost": "C.Fixos",
+      "labor": "M.Obra",
+      "ops": "Soft/EPI",
+      "sales": "Vendas",
+      "results": "Resultado"
+    },
+    "sectionDesc": {
+      "fdmMaterial": "Filamento FDM",
+      "resinMaterial": "Resina fotopolimérica",
+      "print": "Tempo, energia e impressora",
+      "fdmHardware": "Bico, mesa e acabamento",
+      "resinHardware": "Lavagem, cura, LCD/FEP",
+      "machine": "Depreciação e manutenção",
+      "labor": "Setup, pós-processamento e taxa horária",
+      "ops": "EPI, slicer e licença de modelo",
+      "sales": "Embalagem, frete, marketplace e margem"
+    },
     "printVsBuy": "Imprimir vs Comprar",
     "buyPrice": "Preço de Compra",
     "savings": "Economia",
@@ -224,6 +277,16 @@
     "empty": "Nenhum produto salvo.",
     "search": "Buscar produtos...",
     "filter": "Filtrar",
+    "filters": {
+      "all": "Todos",
+      "resin": "Resina"
+    },
+    "sort": {
+      "date": "Data",
+      "price": "Preço",
+      "profit": "Lucro",
+      "name": "Nome"
+    },
     "details": "Detalhes",
     "delete": "Excluir",
     "deleteConfirm": "Excluir este produto?",
@@ -271,6 +334,10 @@
     "watt": "W",
     "noData": "Nenhum dado disponível"
   },
+  "results": {
+    "exportQuote": "Exportar Cotação",
+    "exportQuoteSuccess": "Cotação exportada com sucesso"
+  },
   "tooltip": {
     "costPerKg": "Preço médio do kg do filamento. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
     "purge": "Peso desperdiçado na torre de purga ou troca de cor. Pode ser maior que a peça em prints multicolor!",
@@ -284,5 +351,9 @@
     "finishing": "Valor estimado de lixas, primer, tintas, massa plástica ou acetona gastos nesta peça.",
     "ppe": "Luvas, máscaras, papel toalha, filtros, etc. Custo fixo por impressão.",
     "extras": "Parafusos, colas, verniz, tintas, etc."
+  },
+  "settings": {
+    "currency": "Moeda",
+    "currencyAuto": "Automático"
   }
 }

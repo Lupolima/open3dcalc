@@ -3,43 +3,48 @@ import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { useCatalogStore } from '@/stores/catalogStore'
 import { useFilamentInventory } from '@/stores/filamentInventory'
-import { useProductStore } from '@/stores/productStore'
 import { selectSpool } from '@/stores/storeBridge'
+import { useCurrency } from '@/hooks/useCurrency'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import { ToggleSwitch } from '@/components/ui/ToggleCard'
 import { ToastContainer } from '@/components/ui/Toast'
 import { ResultsPanel } from './ResultsPanel'
 import type { BufferGeometry } from 'three'
+import { estimatePrintTimeFromDimensions } from '@/lib/printTimeEstimator'
 import {
   Layers, SlidersHorizontal, Wrench, Printer, HardHat, ShieldCheck,
-  DollarSign, BarChart3, FolderOpen,
-  FlaskConical, Upload,
+  DollarSign, BarChart3,
+  FlaskConical, Upload, Receipt, AlertTriangle,
   type LucideIcon,
 } from 'lucide-react'
 
 const StlPreview = lazy(() => import('@/components/StlPreview/StlPreview').then(m => ({ default: m.StlPreview })))
 
-const SECTIONS: { id: string; Icon: LucideIcon; label: string; short: string }[] = [
-  { id: 'material', Icon: Layers,           label: 'calc.material',   short: 'Material' },
-  { id: 'print',    Icon: SlidersHorizontal, label: 'calc.printParams', short: 'Parâmetros' },
-  { id: 'hardware', Icon: Wrench,            label: 'calc.fdmHardware', short: 'Hardware' },
-  { id: 'machine',  Icon: Printer,           label: 'calc.machine',    short: 'Máquina' },
-  { id: 'labor',    Icon: HardHat,           label: 'calc.labor',      short: 'M.Obra' },
-  { id: 'ops',      Icon: ShieldCheck,       label: 'calc.opsSoftware', short: 'Soft/EPI' },
-  { id: 'sales',    Icon: DollarSign,        label: 'calc.sales',      short: 'Vendas' },
-  { id: 'results',  Icon: BarChart3,         label: 'calc.results',    short: 'Resultado' },
+const SECTIONS: { id: string; Icon: LucideIcon; label: string; shortKey: string }[] = [
+  { id: 'material',  Icon: Layers,            label: 'calc.material',         shortKey: 'calc.sectionShort.material'  },
+  { id: 'print',     Icon: SlidersHorizontal, label: 'calc.printParams',      shortKey: 'calc.sectionShort.print'     },
+  { id: 'failure',   Icon: AlertTriangle,     label: 'calc.failure.title',    shortKey: 'calc.sectionShort.failure'   },
+  { id: 'hardware',  Icon: Wrench,            label: 'calc.fdmHardware',      shortKey: 'calc.sectionShort.hardware'  },
+  { id: 'machine',   Icon: Printer,           label: 'calc.machine',          shortKey: 'calc.sectionShort.machine'   },
+  { id: 'fixedCost', Icon: Receipt,           label: 'calc.fixedCost.title',  shortKey: 'calc.sectionShort.fixedCost' },
+  { id: 'labor',     Icon: HardHat,           label: 'calc.labor',            shortKey: 'calc.sectionShort.labor'     },
+  { id: 'ops',       Icon: ShieldCheck,       label: 'calc.opsSoftware',      shortKey: 'calc.sectionShort.ops'       },
+  { id: 'sales',     Icon: DollarSign,        label: 'calc.sales',            shortKey: 'calc.sectionShort.sales'     },
+  { id: 'results',   Icon: BarChart3,         label: 'calc.results',          shortKey: 'calc.sectionShort.results'   },
 ]
 
 const SECTION_ENABLES: Record<string, string[]> = {
-  material: ['material'],
-  print:    ['energy', 'failure'],
-  hardware: ['hardware', 'postProcessing'],
-  machine:  ['machine'],
-  labor:    ['labor'],
-  ops:      ['software', 'consumables'],
-  sales:    ['packaging', 'shipping', 'extras'],
-  results:  [],
+  material:  ['material'],
+  print:     ['energy'],
+  failure:   ['failure'],
+  hardware:  ['hardware', 'postProcessing'],
+  machine:   ['machine'],
+  fixedCost: [],
+  labor:     ['labor'],
+  ops:       ['software', 'consumables'],
+  sales:     ['packaging', 'shipping', 'extras'],
+  results:   [],
 }
 
 export function Calculator() {
@@ -54,7 +59,7 @@ export function Calculator() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [stlGeometry, setStlGeometry] = useState<BufferGeometry | null>(null)
-  const [stlInfo, setStlInfo] = useState<{ volume: number; faces: number; vertices: number } | null>(null)
+  const [stlInfo, setStlInfo] = useState<{ volume: number; faces: number; vertices: number; dimensions: { x: number; y: number; z: number } } | null>(null)
   const [stlLoading, setStlLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('material')
   const [toastItems, setToastItems] = useState<{ id: number; message: string; type: 'error' | 'success' | 'info' }[]>([])
@@ -64,9 +69,7 @@ export function Calculator() {
   }
 
   const isFDM = store.activeTab === 'fdm'
-  const themeBg = isFDM ? 'bg-sky-600' : 'bg-purple-600'
-  const results = store.results!
-  const fmtCurrency = (val: number) => (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const { format: fmtCurrency, symbol: currencySymbol } = useCurrency()
 
   const handleFileDrop = useCallback(async (file: File) => {
     const toast = (msg: string) => {
@@ -106,7 +109,7 @@ export function Calculator() {
             store.setFdmMaterial({ ...store.fdmMaterial, weightUsed: w })
           }
         }
-        setStlInfo({ volume: 0, faces: 0, vertices: 0 })
+        setStlInfo({ volume: 0, faces: 0, vertices: 0, dimensions: { x: 0, y: 0, z: 0 } })
       } else {
         const { analyzeMeshFile, volumeToCm3, estimateWeight } = await import('@/lib/stlParser')
         const { geometry, analysis } = await analyzeMeshFile(file)
@@ -117,7 +120,20 @@ export function Calculator() {
         }
         setStlGeometry(geometry)
         const volume = volumeToCm3(analysis.volume)
-        setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount })
+        setStlInfo({ volume, faces: analysis.triangleCount, vertices: analysis.vertexCount, dimensions: analysis.dimensions })
+
+        // Estimate print time from bounding box dimensions
+        const { x: width, y: depth, z: height } = analysis.dimensions
+        if (width > 0 && depth > 0 && height > 0) {
+          const timeEstimate = estimatePrintTimeFromDimensions(width, depth, height)
+          const estimatedHours = timeEstimate.estimatedHours
+          if (isFDM) {
+            store.setFdmPrintParams({ ...store.fdmPrintParams, printTimeHours: estimatedHours })
+          } else {
+            store.setResinPrintParams({ ...store.resinPrintParams, printTimeHours: estimatedHours })
+          }
+        }
+
         const density = store.fdmAmsEnabled
           ? (store.fdmAmsSlots.find(s => s.enabled)?.density ?? store.fdmMaterial.density)
           : store.fdmMaterial.density
@@ -160,6 +176,16 @@ export function Calculator() {
     setter(value === '' ? 0 : parseFloat(value) || 0)
   }, [])
 
+  const results = store.results
+
+  if (!results) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-slate-500 text-sm">Carregando...</div>
+      </div>
+    )
+  }
+
   function renderSectionHeader(Icon: LucideIcon, title: string, subtitle?: string) {
     return (
       <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-white/[0.06]">
@@ -175,7 +201,7 @@ export function Calculator() {
   function renderMaterialSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), isFDM ? 'Filamento FDM' : 'Resina fotopolimérica')}
+        {renderSectionHeader(isFDM ? Layers : FlaskConical, t('calc.material'), t(isFDM ? 'calc.sectionDesc.fdmMaterial' : 'calc.sectionDesc.resinMaterial'))}
         {isFDM ? (
           <>
           {(store.selectedPrinter.maxFilaments ?? 1) > 1 && (
@@ -234,7 +260,7 @@ export function Calculator() {
                       <div className="grid grid-cols-2 gap-2">
                         <InputGroup label="R$/kg" value={slot.costPerKg}
                           onChange={v => store.setFdmAmsSlot(i, { ...slot, costPerKg: parseFloat(v) || 0 })}
-                          type="number" prefix="R$" />
+                          type="number" prefix={currencySymbol} />
                         <InputGroup label="Peso (g)" value={slot.weightUsedGrams}
                           onChange={v => store.setFdmAmsSlot(i, { ...slot, weightUsedGrams: parseFloat(v) || 0 })}
                           type="number" unit="g" />
@@ -260,7 +286,7 @@ export function Calculator() {
             <div className="relative">
               <InputGroup label={t('calc.costPerKg')} value={store.fdmMaterial.costPerKg}
                 onChange={v => handleInput(v, val => store.setFdmMaterial({ ...store.fdmMaterial, costPerKg: val }))}
-                type="number" prefix="R$" />
+                type="number" prefix={currencySymbol} />
               {inventorySpools.length > 0 && (
                 <button
                   type="button"
@@ -354,7 +380,7 @@ export function Calculator() {
               options={catalogMaterials.filter(m => m.type === 'resin').map(m => ({ label: m.name, value: m.name }))} />
             <InputGroup label={t('calc.costPerLiter')} value={store.resinMaterial.costPerLiter}
               onChange={v => handleInput(v, val => store.setResinMaterial({ ...store.resinMaterial, costPerLiter: val }))}
-              type="number" prefix="R$" />
+              type="number" prefix={currencySymbol} />
             <InputGroup label={t('calc.volumeMl')} value={store.resinMaterial.volumeUsedMl}
               onChange={v => handleInput(v, val => store.setResinMaterial({ ...store.resinMaterial, volumeUsedMl: val }))}
               type="number" unit="ml" />
@@ -370,7 +396,7 @@ export function Calculator() {
   function renderPrintSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), 'Tempo, energia, falhas e impressora')}
+        {renderSectionHeader(SlidersHorizontal, t('calc.printParams'), t('calc.sectionDesc.print'))}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.printTime')}
             value={isFDM ? store.fdmPrintParams.printTimeHours : store.resinPrintParams.printTimeHours}
@@ -398,47 +424,61 @@ export function Calculator() {
               groups search />
             </div>
           )}
-            <div className="sm:col-span-2 glass rounded-xl p-4 sm:p-5 space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <span className="text-xs sm:text-sm font-medium text-gray-400">{t('calc.failure')}</span>
-              <div className="flex flex-wrap gap-2">
-                {(['none', 'percent', 'fixed'] as const).map(mode => {
-                  const current = isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode
-                  const label = mode === 'none' ? t('calc.noFailure') : mode === 'percent' ? '%' : 'R$'
-                  return (
-                    <button key={mode}
-                      onClick={() => isFDM
-                        ? store.setFdmPrintParams({ ...store.fdmPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.fdmPrintParams.failureValue })
-                        : store.setResinPrintParams({ ...store.resinPrintParams, failureMode: mode, failureValue: mode === 'none' ? 0 : store.resinPrintParams.failureValue })
-                      }
-                      className={`px-3 min-h-[44px] text-xs sm:text-sm rounded-lg transition-all flex items-center ${current === mode ? `${themeBg} text-white` : 'bg-white/5 text-gray-400 hover:text-white'}`}
-                    >
-                      {label}
-                    </button>
-                  )
-                })}
-              </div>
+        </div>
+      </div>
+    )
+  }
+
+  function renderFailureSection() {
+    const failureMode = isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode
+    const failureValue = isFDM ? store.fdmPrintParams.failureValue : store.resinPrintParams.failureValue
+    const riskMultiplier = isFDM ? store.fdmPrintParams.riskMultiplier : store.resinPrintParams.riskMultiplier
+    const failureEnabled = store.enabledSections.failure
+
+    const setFailureField = (field: Partial<typeof store.fdmPrintParams>) => {
+      const current = isFDM ? store.fdmPrintParams : store.resinPrintParams
+      const update = { ...current, ...field }
+      if (isFDM) {
+        store.setFdmPrintParams(update)
+      } else {
+        store.setResinPrintParams(update)
+      }
+    }
+
+    return (
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(AlertTriangle, t('calc.failure.title'), t('calc.failure.description'))}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between glass rounded-xl px-4 py-3">
+            <span className="text-xs font-semibold text-gray-400">{t('calc.failure.enableFailure')}</span>
+            <ToggleSwitch enabled={failureEnabled} onToggle={() => {
+              store.toggleSection('failure')
+              if (!failureEnabled && failureMode === 'none') {
+                setFailureField({ failureMode: 'percent', failureValue: 10 })
+              }
+            }} />
+          </div>
+          <div className={`space-y-4 transition-all duration-300 ${failureEnabled ? '' : 'opacity-40 pointer-events-none'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Select label={t('calc.failure.mode')}
+                value={failureMode === 'none' ? 'percent' : failureMode}
+                onChange={v => setFailureField({ failureMode: v as 'percent' | 'fixed', failureValue: v === 'percent' ? (failureValue || 10) : failureValue })}
+                options={[
+                  { value: 'percent', label: t('calc.failure.modePercent') },
+                  { value: 'fixed', label: t('calc.failure.modeFixed') },
+                ]} />
+              <InputGroup label={t('calc.failure.value')}
+                value={failureValue}
+                onChange={v => setFailureField({ failureValue: parseFloat(v) || 0 })}
+                type="number"
+                unit={failureMode === 'fixed' ? undefined : '%'}
+                prefix={failureMode === 'fixed' ? 'R$' : undefined} />
             </div>
-            {(isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode) !== 'none' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <InputGroup label={t('calc.failureValue')}
-                  value={isFDM ? store.fdmPrintParams.failureValue : store.resinPrintParams.failureValue}
-                  onChange={v => handleInput(v, val => isFDM
-                    ? store.setFdmPrintParams({ ...store.fdmPrintParams, failureValue: val })
-                    : store.setResinPrintParams({ ...store.resinPrintParams, failureValue: val })
-                  )} type="number"
-                  unit={(isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode) === 'percent' ? '%' : undefined}
-                  prefix={(isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode) === 'fixed' ? 'R$' : undefined} />
-                {(isFDM ? store.fdmPrintParams.failureMode : store.resinPrintParams.failureMode) === 'percent' && (
-                  <InputGroup label={t('calc.riskMultiplier')}
-                    value={isFDM ? store.fdmPrintParams.riskMultiplier : store.resinPrintParams.riskMultiplier}
-                    onChange={v => handleInput(v, val => isFDM
-                      ? store.setFdmPrintParams({ ...store.fdmPrintParams, riskMultiplier: val })
-                      : store.setResinPrintParams({ ...store.resinPrintParams, riskMultiplier: val })
-                    )} type="number" step="0.1" />
-                )}
-              </div>
-            )}
+            <InputGroup label={t('calc.failure.riskMultiplier')}
+              value={riskMultiplier}
+              onChange={v => setFailureField({ riskMultiplier: parseFloat(v) || 0 })}
+              type="number" step="0.1"
+              tooltip={t('calc.failure.riskMultiplierTooltip')} />
           </div>
         </div>
       </div>
@@ -448,7 +488,7 @@ export function Calculator() {
   function renderHardwareSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5 space-y-6">
-        {renderSectionHeader(Wrench, t('calc.fdmHardware'), isFDM ? 'Bico, mesa e acabamento' : 'Washing, curing, LCD/FEP')}
+        {renderSectionHeader(Wrench, t('calc.fdmHardware'), t(isFDM ? 'calc.sectionDesc.fdmHardware' : 'calc.sectionDesc.resinHardware'))}
         {isFDM && (
           <>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
@@ -460,7 +500,7 @@ export function Calculator() {
                 {store.fdmHardware.nozzleEnabled && (
                   <>
                     <InputGroup label={t('calc.nozzleCost')} value={store.fdmHardware.nozzleCost}
-                      onChange={v => handleInput(v, val => store.setFdmHardware({ ...store.fdmHardware, nozzleCost: val }))} type="number" prefix="R$" />
+                      onChange={v => handleInput(v, val => store.setFdmHardware({ ...store.fdmHardware, nozzleCost: val }))} type="number" prefix={currencySymbol} />
                     <InputGroup label={t('calc.nozzleLife')} value={store.fdmHardware.nozzleLifespanKg}
                       onChange={v => handleInput(v, val => store.setFdmHardware({ ...store.fdmHardware, nozzleLifespanKg: val }))} type="number" unit="kg" />
                   </>
@@ -473,7 +513,7 @@ export function Calculator() {
                 </div>
                 {store.fdmHardware.bedEnabled && (
                   <InputGroup label={t('calc.bedCost')} value={store.fdmHardware.bedAdhesionCost}
-                    onChange={v => handleInput(v, val => store.setFdmHardware({ ...store.fdmHardware, bedAdhesionCost: val }))} type="number" prefix="R$" />
+                    onChange={v => handleInput(v, val => store.setFdmHardware({ ...store.fdmHardware, bedAdhesionCost: val }))} type="number" prefix={currencySymbol} />
                 )}
               </div>
             </div>
@@ -483,7 +523,7 @@ export function Calculator() {
                 <span className="text-sm font-semibold text-white">{t('calc.fdmFinishing')}</span>
               </div>
               <InputGroup label={t('calc.finishingSupplies')} value={store.fdmFinishing.suppliesCost}
-                onChange={v => handleInput(v, val => store.setFdmFinishing({ ...store.fdmFinishing, suppliesCost: val }))} type="number" prefix="R$" />
+                onChange={v => handleInput(v, val => store.setFdmFinishing({ ...store.fdmFinishing, suppliesCost: val }))} type="number" prefix={currencySymbol} />
             </div>
           </>
         )}
@@ -526,11 +566,11 @@ export function Calculator() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <InputGroup label={t('calc.lcdCost')} value={store.resinHardware.lcdCost}
-                  onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdCost: val }))} type="number" prefix="R$" />
+                  onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdCost: val }))} type="number" prefix={currencySymbol} />
                 <InputGroup label={t('calc.lcdLife')} value={store.resinHardware.lcdLifespanHours}
                   onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, lcdLifespanHours: val }))} type="number" unit="h" />
                 <InputGroup label={t('calc.fepCost')} value={store.resinHardware.fepCost}
-                  onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, fepCost: val }))} type="number" prefix="R$" />
+                  onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, fepCost: val }))} type="number" prefix={currencySymbol} />
                 <InputGroup label={t('calc.fepLife')} value={store.resinHardware.fepLifespanPrints}
                   onChange={v => handleInput(v, val => store.setResinHardware({ ...store.resinHardware, fepLifespanPrints: val }))} type="number" unit="prints" />
               </div>
@@ -544,11 +584,11 @@ export function Calculator() {
   function renderMachineSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(Printer, t('calc.machine'), 'Depreciação e manutenção')}
+        {renderSectionHeader(Printer, t('calc.machine'), t('calc.sectionDesc.machine'))}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.machineCost')}
             value={isFDM ? store.fdmMachine.machineCost : store.resinMachine.machineCost}
-            onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, machineCost: val }) : store.setResinMachine({ ...store.resinMachine, machineCost: val }))} type="number" prefix="R$" />
+            onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, machineCost: val }) : store.setResinMachine({ ...store.resinMachine, machineCost: val }))} type="number" prefix={currencySymbol} />
           <InputGroup label={t('calc.depreciationMonths')}
             value={isFDM ? store.fdmMachine.depreciationMonths : store.resinMachine.depreciationMonths}
             onChange={v => handleInput(v, val => isFDM ? store.setFdmMachine({ ...store.fdmMachine, depreciationMonths: val }) : store.setResinMachine({ ...store.resinMachine, depreciationMonths: val }))} type="number" unit="meses" />
@@ -572,10 +612,37 @@ export function Calculator() {
     )
   }
 
+  function renderFixedCostsSection() {
+    return (
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        {renderSectionHeader(Receipt, t('calc.fixedCost.title'), t('calc.fixedCost.description'))}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-400">{t('calc.fixedCost.title')}</span>
+          <ToggleSwitch enabled={store.fixedCosts.enabled}
+            onToggle={v => store.setFixedCostsField('enabled', v)} />
+        </div>
+        {store.fixedCosts.enabled && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <InputGroup label={t('calc.fixedCost.monthlyCost')}
+              value={store.fixedCosts.monthlyCost}
+              onChange={v => handleInput(v, val => store.setFixedCostsField('monthlyCost', val))}
+              type="number" prefix={currencySymbol}
+              tooltip={t('calc.fixedCost.monthlyCostTooltip')} />
+            <InputGroup label={t('calc.fixedCost.monthlyHours')}
+              value={store.fixedCosts.monthlyPrintHours}
+              onChange={v => handleInput(v, val => store.setFixedCostsField('monthlyPrintHours', val))}
+              type="number" unit="h/mês"
+              tooltip={t('calc.fixedCost.monthlyHoursTooltip')} />
+          </div>
+        )}
+      </div>
+    )
+  }
+
   function renderLaborSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(HardHat, t('calc.labor'), 'Setup, pós-processamento e taxa horária')}
+        {renderSectionHeader(HardHat, t('calc.labor'), t('calc.sectionDesc.labor'))}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <InputGroup label={t('calc.setupTime')}
             value={isFDM ? store.fdmLabor.setupTimeMinutes : store.resinLabor.setupTimeMinutes}
@@ -585,7 +652,7 @@ export function Calculator() {
             onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, postProcessingTimeMinutes: val }) : store.setResinLabor({ ...store.resinLabor, postProcessingTimeMinutes: val }))} type="number" unit="min" />
           <InputGroup label={t('calc.hourlyRate')}
             value={isFDM ? store.fdmLabor.hourlyRate : store.resinLabor.hourlyRate}
-            onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, hourlyRate: val }) : store.setResinLabor({ ...store.resinLabor, hourlyRate: val }))} type="number" prefix="R$" />
+            onChange={v => handleInput(v, val => isFDM ? store.setFdmLabor({ ...store.fdmLabor, hourlyRate: val }) : store.setResinLabor({ ...store.resinLabor, hourlyRate: val }))} type="number" prefix={currencySymbol} />
         </div>
       </div>
     )
@@ -594,7 +661,7 @@ export function Calculator() {
   function renderOpsSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), 'EPI, slicer e licença de modelo')}
+        {renderSectionHeader(ShieldCheck, t('calc.opsSoftware'), t('calc.sectionDesc.ops'))}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           <div>
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
@@ -605,7 +672,7 @@ export function Calculator() {
             {(isFDM ? store.fdmOps.enabled : store.resinOps.enabled) && (
               <InputGroup label={t('calc.ppeCost')}
                 value={isFDM ? store.fdmOps.ppeCostPerPrint : store.resinOps.ppeCostPerPrint}
-                onChange={v => handleInput(v, val => isFDM ? store.setFdmOps({ ...store.fdmOps, ppeCostPerPrint: val }) : store.setResinOps({ ...store.resinOps, ppeCostPerPrint: val }))} type="number" prefix="R$" />
+                onChange={v => handleInput(v, val => isFDM ? store.setFdmOps({ ...store.fdmOps, ppeCostPerPrint: val }) : store.setResinOps({ ...store.resinOps, ppeCostPerPrint: val }))} type="number" prefix={currencySymbol} />
             )}
           </div>
           <div>
@@ -618,10 +685,10 @@ export function Calculator() {
               <div className="space-y-3">
                 <InputGroup label={t('calc.slicerCost')}
                   value={isFDM ? store.fdmSoft.slicerMonthlyCost : store.resinSoft.slicerMonthlyCost}
-                  onChange={v => handleInput(v, val => isFDM ? store.setFdmSoft({ ...store.fdmSoft, slicerMonthlyCost: val }) : store.setResinSoft({ ...store.resinSoft, slicerMonthlyCost: val }))} type="number" prefix="R$" />
+                  onChange={v => handleInput(v, val => isFDM ? store.setFdmSoft({ ...store.fdmSoft, slicerMonthlyCost: val }) : store.setResinSoft({ ...store.resinSoft, slicerMonthlyCost: val }))} type="number" prefix={currencySymbol} />
                 <InputGroup label={t('calc.modelCost')}
                   value={isFDM ? store.fdmSoft.modelFileCost : store.resinSoft.modelFileCost}
-                  onChange={v => handleInput(v, val => isFDM ? store.setFdmSoft({ ...store.fdmSoft, modelFileCost: val }) : store.setResinSoft({ ...store.resinSoft, modelFileCost: val }))} type="number" prefix="R$" />
+                  onChange={v => handleInput(v, val => isFDM ? store.setFdmSoft({ ...store.fdmSoft, modelFileCost: val }) : store.setResinSoft({ ...store.resinSoft, modelFileCost: val }))} type="number" prefix={currencySymbol} />
               </div>
             )}
           </div>
@@ -633,7 +700,7 @@ export function Calculator() {
   function renderSalesSection() {
     return (
       <div className="glass rounded-2xl p-4 sm:p-5">
-        {renderSectionHeader(DollarSign, t('calc.sales'), 'Embalagem, frete, marketplace e margem')}
+        {renderSectionHeader(DollarSign, t('calc.sales'), t('calc.sectionDesc.sales'))}
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputGroup label={t('calc.quantity')}
@@ -645,14 +712,14 @@ export function Calculator() {
           </div>
           <InputGroup label={t('calc.extras')}
             value={isFDM ? store.fdmExtras.extrasCost : store.resinExtras.extrasCost}
-            onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix="R$" />
+            onChange={v => handleInput(v, val => isFDM ? store.setFdmExtras({ extrasCost: val }) : store.setResinExtras({ extrasCost: val }))} type="number" prefix={currencySymbol} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <InputGroup label={t('calc.packaging')}
               value={isFDM ? store.fdmSales.packagingCost : store.resinSales.packagingCost}
-              onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, packagingCost: val }) : store.setResinSales({ ...store.resinSales, packagingCost: val }))} type="number" prefix="R$" />
+              onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, packagingCost: val }) : store.setResinSales({ ...store.resinSales, packagingCost: val }))} type="number" prefix={currencySymbol} />
             <InputGroup label={t('calc.shipping')}
               value={isFDM ? store.fdmSales.shippingCost : store.resinSales.shippingCost}
-              onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix="R$" />
+              onChange={v => handleInput(v, val => isFDM ? store.setFdmSales({ ...store.fdmSales, shippingCost: val }) : store.setResinSales({ ...store.resinSales, shippingCost: val }))} type="number" prefix={currencySymbol} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select label={t('calc.marketplace')} value={store.selectedMarketplace.id}
@@ -720,7 +787,7 @@ export function Calculator() {
                   }`}
                   title={t(s.label)}>
                   <s.Icon className={`w-4 h-4 shrink-0 ${activeSection === s.id ? 'text-indigo-400' : ''}`} />
-                  <span className="text-[11px] font-medium leading-tight">{s.short}</span>
+                  <span className="text-[11px] font-medium leading-tight">{t(s.shortKey)}</span>
                 </button>
               </div>
             )
@@ -764,8 +831,10 @@ export function Calculator() {
           <div className="space-y-4">
             <div id="section-material" className="scroll-mt-24">{renderMaterialSection()}</div>
             <div id="section-print" className="scroll-mt-24">{renderPrintSection()}</div>
+            <div id="section-failure" className="scroll-mt-24">{renderFailureSection()}</div>
             <div id="section-hardware" className="scroll-mt-24">{renderHardwareSection()}</div>
             <div id="section-machine" className="scroll-mt-24">{renderMachineSection()}</div>
+            <div id="section-fixedCost" className="scroll-mt-24">{renderFixedCostsSection()}</div>
             <div id="section-labor" className="scroll-mt-24">{renderLaborSection()}</div>
             <div id="section-ops" className="scroll-mt-24">{renderOpsSection()}</div>
             <div id="section-sales" className="scroll-mt-24">{renderSalesSection()}</div>
@@ -790,36 +859,7 @@ export function Calculator() {
             <span className="text-emerald-400 font-bold"><span className="text-slate-500 mr-1">Venda</span>{fmtCurrency(results.sellPrice)}</span>
             <span className="text-amber-400"><span className="text-slate-500 mr-1">Lucro</span>{fmtCurrency(results.profit)}</span>
           </div>
-          <button onClick={() => {
-            const r = store.results
-            if (!r) return
-            store.addToHistory()
-            const name = store.productName.trim() || (store.activeTab === 'fdm'
-              ? `${store.fdmMaterial.type} - ${store.fdmMaterial.weightUsed}g`
-              : `${store.resinMaterial.type} - ${store.resinMaterial.volumeUsedMl}ml`)
-            const snapshot: import('@/types').CalculationSnapshot = {
-              id: Date.now().toString(), timestamp: Date.now(), type: store.activeTab, summary: name,
-              fdmMaterial: store.fdmMaterial, fdmPrintParams: store.fdmPrintParams,
-              fdmMachine: store.fdmMachine, fdmHardware: store.fdmHardware, fdmFinishing: store.fdmFinishing,
-              fdmLabor: store.fdmLabor, fdmExtras: store.fdmExtras, fdmSales: store.fdmSales,
-              fdmOps: store.fdmOps, fdmSoft: store.fdmSoft,
-              resinMaterial: store.resinMaterial, resinPrintParams: store.resinPrintParams,
-              resinPostProcess: store.resinPostProcess, resinMachine: store.resinMachine,
-              resinHardware: store.resinHardware, resinLabor: store.resinLabor,
-              resinExtras: store.resinExtras, resinSales: store.resinSales,
-              resinOps: store.resinOps, resinSoft: store.resinSoft,
-              fdmAmsEnabled: store.fdmAmsEnabled || undefined,
-              fdmAmsSlots: store.fdmAmsSlots,
-              selectedPrinterId: store.selectedPrinter.id, selectedMarketplaceId: store.selectedMarketplace.id,
-              productName: store.productName, quantity: store.quantity, infillPercent: store.infillPercent,
-              targetMarginMode: store.targetMarginMode, enabledSections: store.enabledSections,
-              results: r,
-            }
-            useProductStore.getState().save(name, r, snapshot)
-          }} className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[9px] font-bold shrink-0 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none hover:bg-indigo-500 transition-colors">
-            <FolderOpen className="w-2.5 h-2.5" />
-            Salvar
-          </button>
+
         </div>
         {/* Section nav */}
         <nav style={{ background: 'rgba(6,8,24,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
@@ -833,7 +873,7 @@ export function Calculator() {
                   activeSection === s.id ? 'text-indigo-400' : 'text-slate-600 hover:text-slate-400'
                 }`}>
                 <s.Icon className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? 'scale-110' : ''}`} />
-                <span className="truncate max-w-[48px] leading-tight">{s.short}</span>
+                <span className="truncate max-w-[48px] leading-tight">{t(s.shortKey)}</span>
               </button>
             ))}
           </div>

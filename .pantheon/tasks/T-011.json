@@ -1,0 +1,15 @@
+{
+  "id": "T-011",
+  "subject": "Review completo da Fase 2+",
+  "description": "Revisar todos os PRs da Fase 2+: qualidade, cobertura de testes, i18n, tipos, performance. Garantir que coverage calculator.ts ≥ 80%. Validar quebra de compatibilidade com dados existentes no localStorage.",
+  "status": "pending",
+  "activeForm": "Revisando Fase 2+",
+  "blockedBy": ["T-003", "T-006", "T-007", "T-010"],
+  "blocks": [],
+  "owner": "Themis",
+  "metadata": {
+    "files": ["todos os arquivos modificados"],
+    "dependencies": ["todos os tasks anteriores"],
+    "estimatedEffort": "médio"
+  }
+}

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useReducer } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 
 interface ConfirmDialogProps {
@@ -10,6 +10,17 @@ interface ConfirmDialogProps {
   variant?: 'danger' | 'warning' | 'info'
   onConfirm: () => void
   onCancel: () => void
+}
+
+type DialogState = 'visible' | 'closing' | 'hidden'
+type DialogAction = { type: 'open' } | { type: 'close' } | { type: 'closeComplete' }
+
+function dialogReducer(_state: DialogState, action: DialogAction): DialogState {
+  switch (action.type) {
+    case 'open': return 'visible'
+    case 'close': return 'closing'
+    case 'closeComplete': return 'hidden'
+  }
 }
 
 const variantStyles = {
@@ -24,20 +35,22 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
-  const [visible, setVisible] = useState(false)
+  const [dialogState, dispatch] = useReducer(dialogReducer, 'hidden')
 
   useEffect(() => {
     if (open) {
-      setVisible(true)
+      dispatch({ type: 'open' })
       setTimeout(() => confirmRef.current?.focus(), 50)
     } else {
-      const timer = setTimeout(() => setVisible(false), 200)
+      dispatch({ type: 'close' })
+      const timer = setTimeout(() => dispatch({ type: 'closeComplete' }), 200)
       return () => clearTimeout(timer)
     }
   }, [open])
 
   useEffect(() => {
     if (!open) return
+    const focusTimer = setTimeout(() => confirmRef.current?.focus(), 50)
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { onCancel(); return }
       if (e.key !== 'Tab') return
@@ -53,10 +66,13 @@ export function ConfirmDialog({
       }
     }
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      clearTimeout(focusTimer)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [open, onCancel])
 
-  if (!visible) return null
+  if (dialogState === 'hidden') return null
 
   const styles = variantStyles[variant]
 

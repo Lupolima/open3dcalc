@@ -36,7 +36,19 @@
     "printerPower": "Printer Power",
     "energyCost": "Energy Cost",
     "printer": "Printer",
-    "failure": "Risk & Failure",
+    "failure": {
+      "title": "Risk & Failures",
+      "description": "Print failure costs",
+      "enableFailure": "Enable failure cost",
+      "mode": "Failure mode",
+      "modePercent": "Percentage",
+      "modeFixed": "Fixed (R$)",
+      "value": "Failure value",
+      "valuePercent": "% failure over base cost",
+      "valueFixed": "Fixed failure cost",
+      "riskMultiplier": "Risk multiplier",
+      "riskMultiplierTooltip": "Applies a multiplier to the total cost for high-risk scenarios"
+    },
     "noFailure": "No fee",
     "failureValue": "Value",
     "riskMultiplier": "Risk Multiplier",
@@ -115,6 +127,47 @@
     "monthlyRevenue": "Monthly Revenue",
     "monthlyCost": "Monthly Cost",
     "monthlyProfit": "Monthly Profit",
+    "fixedCost": {
+      "title": "Fixed Costs",
+      "description": "Monthly fixed workshop costs",
+      "monthlyCost": "Monthly Fixed Cost",
+      "monthlyCostTooltip": "Internet, rent, base electricity, workshop maintenance",
+      "monthlyHours": "Hours per Month",
+      "monthlyHoursTooltip": "Estimated monthly printer operating hours"
+    },
+    "chartLabels": {
+      "energy": "Energy",
+      "machine": "Machine",
+      "finishing": "Finishing",
+      "consumables": "Consumables",
+      "software": "Software",
+      "labor": "Labor",
+      "failure": "Failure",
+      "extras": "Extras"
+    },
+    "sectionShort": {
+      "material": "Material",
+      "print": "Params",
+      "failure": "Failure",
+      "hardware": "Hardware",
+      "machine": "Machine",
+      "fixedCost": "Fixed",
+      "labor": "Labor",
+      "ops": "Ops",
+      "sales": "Sales",
+      "results": "Results"
+    },
+    "sectionDesc": {
+      "fdmMaterial": "FDM Filament",
+      "resinMaterial": "Photopolymer resin",
+      "print": "Time, energy and printer",
+      "fdmHardware": "Nozzle, bed and finishing",
+      "resinHardware": "Washing, curing, LCD/FEP",
+      "machine": "Depreciation and maintenance",
+      "labor": "Setup, post-processing and hourly rate",
+      "ops": "PPE, slicer and model license",
+      "sales": "Packaging, shipping, marketplace and margin"
+    },
     "printVsBuy": "Print vs Buy",
     "buyPrice": "Buy Price",
     "savings": "Savings",
@@ -224,6 +277,16 @@
     "empty": "No saved products.",
     "search": "Search products...",
     "filter": "Filter",
+    "filters": {
+      "all": "All",
+      "resin": "Resin"
+    },
+    "sort": {
+      "date": "Date",
+      "price": "Price",
+      "profit": "Profit",
+      "name": "Name"
+    },
     "details": "Details",
     "delete": "Delete",
     "deleteConfirm": "Delete this product?",
@@ -271,6 +334,10 @@
     "watt": "W",
     "noData": "No data available"
   },
+  "results": {
+    "exportQuote": "Export Quote",
+    "exportQuoteSuccess": "Quote exported successfully"
+  },
   "tooltip": {
     "costPerKg": "Average price per kg of filament. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
     "purge": "Weight wasted in purge tower or color change. Can be larger than the part in multicolor prints!",
@@ -284,5 +351,9 @@
     "finishing": "Estimated cost of sandpaper, primer, paints, putty or acetone used on this part.",
     "ppe": "Gloves, masks, paper towels, filters, etc. Fixed cost per print.",
     "extras": "Screws, adhesives, varnishes, paints, etc."
+  },
+  "settings": {
+    "currency": "Currency",
+    "currencyAuto": "Auto"
   }
 }
