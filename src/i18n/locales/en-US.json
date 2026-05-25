@@ -383,5 +383,134 @@
   "settings": {
     "currency": "Currency",
     "currencyAuto": "Auto"
+  },
+  "changelog": {
+    "header": "{{versions}} versions · {{changes}} changes",
+    "viewAllOnGitHub": "View all releases on GitHub",
+    "versions": [
+      {
+        "version": "1.4.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ New",
+            "items": [
+              "Automatic Inventory Deduction — \"Deduct from Inventory\" button in ResultsPanel with spool dropdown",
+              "Enhanced Dashboard — localStorage persistence, Break-Even, Average Margin, Profit Trend",
+              "History Comparison — checkboxes, side-by-side modal with green/red highlighting",
+              "JSON Import — file picker + importJson() with smart merge without duplicates"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Spool dropdown with color visual indicator, brand and remaining weight",
+              "Checkbox on history records with highlight on selection",
+              "Visual success feedback on deduction and import"
+            ]
+          },
+          {
+            "title": "🔧 Technical",
+            "items": [
+              "ResultsPanel.tsx: integration with useFilamentInventory, dropdown with click-outside",
+              "Dashboard.tsx: localStorage persistence, break-even, AreaChart with gradient",
+              "ComparisonModal.tsx: focus trap, ESC close, 10 comparison fields",
+              "HistoryTab.tsx: selectedForCompare, file input with FileReader",
+              "14 new i18n keys in pt-BR and en-US"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.3.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ New",
+            "items": [
+              "Multi-Currency System — BRL/USD/EUR/GBP support with auto-detection",
+              "Currency Selector in Header — dropdown with Automatic, BRL, USD, EUR, GBP options",
+              "Redesigned Inventory — SVG spool icons, search, filters, editing, color palette",
+              "Spool Status — status and purchaseStore fields with automatic migration",
+              "Fixed Costs in Navigation — section added to sidebar navigation"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Currency selector with automatic fallback (pt-BR → BRL)",
+              "Loading indicator when results are null",
+              "Internationalized labels and descriptions via i18n"
+            ]
+          },
+          {
+            "title": "🔧 Technical",
+            "items": [
+              "lib/currency.ts + hooks/useCurrency.ts — locale-aware formatting",
+              "calculatorStore: new currency field with localStorage persistence",
+              "filamentInventory: new fields colorHex, status, purchaseStore, updateSpool()",
+              "All R$ occurrences replaced by the useCurrency hook"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.2.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ New",
+            "items": [
+              "Collaboration Structure — CONTRIBUTING.md, PR/issue templates, SECURITY.md",
+              "CODEOWNERS — automatic review for all code",
+              "MAINTAINERS.md — documentation of roles and responsibilities"
+            ]
+          },
+          {
+            "title": "🔧 Technical",
+            "items": [
+              "CI/CD with parallel jobs (lint, typecheck, test, build) + coverage report",
+              "Husky + commitlint + lint-staged for automatic validation"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-05-20",
+        "sections": [
+          {
+            "title": "✨ New",
+            "items": [
+              "AMS Multi-material — support for multi-filament printers (Bambu Lab, Prusa XL)",
+              "Inventory → Calculator — select spools to fill cost/kg",
+              "Catalog → Calculator — custom printers and materials in selects",
+              "Load from History — full restorable snapshot in the calculator",
+              "Auto-save — form saved every 800ms + beforeunload",
+              "ConfirmDialog — styled modal replacing native confirm()",
+              "StoreBridge — orchestration between stores"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Units moved outside inputs — cleaner visual",
+              "Simplified section headers — no arrow toggles",
+              "Responsive grids — maximum 2 items per row",
+              "Reduced padding in cards and grids"
+            ]
+          },
+          {
+            "title": "🔧 Technical",
+            "items": [
+              "New types: AMSSlot, PrinterProfile.maxFilaments, CalculationSnapshot",
+              "calculatorStore: auto-save with debounce, loadHistoryItem()",
+              "ConfirmDialog: focus trap, ESC close, 3 variants",
+              "AMS calculation integrated into computeStoreResults()"
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
