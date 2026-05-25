@@ -291,13 +291,17 @@ export function Calculator() {
                 <button
                   type="button"
                   onClick={() => setShowSpoolSelector(!showSpoolSelector)}
-                  className="absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 transition-colors"
+                  className={`absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md transition-colors ${
+                    showSpoolSelector
+                      ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-500/40'
+                      : 'bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50'
+                  }`}
                 >
                   Inventário
                 </button>
               )}
               {showSpoolSelector && (
-                <div className="absolute z-20 mt-1 w-full glass rounded-xl p-2 max-h-48 overflow-y-auto shadow-xl">
+                <div className="absolute z-20 mt-1 w-full glass border border-white/10 rounded-xl p-1 max-h-48 overflow-y-auto shadow-xl">
                   {inventorySpools
                     .filter(s => s.material.toLowerCase() === store.fdmMaterial.type.toLowerCase() || showSpoolSelector)
                     .slice(0, 10)
@@ -306,7 +310,7 @@ export function Calculator() {
                         key={spool.id}
                         type="button"
                         onClick={() => { selectSpool(spool); setShowSpoolSelector(false) }}
-                        className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-white/10 transition-colors flex justify-between"
+                        className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-white/[0.06] transition-colors flex justify-between"
                       >
                         <span className="text-slate-200">{spool.brand} - {spool.color}</span>
                         <span className="text-indigo-400">R$ {spool.costPerKg.toFixed(2)}/kg</span>

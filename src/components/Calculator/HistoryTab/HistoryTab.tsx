@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ComparisonModal } from '@/components/ui/ComparisonModal'
 import { useCurrency } from '@/hooks/useCurrency'
 import type { HistoryEntry } from '@/types'
+import { Select } from '@/components/ui/Select'
 import {
   X, Layers, Zap, Printer, Wrench, HardHat, Monitor,
   Paintbrush, DollarSign, Store, Tags, TrendingUp, Search, FileJson,
@@ -222,16 +223,19 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
           </button>
         ))}
         <div className="flex-1" />
-        <select
+        <Select
+          label=""
           value={store.sortBy}
-          onChange={e => store.setSortBy(e.target.value as 'date' | 'price' | 'profit' | 'name')}
-          className="bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="date">{t('history.sort.date')}</option>
-          <option value="price">{t('history.sort.price')}</option>
-          <option value="profit">{t('history.sort.profit')}</option>
-          <option value="name">{t('history.sort.name')}</option>
-        </select>
+          onChange={v => store.setSortBy(v as 'date' | 'price' | 'profit' | 'name')}
+          options={[
+            { label: t('history.sort.date'), value: 'date' },
+            { label: t('history.sort.price'), value: 'price' },
+            { label: t('history.sort.profit'), value: 'profit' },
+            { label: t('history.sort.name'), value: 'name' },
+          ]}
+          search={false}
+          className="w-28"
+        />
           <button onClick={() => setShowComparison(true)} disabled={selectedForCompare.length !== 2}
             className={`px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center gap-1.5 ${
               selectedForCompare.length === 2 ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-white/5 text-gray-500 cursor-not-allowed'
