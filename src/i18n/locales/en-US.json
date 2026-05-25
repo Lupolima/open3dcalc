@@ -204,6 +204,8 @@
     "printerBrand": "Brand",
     "power": "Power",
     "value": "Value",
+    "usefulLife": "Useful Life",
+    "maintenancePerHour": "Maintenance/h",
     "addMaterial": "New material",
     "selectMaterial": "Select material",
     "customMaterial": "Custom",

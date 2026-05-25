@@ -59,11 +59,13 @@ function PrinterManager() {
   const [brand, setBrand] = useState('')
   const [power, setPower] = useState('')
   const [value, setValue] = useState('')
+  const [usefulLife, setUsefulLife] = useState('3000')
+  const [maintPerHour, setMaintPerHour] = useState('0.25')
 
   const add = () => {
     if (!name.trim()) return
-    store.addPrinter({ id: uid(), name, brand: brand || 'Custom', power: Number(power) || 0, value: Number(value) || 0, usefulLife: 3000, maintenancePerHour: 0.25, custom: true })
-    setName(''); setBrand(''); setPower(''); setValue('')
+    store.addPrinter({ id: uid(), name, brand: brand || 'Custom', power: Number(power) || 0, value: Number(value) || 0, usefulLife: Number(usefulLife) || 3000, maintenancePerHour: Number(maintPerHour) || 0.25, custom: true })
+    setName(''); setBrand(''); setPower(''); setValue(''); setUsefulLife('3000'); setMaintPerHour('0.25')
   }
 
   return (
@@ -86,6 +88,10 @@ function PrinterManager() {
           <InputGroup label={t('catalog.power')} value={power} onChange={setPower} type="number" unit="W" />
           <InputGroup label={t('catalog.value')} value={value} onChange={setValue} type="number" prefix="R$" />
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputGroup label={t('catalog.usefulLife')} value={usefulLife} onChange={setUsefulLife} type="number" unit="h" placeholder="3000" />
+          <InputGroup label={t('catalog.maintenancePerHour')} value={maintPerHour} onChange={setMaintPerHour} type="number" prefix="R$" placeholder="0.25" />
+        </div>
         <button onClick={add} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none">{t('catalog.save')}</button>
       </div>
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
@@ -100,6 +106,8 @@ function PrinterManager() {
             </div>
             <div className="text-xs text-gray-400">{t('catalog.power')}: {p.power}W</div>
             <div className="text-xs text-gray-400">{t('catalog.value')}: R$ {p.value}</div>
+            <div className="text-xs text-gray-400">{t('catalog.usefulLife')}: {p.usefulLife}h</div>
+            <div className="text-xs text-gray-400">{t('catalog.maintenancePerHour')}: R$ {p.maintenancePerHour}/h</div>
             {p.custom && <button onClick={() => store.removePrinter(p.id)} className="text-xs text-red-400 hover:text-red-300 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none rounded">{t('catalog.remove')}</button>}
           </div>
         ))}
