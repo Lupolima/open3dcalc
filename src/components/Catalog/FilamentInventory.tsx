@@ -13,10 +13,6 @@ const FILTER_STATUSES = [
   { value: 'empty',      label: 'Vazio' },
 ]
 const MATERIALS = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'SILK', 'Nylon', 'PLA-CF', 'PETG-CF', 'PVA', 'HIPS', 'Outro']
-const BRANDS = [
-  'Bambu Lab', 'Creality', 'Anycubic', 'Prusa', 'Elegoo', 'Flashforge',
-  'Hatchbox', 'eSun', 'Sunlu', 'Polymaker', 'Voolt 3D', '3DPrime', 'Outro',
-]
 const STORES = [
   'Aliexpress', 'Mercado Livre', 'Amazon', 'Voolt 3D', '3DPrime',
   'Bambu Store', 'Creality Store', 'Shopee', 'Outro',
@@ -358,7 +354,7 @@ export function FilamentInventory() {
                 </div>
               </div>
               <Select label="Material" value={form.material} onChange={v => upd('material', v)} options={MATERIALS.map(m => ({ label: m, value: m }))} search={false} />
-              <Select label="Marca" value={form.brand} onChange={v => upd('brand', v)} options={BRANDS.map(b => ({ label: b, value: b }))} search />
+              <InputGroup label="Marca" value={form.brand} onChange={v => upd('brand', v)} type="text" placeholder="Ex: Overture, eSun..." />
               <InputGroup label="Peso (g)" value={form.weight} onChange={v => upd('weight', v)} type="number" unit="g" />
               <InputGroup label="Custo/kg" value={form.costPerKg} onChange={v => upd('costPerKg', v)} type="number" prefix={symbol} />
               <Select label="Loja" value={form.purchaseStore} onChange={v => upd('purchaseStore', v)} options={STORES.map(s => ({ label: s, value: s }))} search />

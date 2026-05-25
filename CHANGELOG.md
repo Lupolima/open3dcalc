@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0] — 2026-05-25
+
+### ✨ Novo
+
+- **Dedução Automática de Estoque** — botão "Deduzir do Estoque" no ResultsPanel. Dropdown com carretéis disponíveis filtrados por material e estoque, confirmação via ConfirmDialog, feedback de sucesso com auto-hide.
+- **Dashboard Aprimorado** — persistência de inputs (printsPerMonth, buyPrice, targetSellPrice) no localStorage. Card Break-Even (unidades necessárias para cobrir custo fixo). Card Margem Média sobre histórico. Gráfico de Tendência de Lucro (AreaChart recharts com gradiente).
+- **Comparativo de Histórico** — checkboxes nos registros do histórico (máx 2). Botão "Comparar" abre modal com tabela lado a lado de 10 campos, destacando melhor (verde) e pior (vermelho) com ícones TrendingUp/TrendingDown.
+- **Importação JSON** — botão "Importar JSON" no HistoryTab com file picker. Usa `importJson()` existente no historyStore com merge inteligente sem duplicatas.
+
+### 🎨 UX
+
+- Dropdown de carretéis com indicador visual de cor, marca, material e peso restante.
+- Checkbox de seleção nos registros do histórico com destaque (ring indigo) quando selecionado.
+- Contador de seleção no botão "Comparar" (ex: "Comparar (2/2)").
+- Feedback temporário de resultado de importação (3s auto-hide).
+
+### 🔧 Técnico
+
+- `ResultsPanel.tsx`: integração com `useFilamentInventory`, dropdown de carretéis com click-outside, `deductWeight()`.
+- `Dashboard.tsx`: persistência localStorage (`open3dcalc_dashboard_v1`), break-even com `fixedCosts.monthlyCost`, área chart com gradiente SVG, cálculo de margem média do histórico.
+- `ComparisonModal.tsx` (novo): modal de comparação com focus trap, ESC close, highlight verde/vermelho, 10 campos comparativos.
+- `HistoryTab.tsx`: estado `selectedForCompare` (max 2), `toggleCompare()`, `compareEntries` memo, file input + `FileReader` + `importJson()`.
+- `i18n`: 14 novas chaves em pt-BR e en-US para inventário, dashboard, histórico e comparação.
+
 ## [1.3.0] — 2026-05-25
 
 ### ✨ Novo

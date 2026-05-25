@@ -5,6 +5,7 @@ import { Calculator } from '@/components/Calculator/Calculator'
 import { CatalogTab } from '@/components/Catalog/CatalogTab'
 import { HistoryTab } from '@/components/Calculator/HistoryTab/HistoryTab'
 import { Dashboard } from '@/components/Dashboard/Dashboard'
+import { ChangelogPage } from '@/components/Changelog/ChangelogPage'
 import { InfillCalculator } from '@/components/Calculator/InfillCalculator'
 import { FilamentInventory } from '@/components/Catalog/FilamentInventory'
 import { restoreAutoSnapshot } from '@/stores/storeBridge'
@@ -18,9 +19,10 @@ import {
   BarChart3,
   Grid3x3,
   Spool,
+  Sparkles,
 } from 'lucide-react'
 
-type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory'
+type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory' | 'changelog'
 type LegacyProduct = {
   name?: string
   result?: CalculationResult
@@ -44,6 +46,7 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
   { id: 'inventory',  icon: <Spool className="w-[18px] h-[18px]" />,          labelKey: 'nav.inventory',  label: 'Filamentos' },
   { id: 'catalog',    icon: <Settings2 className="w-[18px] h-[18px]" />,      labelKey: 'nav.catalog',    label: 'Catálogo' },
   { id: 'history',    icon: <Clock className="w-[18px] h-[18px]" />,          labelKey: 'nav.history',    label: 'Histórico' },
+  { id: 'changelog',  icon: <Sparkles className="w-[18px] h-[18px]" />,     labelKey: 'nav.changelog',  label: 'Novidades' },
 ]
 
 function App() {
@@ -206,6 +209,7 @@ function App() {
             {activeTab === 'inventory'  && <FilamentInventory />}
             {activeTab === 'catalog'    && <CatalogTab />}
             {activeTab === 'history'    && <HistoryTab onLoadToCalculator={() => setActiveTab('calculator')} />}
+            {activeTab === 'changelog' && <ChangelogPage />}
           </div>
         </main>
       </div>

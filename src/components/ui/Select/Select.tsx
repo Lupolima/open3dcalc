@@ -113,10 +113,10 @@ export function Select({
       aria-controls={`${id}-listbox`}
       aria-label={label}
       onClick={() => setOpen(o => !o)}
-      className={`w-full flex items-center gap-2.5 bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-xl text-sm text-white h-11 px-3 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/60 ${className}`}
+      className={`w-full flex items-center gap-2.5 glass border ${open ? 'border-indigo-500/60' : 'border-white/10 hover:border-white/25'} rounded-xl text-sm text-white h-11 px-3 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/60 ${className}`}
     >
       {(selected?.group || selected?.image) && (
-        <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0 text-[9px] font-bold text-white/70 leading-none select-none">
+        <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center shrink-0 text-[9px] font-bold text-indigo-300 leading-none select-none">
           {getMonogram(selected.group || selected.label)}
         </div>
       )}
@@ -141,8 +141,8 @@ export function Select({
           initial={{ opacity: 0, scaleY: 0.95, transformOrigin: 'top' }}
           animate={{ opacity: 1, scaleY: 1 }}
           exit={{ opacity: 0, scaleY: 0.95 }}
-          transition={{ duration: 0.12 }}
-          className="z-50 w-full mt-1.5 bg-gray-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="z-50 w-full mt-1.5 glass border border-white/10 rounded-xl shadow-2xl overflow-hidden"
           style={portal ? { position: 'absolute', left: 0, top: '100%' } : {}}
         >
           {search && (
@@ -153,7 +153,7 @@ export function Select({
                 value={query}
                 onChange={e => { setQuery(e.target.value); setFocusIdx(0) }}
                 placeholder="Buscar..."
-                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-600"
+                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
                 autoFocus
               />
             </div>
@@ -215,11 +215,11 @@ function OptionItem({ opt, idx, focusIdx, value, onSelect }: {
       onMouseEnter={() => {}}
       onClick={onSelect}
       className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors ${
-        isFocused ? 'bg-white/10' : 'hover:bg-white/5'
-      } ${isSelected ? 'text-white font-semibold' : 'text-gray-300'}`}
+        isFocused ? 'bg-indigo-500/20 text-white' : 'hover:bg-white/[0.06] text-gray-300'
+      } ${isSelected ? 'text-white font-semibold bg-indigo-500/10' : ''}`}
     >
       {(opt.group || opt.image) && (
-        <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center shrink-0 text-[9px] font-bold text-white/60 leading-none select-none">
+        <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center shrink-0 text-[9px] font-bold text-indigo-300 leading-none select-none">
           {getMonogram(opt.group || opt.label)}
         </div>
       )}
@@ -227,7 +227,7 @@ function OptionItem({ opt, idx, focusIdx, value, onSelect }: {
         <div className="truncate">{opt.label}</div>
         {opt.subtitle && <div className="text-[10px] text-gray-500 truncate">{opt.subtitle}</div>}
       </div>
-      {isSelected && <Check className="w-4 h-4 text-purple-400 shrink-0" />}
+      {isSelected && <Check className="w-4 h-4 text-indigo-400 shrink-0" />}
     </button>
   )
 }

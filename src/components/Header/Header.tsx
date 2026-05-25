@@ -91,8 +91,7 @@ export function Header() {
             </button>
 
             {showCurrencyMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 rounded-xl shadow-2xl z-50 overflow-hidden border border-white/10"
-                style={{ background: 'rgba(6,8,24,0.98)', backdropFilter: 'blur(20px)' }}>
+              <div className="absolute right-0 top-full mt-1.5 w-44 rounded-xl shadow-2xl z-50 overflow-hidden glass border border-white/10">
                 <button
                   onClick={() => { setCurrency('auto'); setShowCurrencyMenu(false) }}
                   className={`w-full px-3.5 py-2.5 text-left text-[12px] flex items-center gap-2 hover:bg-white/5 transition-colors ${currencySetting === 'auto' ? 'text-indigo-400' : 'text-slate-300'}`}
