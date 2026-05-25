@@ -9,7 +9,8 @@
     "history": "History",
     "dashboard": "Dashboard",
     "infill": "Infill Calc.",
-    "inventory": "Filaments"
+    "inventory": "Filaments",
+    "changelog": "Changelog"
   },
   "dashboard": {
     "totalCost": "Total Cost",
