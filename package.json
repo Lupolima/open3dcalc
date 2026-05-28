@@ -1,7 +1,7 @@
 {
   "name": "open3dcalc",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,9 @@
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "changelog": "changelogen --bump --output CHANGELOG.md",
+    "release": "changelogen --release"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.0.0",

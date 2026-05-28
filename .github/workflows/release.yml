@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Tipo de bump (auto = detecta dos commits)'
+        required: true
+        type: choice
+        default: auto
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate changelog and bump version
+        run: |
+          if [ "${{ inputs.bump }}" = "auto" ]; then
+            npx changelogen --bump --output CHANGELOG.md
+          else
+            npx changelogen --bump --output CHANGELOG.md --${{ inputs.bump }}
+          fi
+
+      - name: Commit, tag and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          VERSION=v$(node -p "require('./package.json').version")
+          git add CHANGELOG.md package.json package-lock.json
+          git commit -m "chore(release): $VERSION [skip ci]"
+          git tag "$VERSION"
+          git push --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=v$(node -p "require('./package.json').version")
+          # Extrai a seção da versão atual do CHANGELOG.md
+          NOTES=$(npx changelogen --output CHANGELOG.md 2>/dev/null || echo "Release $VERSION")
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "$NOTES" \
+            --target ${{ github.sha }}

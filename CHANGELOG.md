@@ -1,5 +1,74 @@
 # Changelog
 
+## v1.5.0
+
+### 🚀 Enhancements
+
+- SelectDropdown compound + STL security + dead code removal ([f4371f9](https://github.com/ils15/open3dcalc/commit/f4371f9))
+- Auto-preenchimento ao selecionar impressora no cadastro ([7d29062](https://github.com/ils15/open3dcalc/commit/7d29062))
+- Auto-preenchimento materiais e marketplaces + formulario marketplaces ([02a8b40](https://github.com/ils15/open3dcalc/commit/02a8b40))
+- Atualiza taxas marketplace 2026 - Shopee 14%+R6, ML 16%+R.50, Amazon/Etsy mantidos ([2fd524e](https://github.com/ils15/open3dcalc/commit/2fd524e))
+- Duas faixas Shopee - ate R9 (20%+R) e R0+ (14%+R6) ([f6abf4c](https://github.com/ils15/open3dcalc/commit/f6abf4c))
+- Waves 1-2 - dashboard, cost/gram, markup presets, failure cost, 3MF parser, G-code parser, CSV export, print time estimator ([4b6316a](https://github.com/ils15/open3dcalc/commit/4b6316a))
+- Complete waves 1-2 - batch calc, infill input, update WAVES.md ([3215b51](https://github.com/ils15/open3dcalc/commit/3215b51))
+- Complete waves 3-4 - target margin, monthly projection, print vs buy, infill calc, filament inventory, SKU manager, quote API ([0e6c15e](https://github.com/ils15/open3dcalc/commit/0e6c15e))
+- Sections toggle + dashboard i18n fix + extensive README docs ([b384d87](https://github.com/ils15/open3dcalc/commit/b384d87))
+- Improve accessibility, responsiveness and fix store results sync ([6676a88](https://github.com/ils15/open3dcalc/commit/6676a88))
+- Responsividade — max-width 1400px, touch targets 44px, safe-areas, glass perf ([309617f](https://github.com/ils15/open3dcalc/commit/309617f))
+- Section enable/disable toggle in each card header ([9dc20bd](https://github.com/ils15/open3dcalc/commit/9dc20bd))
+- AMS multi-material + integração Catálogo/Inventário/Histórico + auto-save + UX overhaul ([95a2a22](https://github.com/ils15/open3dcalc/commit/95a2a22))
+- **infra:** Add complete collaboration structure with PR workflows and quality gates ([aa8b63c](https://github.com/ils15/open3dcalc/commit/aa8b63c))
+- **fase2:** Calculator improvements, unified history, and integrated tools ([#1](https://github.com/ils15/open3dcalc/pull/1))
+- **fase-2:** Add inventory deduction, dashboard enhancements, comparison modal, and JSON import ([b0f10be](https://github.com/ils15/open3dcalc/commit/b0f10be))
+- **fase-2:** Add history compare/import UI ([c256d43](https://github.com/ils15/open3dcalc/commit/c256d43))
+- **changelog:** Add v1.4.0 changelog and in-app changelog page ([72b4d6f](https://github.com/ils15/open3dcalc/commit/72b4d6f))
+- **changelog:** Internationalize all hardcoded strings in ChangelogPage ([1f291c9](https://github.com/ils15/open3dcalc/commit/1f291c9))
+- Quick mode — basic/advanced segmented control for calculator ([234eca2](https://github.com/ils15/open3dcalc/commit/234eca2))
+- Merge 3-level calculator system (basic/intermediate/advanced) ([5c828b1](https://github.com/ils15/open3dcalc/commit/5c828b1))
+- Merge 3-level calculator system (basic/intermediate/advanced)" ([c2a3cd3](https://github.com/ils15/open3dcalc/commit/c2a3cd3))
+- **calculator:** 3-level system (Basic/Intermediate/Advanced) with field customization ([974af0b](https://github.com/ils15/open3dcalc/commit/974af0b))
+
+### 🩹 Fixes
+
+- Lint errors - unused expression and unused param ([0fd9c47](https://github.com/ils15/open3dcalc/commit/0fd9c47))
+- Lint errors - remove any type, add missing useEffect dependency ([7692155](https://github.com/ils15/open3dcalc/commit/7692155))
+- Move CSS reset into @layer base so Tailwind utilities override correctly — fixes mx-auto centering and all margin/padding utilities ([cc7a7a3](https://github.com/ils15/open3dcalc/commit/cc7a7a3))
+- Nav translations, Calculator UX, Catalog infinite re-render ([2e1ba45](https://github.com/ils15/open3dcalc/commit/2e1ba45))
+- Infill dimensions grid 2-col so values aren't clipped by unit badge ([bdcfc36](https://github.com/ils15/open3dcalc/commit/bdcfc36))
+- Items-end on all grid containers for consistent input alignment ([ed36919](https://github.com/ils15/open3dcalc/commit/ed36919))
+- Label min-h for consistent input alignment across all sections ([aee5e71](https://github.com/ils15/open3dcalc/commit/aee5e71))
+- Remove nav dots, strip icon boxes, fix printer select portal ([5fc88b4](https://github.com/ils15/open3dcalc/commit/5fc88b4))
+- Monogram initials in printer select, remove duplicate results, slim toggle switches ([627b0f9](https://github.com/ils15/open3dcalc/commit/627b0f9))
+- Resolve all code review feedback from fase-2 PR ([a6629ae](https://github.com/ils15/open3dcalc/commit/a6629ae))
+- **catalog:** Allow free-text brand entry and add printer usefulLife/maintenance fields ([723f351](https://github.com/ils15/open3dcalc/commit/723f351))
+- **changelog:** Replace invalid Github icon with inline SVG and guard changelogData type ([4a82af2](https://github.com/ils15/open3dcalc/commit/4a82af2))
+- Address calculator review feedback ([959a89b](https://github.com/ils15/open3dcalc/commit/959a89b))
+- **calculator:** Show friendly names in section field customizer popover ([9de141a](https://github.com/ils15/open3dcalc/commit/9de141a))
+
+### 💅 Refactors
+
+- Improve component structure, styling and accessibility across UI ([c6bf8d3](https://github.com/ils15/open3dcalc/commit/c6bf8d3))
+- Extrai ResultsPanel, adiciona Toast, ToggleSwitch, modo completo e barras mobile consolidadas ([6350212](https://github.com/ils15/open3dcalc/commit/6350212))
+- Move section toggles to sidebar dots, remove sticky bar, rename Ops to Soft/EPI, always fullView, fix input sizing ([9ec47aa](https://github.com/ils15/open3dcalc/commit/9ec47aa))
+
+### 📖 Documentation
+
+- Add ROADMAP with 4-phase improvement plan ([7e04659](https://github.com/ils15/open3dcalc/commit/7e04659))
+
+### 🏡 Chore
+
+- Add \*.plan.md to gitignore ([f9a3e35](https://github.com/ils15/open3dcalc/commit/f9a3e35))
+- Remove old artifact plan files from repo ([89f859f](https://github.com/ils15/open3dcalc/commit/89f859f))
+
+### 🎨 Styles
+
+- **ui:** Overhaul dropdown visuals with glass effect and indigo accents ([250c7df](https://github.com/ils15/open3dcalc/commit/250c7df))
+- Clean up calculator sales section formatting ([9e95e3e](https://github.com/ils15/open3dcalc/commit/9e95e3e))
+
+### ❤️ Contributors
+
+- Ils15 ([@ils15](https://github.com/ils15))
+
 ## [1.4.0] — 2026-05-25
 
 ### ✨ Novo
