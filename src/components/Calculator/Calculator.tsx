@@ -1964,7 +1964,7 @@ export function Calculator() {
 			<ToastContainer items={toastItems} onDismiss={dismissToast} />
 			<div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
 				{/* Desktop sidebar — icon + label + cost toggle dot */}
-				<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-6 h-fit">
+				<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-[92px] h-fit">
 					{visibleSections.map((s) => {
 						const keys = SECTION_ENABLES[s.id] || [];
 						const anyEnabled =
@@ -2152,7 +2152,7 @@ export function Calculator() {
 				</div>
 
 				{/* Desktop right sidebar — always visible */}
-				<div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0 sticky top-6 self-start">
+				<div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0 sticky top-[92px] self-start max-h-[calc(100vh-92px)] overflow-y-auto">
 					{renderRightSidebar()}
 				</div>
 			</div>
