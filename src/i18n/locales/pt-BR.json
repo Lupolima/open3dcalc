@@ -123,6 +123,8 @@
     "quickMode": "Modo Rápido",
     "basic": "Básico",
     "advanced": "Avançado",
+    "intermediate": "Intermediário",
+    "customizeFields": "Personalizar campos",
     "productName": "Nome do Produto",
     "productNamePlaceholder": "Ex: Vaso Decorativo",
     "costPerGram": "Custo por Grama",
