@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.2
+
+[compare changes](https://github.com/ils15/open3dcalc/compare/v1.5.0...v1.5.2)
+
+## v1.5.1
+
+[compare changes](https://github.com/ils15/open3dcalc/compare/v1.5.0...v1.5.1)
+
 ## v1.5.0
 
 ### 🚀 Enhancements
