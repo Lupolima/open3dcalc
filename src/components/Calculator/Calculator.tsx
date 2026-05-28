@@ -180,8 +180,11 @@ export function Calculator() {
 
 			// Basic level: only basic fields
 			if (level === 'basic') return basicFields.includes(fieldId)
-			// Intermediate level: basic + intermediate fields
-			if (level === 'intermediate') return basicFields.includes(fieldId) || sectionFields.includes(fieldId)
+			// Intermediate level: basic + intermediate fields, unless hidden via customizer
+			if (level === 'intermediate') {
+				return (basicFields.includes(fieldId) || sectionFields.includes(fieldId))
+					&& !store.hiddenFields.includes(`${sectionId}.${fieldId}`)
+			}
 			// Advanced: everything (unless hidden via customizer)
 			return !store.hiddenFields.includes(`${sectionId}.${fieldId}`)
 		},

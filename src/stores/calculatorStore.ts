@@ -40,7 +40,7 @@ function debouncedAutoSave(getState: () => CalculatorState) {
       productName: s.productName, quantity: s.quantity,
       infillPercent: s.infillPercent, targetMarginMode: s.targetMarginMode,
       enabledSections: s.enabledSections,
-      quickMode: s.quickMode, calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
+      calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
     }
     localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
   }, 800)
@@ -304,7 +304,7 @@ function computeStoreResults(s: ComputeStoreInput): CalculationResult {
 function migrateQuickMode(quickMode: boolean | undefined): CalcLevel {
   if (quickMode === true) return 'basic'
   if (quickMode === false) return 'advanced'
-  return 'intermediate'
+  return 'basic'
 }
 
 export const useCalculatorStore = create<CalculatorState>((set, get) => {
@@ -350,7 +350,6 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     fdmAmsSlots: DEFAULT_AMS_SLOTS.map(s => ({ ...s })),
 
     productName: '',
-    quickMode: loadStr('quickMode', true),
     calcLevel: loadStr<CalcLevel>('calcLevel', migrateQuickMode(loadStr<boolean | undefined>('quickMode', undefined))),
     hiddenFields: loadStr<string[]>('hiddenFields', []),
     quantity: loadStr('quantity', 1),
@@ -546,7 +545,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
         fixedCosts: s.fixedCosts,
         quantity: s.quantity, infillPercent: s.infillPercent,
         currency: s.currency,
-        quickMode: s.quickMode, calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
+        calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
       }
       localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
     },
