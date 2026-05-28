@@ -21,27 +21,27 @@
 
 ### ⚠️ Problemas identificados
 
-| Área             | Problema                                                                   | Impacto  |
-| ---------------- | -------------------------------------------------------------------------- | -------- |
-| **Histórico**    | Não é possível carregar um item do histórico de volta na calculadora       | Alto     |
-| **Histórico**    | Sem ordenação (por data, preço, nome)                                      | Médio    |
-| **Histórico**    | Sem comparativo lado a lado entre dois registros                           | Médio    |
-| **Histórico**    | Sem importação de JSON (só exporta)                                        | Baixo    |
-| **Dashboard**    | `printsPerMonth`, `buyPrice`, `targetSellPrice` resetam ao fechar          | Médio    |
-| **Dashboard**    | Sem gráfico de tendência de lucro ao longo dos cálculos salvos             | Médio    |
-| **Dashboard**    | Sem análise de break-even (quantidade mínima para cobrir custo fixo)       | Médio    |
-| **Catálogo**     | Impressoras e materiais customizados não aparecem no select da calculadora | Alto     |
-| **Catálogo**     | Sem edição inline de itens existentes (só adicionar/remover)               | Médio    |
-| **Inventário**   | Nenhuma integração com a calculadora (carretel não preenche custo/kg)      | Alto     |
-| **Inventário**   | Dedução de peso só tem botões fixos (-10g/-50g/-100g), sem campo livre     | Baixo    |
-| **Inventário**   | Sem filtro por material ou marca                                           | Baixo    |
-| **Inventário**   | Sem edição de um carretel existente                                        | Médio    |
-| **UX Geral**     | Auto-save inexistente — usuário precisa clicar "Salvar Configurações"      | Alto     |
-| **UX Geral**     | `confirm()` nativo para deletar/limpar (feio, sem acessibilidade)          | Médio    |
-| **UX Geral**     | Quick Mode substituído por 3 níveis (Básico/Intermediário/Avançado)        | ✅ Feito |
-| **UX Geral**     | Sem estado de onboarding para novos usuários (tela em branco sem contexto) | Médio    |
-| **ResultsPanel** | Dois sistemas de histórico separados (sidebar vs HistoryTab) — duplicação  | Alto     |
-| **Mobile**       | Navegação inferior funcional, mas sem acesso rápido a PDF/CSV no mobile    | Baixo    |
+| Área             | Problema                                                                   | Impacto |
+| ---------------- | -------------------------------------------------------------------------- | ------- |
+| **Histórico**    | Não é possível carregar um item do histórico de volta na calculadora       | Alto    |
+| **Histórico**    | Sem ordenação (por data, preço, nome)                                      | Médio   |
+| **Histórico**    | Sem comparativo lado a lado entre dois registros                           | Médio   |
+| **Histórico**    | Sem importação de JSON (só exporta)                                        | Baixo   |
+| **Dashboard**    | `printsPerMonth`, `buyPrice`, `targetSellPrice` resetam ao fechar          | Médio   |
+| **Dashboard**    | Sem gráfico de tendência de lucro ao longo dos cálculos salvos             | Médio   |
+| **Dashboard**    | Sem análise de break-even (quantidade mínima para cobrir custo fixo)       | Médio   |
+| **Catálogo**     | Impressoras e materiais customizados não aparecem no select da calculadora | Alto    |
+| **Catálogo**     | Sem edição inline de itens existentes (só adicionar/remover)               | Médio   |
+| **Inventário**   | Nenhuma integração com a calculadora (carretel não preenche custo/kg)      | Alto    |
+| **Inventário**   | Dedução de peso só tem botões fixos (-10g/-50g/-100g), sem campo livre     | Baixo   |
+| **Inventário**   | Sem filtro por material ou marca                                           | Baixo   |
+| **Inventário**   | Sem edição de um carretel existente                                        | Médio   |
+| **UX Geral**     | Auto-save inexistente — usuário precisa clicar "Salvar Configurações"      | Alto    |
+| **UX Geral**     | `confirm()` nativo para deletar/limpar (feio, sem acessibilidade)          | Médio   |
+| **UX Geral**     | Quick Mode ativo, mas sem tooltip ou explicação do que muda                | Baixo   |
+| **UX Geral**     | Sem estado de onboarding para novos usuários (tela em branco sem context)  | Médio   |
+| **ResultsPanel** | Dois sistemas de histórico separados (sidebar vs HistoryTab) — duplicação  | Alto    |
+| **Mobile**       | Navegação inferior funcional, mas sem acesso rápido a PDF/CSV no mobile    | Baixo   |
 
 ---
 
@@ -160,16 +160,6 @@
 - `Escape` → fechar qualquer modal aberto
 - Indicador de atalho visível em tooltips dos botões principais
 
-#### 3.6 Calculadora de 3 Níveis
-
-- Toggle de 3 botões: Básico / Intermediário / Avançado
-- **Básico:** 4 seções essenciais (Material, Parâmetros, Vendas, Resultados)
-- **Intermediário:** 5 seções (+ Falhas) com campos intermediários
-- **Avançado:** Todas as 10 seções com campos completos
-- Engrenagem (⚙️) no header de cada seção para customizar campos individuais
-- Persistência do nível e campos ocultos no localStorage
-- Migração automática do modo rápido antigo (quickMode → calcLevel)
-
 ---
 
 ### Fase 4 — Qualidade & Infraestrutura
@@ -249,22 +239,21 @@
 - **AMS Multi-material** — suporte a impressoras multifilamento com até 4 slots
 - **Responsividade** — grids 2 itens/linha, padding reduzido, unidades fora dos inputs
 - **UX** — modo rápido reposicionado, headers sem toggle, seções colapsáveis
-- **3-Level Calculator** — sistema Básico/Intermediário/Avançado com toggle de 3 botões, campos customizáveis por seção via engrenagem (⚙️), persistência localStorage
 
-### 📋 Pendente (Fases 3 e 4)
+### 📋 Pendente (Fase 2 + Fases 3 e 4)
 
-- **3.1 Onboarding** — modal de boas-vindas para novos usuários
-- **3.2 Tooltips** — ícone `ⓘ` em campos não-óbvios com explicações
-- **3.3 Inventário edição livre** — edição inline, dedução livre, filtros
-- **3.4 Catálogo edição inline** — lápis em cada card, input substitui texto
-- **3.5 Atalhos de teclado** — Ctrl+S salvar, Ctrl+H histórico, Esc fechar
+- **T-003: Dedução Automática de Estoque** — botão "Deduzir do Estoque" no ResultsPanel
+- **T-006: Comparativo de Registros** — modal lado a lado com diferenças destacadas
+- **T-007: Dashboard Persistente** — break-even chart, gráfico de tendência, margem média
+- **T-010: Import JSON** — botão de import no HistoryTab
+- **Fase 3: Usabilidade** — onboarding, tooltips, edição inline catálogo, atalhos teclado
 - **Fase 4: Qualidade** — testes unitários/integração, error boundaries, PWA, performance
 
-| Item                                | Status                          |
-| ----------------------------------- | ------------------------------- |
-| Fase 1 — Fundação & Quick Wins      | ✅ Concluída                    |
-| Fase 2 — Histórico & Dashboard      | ✅ Concluída                    |
-| Fase 3 — Usabilidade & Experiência  | 🟡 Parcial (3-Level Calc feito) |
-| Fase 4 — Qualidade & Infraestrutura | 📋 Planejado                    |
+| Item                                | Status                               |
+| ----------------------------------- | ------------------------------------ |
+| Fase 1 — Fundação & Quick Wins      | ✅ Concluída                         |
+| Fase 2 — Histórico & Dashboard      | 🟡 Parcial (2.3, 2.4, 2.5 pendentes) |
+| Fase 3 — Usabilidade & Experiência  | 📋 Planejado                         |
+| Fase 4 — Qualidade & Infraestrutura | 📋 Planejado                         |
 
-> Atualizado em: 28 de Maio de 2026
+> Atualizado em: 25 de Maio de 2026

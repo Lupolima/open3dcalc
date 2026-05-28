@@ -40,7 +40,7 @@ function debouncedAutoSave(getState: () => CalculatorState) {
       productName: s.productName, quantity: s.quantity,
       infillPercent: s.infillPercent, targetMarginMode: s.targetMarginMode,
       enabledSections: s.enabledSections,
-      quickMode: s.quickMode, calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
+      quickMode: s.quickMode,
     }
     localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
   }, 800)
@@ -81,8 +81,6 @@ const DEFAULT_AMS_SLOTS: AMSSlot[] = Array.from({ length: 4 }, (_, i) => ({
   spoolEfficiency: 98,
   color: ['#cccccc', '#f87171', '#60a5fa', '#34d399'][i],
 }))
-
-export type CalcLevel = 'basic' | 'intermediate' | 'advanced'
 
 interface CalculatorState {
   activeTab: 'fdm' | 'resin'
@@ -145,10 +143,8 @@ interface CalculatorState {
 
   productName: string
   setProductName: (name: string) => void
-  calcLevel: CalcLevel
-  setCalcLevel: (v: CalcLevel) => void
-  hiddenFields: string[]
-  toggleField: (fieldId: string) => void
+  quickMode: boolean
+  setQuickMode: (v: boolean) => void
   quantity: number
   setQuantity: (v: number) => void
   infillPercent: number
@@ -301,12 +297,6 @@ function computeStoreResults(s: ComputeStoreInput): CalculationResult {
   }
 }
 
-function migrateQuickMode(quickMode: boolean | undefined): CalcLevel {
-  if (quickMode === true) return 'basic'
-  if (quickMode === false) return 'advanced'
-  return 'intermediate'
-}
-
 export const useCalculatorStore = create<CalculatorState>((set, get) => {
   const setWithCompute = (update: Partial<CalculatorState> | ((state: CalculatorState) => Partial<CalculatorState>)) => {
     set((state) => {
@@ -351,8 +341,6 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
 
     productName: '',
     quickMode: loadStr('quickMode', true),
-    calcLevel: loadStr<CalcLevel>('calcLevel', migrateQuickMode(loadStr<boolean | undefined>('quickMode', undefined))),
-    hiddenFields: loadStr<string[]>('hiddenFields', []),
     quantity: loadStr('quantity', 1),
     infillPercent: loadStr('infillPercent', 20),
     targetMarginMode: false,
@@ -415,13 +403,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     setCurrency: (currency) => set({ currency }),
 
     setProductName: (productName) => setWithCompute({ productName }),
-    setCalcLevel: (calcLevel) => setWithCompute({ calcLevel }),
-    toggleField: (fieldId) => setWithCompute((state) => {
-      const hidden = state.hiddenFields.includes(fieldId)
-        ? state.hiddenFields.filter((id) => id !== fieldId)
-        : [...state.hiddenFields, fieldId]
-      return { hiddenFields: hidden }
-    }),
+    setQuickMode: (quickMode) => setWithCompute({ quickMode }),
     setQuantity: (quantity) => setWithCompute({ quantity }),
     setInfillPercent: (infillPercent) => setWithCompute({ infillPercent }),
     setTargetMarginMode: (targetMarginMode) => setWithCompute({ targetMarginMode }),
@@ -546,7 +528,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
         fixedCosts: s.fixedCosts,
         quantity: s.quantity, infillPercent: s.infillPercent,
         currency: s.currency,
-        quickMode: s.quickMode, calcLevel: s.calcLevel, hiddenFields: s.hiddenFields,
+        quickMode: s.quickMode,
       }
       localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
     },
