@@ -40,6 +40,7 @@ function debouncedAutoSave(getState: () => CalculatorState) {
       productName: s.productName, quantity: s.quantity,
       infillPercent: s.infillPercent, targetMarginMode: s.targetMarginMode,
       enabledSections: s.enabledSections,
+      quickMode: s.quickMode,
     }
     localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
   }, 800)
@@ -339,7 +340,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     fdmAmsSlots: DEFAULT_AMS_SLOTS.map(s => ({ ...s })),
 
     productName: '',
-    quickMode: false,
+    quickMode: loadStr('quickMode', true),
     quantity: loadStr('quantity', 1),
     infillPercent: loadStr('infillPercent', 20),
     targetMarginMode: false,
@@ -527,6 +528,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
         fixedCosts: s.fixedCosts,
         quantity: s.quantity, infillPercent: s.infillPercent,
         currency: s.currency,
+        quickMode: s.quickMode,
       }
       localStorage.setItem('open3dcalc_settings_v2', JSON.stringify(data))
     },
