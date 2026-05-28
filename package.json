@@ -21,6 +21,7 @@
     "prebuild": "node scripts/sync-changelog-i18n.mjs"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "@react-pdf/renderer": "^4.0.0",
     "@react-three/drei": "^10.0.0",
     "@react-three/fiber": "^9.0.0",
