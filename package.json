@@ -1,7 +1,7 @@
 {
   "name": "open3dcalc",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,8 +14,11 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "prepare": "husky",
-    "changelog": "changelogen --bump --output CHANGELOG.md",
-    "release": "changelogen --release"
+    "release:bump": "changelogen --bump",
+    "release:tag": "changelogen --release",
+    "changelog:preview": "changelogen",
+    "sync:changelog": "node scripts/sync-changelog-i18n.mjs",
+    "prebuild": "node scripts/sync-changelog-i18n.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.0.0",

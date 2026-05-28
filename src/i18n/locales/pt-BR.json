@@ -393,6 +393,67 @@
     "viewAllOnGitHub": "Ver todas as releases no GitHub",
     "versions": [
       {
+        "version": "1.5.0",
+        "date": "2026-05-28",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "**Onboarding para Novos Usuários** — modal de boas-vindas com 3 slides (\"O que é\", \"Como calcular\", \"Como salvar\"), detecção de primeira visita via localStorage, navegação entre slides com bolinhas, botão \"Pular\" persistente.",
+              "**Tooltips Informativos** — sistema de tooltips com Floating UI, delay 400ms, posicionamento inteligente em campos não-óbvios (taxa de falha, vida útil da máquina, break-even).",
+              "**Atalhos de Teclado** — Ctrl/Cmd+S (salvar configurações), Ctrl/Cmd+H (navegar para histórico), Ctrl/Cmd+D (navegar para dashboard), Escape (fechar modais). Indicadores visuais nos botões de navegação.",
+              "**Inventário — Dedução Livre** — campo de input numérico para deduzir peso exato em cada carretel, validação de saldo, combinado com filtro por marca (pills clicáveis) e filtro de material.",
+              "**Catálogo — Edição Inline** — ícone ✏️ em cards de impressora/material/marketplace, input substitui texto com Enter/blur para salvar, Escape para cancelar.",
+              "**Error Boundaries** — envolve ResultsPanel, Dashboard e StlPreview com fallback estilizado, botões \"Tentar novamente\" e \"Resetar calculadora\".",
+              "**PWA & Offline** — service worker com cache total de assets, notificação \"Nova versão disponível\" com botão de atualização."
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Tooltips com ícone ⓘ nos InputGroup com delay de 400ms e posicionamento automático (Floating UI).",
+              "Filtro combinado de material + marca no inventário com feedback visual.",
+              "Indicadores de atalho de teclado nos botões de navegação (Ctrl+H, Ctrl+D).",
+              "Glassmorphism consistente em todos os novos componentes (OnboardingModal, Tooltip, ErrorBoundary, PwaUpdatePrompt).",
+              "Edição inline no catálogo com confirmação visual (check verde / X vermelho)."
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "`src/hooks/useKeyboardShortcuts.ts` — hook de atalhos com supressão em inputs/textarea/select.",
+              "`src/hooks/usePwaUpdate.ts` — hook de atualização PWA com service worker registration.",
+              "`src/components/ui/OnboardingModal.tsx` — modal com 3 slides, Framer Motion `AnimatePresence`, lazy initializer.",
+              "`src/components/ui/Tooltip.tsx` — tooltip com Floating UI, `useMergeRefs`, suporte a 4 direções.",
+              "`src/components/ui/ErrorBoundary.tsx` — ErrorBoundary classe com `componentDidCatch`, fallback com retry e reset.",
+              "`src/components/ui/PwaUpdatePrompt.tsx` — banner de atualização com `skipWaiting()` + reload.",
+              "`src/components/Catalog/FilamentInventory.tsx` — input de dedução livre + brand filter pills.",
+              "`src/components/Catalog/CatalogTab.tsx` — componente `InlineField` para edição inline nos 3 gerenciadores.",
+              "`vite.config.ts` — PWA config com runtime caching e globPatterns completo.",
+              "`src/main.tsx` — integração do PwaUpdatePrompt no root."
+            ]
+          },
+          {
+            "title": "📚 Qualidade",
+            "items": [
+              "**53 testes unitários** em `calculator.ts` — cobertura de **99.19%** (statements) e **82.95%** (branches).",
+              "**25 testes de integração** nas stores (calculatorStore 8, historyStore 9, filamentInventory 8).",
+              "**79 testes no total** passando, 0 lint errors, build limpo.",
+              "Performance: memoização com `useMemo`/`useShallow`, lazy loading de StlPreview e PDF.",
+              "Error Boundaries nos 3 componentes críticos com fallback padronizado."
+            ]
+          },
+          {
+            "title": "🤖 CI & Automação",
+            "items": [
+              "**changelogen** configurado para geração de changelog a partir de conventional commits.",
+              "`.changelogenrc` com categorias em português e emojis personalizados.",
+              "Workflow de Release manual no GitHub Actions (`release.yml`) com bump semântico e GitHub Release."
+            ]
+          }
+        ]
+      },
+      {
         "version": "1.4.0",
         "date": "2026-05-25",
         "sections": [
