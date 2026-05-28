@@ -140,6 +140,21 @@ const BASIC_FIELDS: Record<string, string[]> = {
 	sales: ['quantity', 'packagingCost', 'profitMarginPercent'],
 }
 
+/** Human-readable labels for customizable field IDs */
+const FIELD_LABELS: Record<string, string> = {
+	purgeWeight: 'calc.purge',
+	spoolEfficiency: 'calc.spoolEfficiency',
+	density: 'calc.density',
+	wasteMargin: 'calc.wasteMargin',
+	selectedPrinter: 'calc.printer',
+	infillPercent: 'calc.infillPercent',
+	extrasCost: 'calc.extras',
+	shippingCost: 'calc.shipping',
+	marketplace: 'calc.marketplace',
+	taxPercent: 'calc.taxPercent',
+	markupPresets: 'calc.markupPresets',
+}
+
 const LEVEL_LABELS: Record<CalcLevel, 'calc.basic' | 'calc.intermediate' | 'calc.advanced'> = {
 	basic: 'calc.basic',
 	intermediate: 'calc.intermediate',
@@ -418,7 +433,7 @@ export function Calculator() {
 											onChange={() => store.toggleField(`${sectionId}.${fieldId}`)}
 											className="rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 										/>
-										{fieldId}
+										{t(FIELD_LABELS[fieldId] ?? fieldId)}
 									</label>
 								))}
 							</div>
