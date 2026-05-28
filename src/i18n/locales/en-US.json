@@ -121,6 +121,8 @@
     "clearHistory": "Clear",
     "clearConfirm": "Are you sure? This will delete all history.",
     "quickMode": "Quick Mode",
+    "basic": "Basic",
+    "advanced": "Advanced",
     "productName": "Product Name",
     "productNamePlaceholder": "E.g.: Decorative Vase",
     "costPerGram": "Cost per Gram",
