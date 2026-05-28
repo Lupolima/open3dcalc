@@ -8,12 +8,13 @@ import {
 	type LucideIcon,
 	Printer,
 	Receipt,
+	Settings,
 	ShieldCheck,
 	SlidersHorizontal,
 	Upload,
 	Wrench,
 } from "lucide-react";
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { BufferGeometry } from "three";
 import { InputGroup } from "@/components/ui/InputGroup";
@@ -23,6 +24,7 @@ import { ToggleSwitch } from "@/components/ui/ToggleCard";
 import { useCurrency } from "@/hooks/useCurrency";
 import { estimatePrintTimeFromDimensions } from "@/lib/printTimeEstimator";
 import { useCalculatorStore } from "@/stores/calculatorStore";
+import type { CalcLevel } from "@/stores/calculatorStore";
 import { useCatalogStore } from "@/stores/catalogStore";
 import { useFilamentInventory } from "@/stores/filamentInventory";
 import { selectSpool } from "@/stores/storeBridge";
@@ -115,8 +117,28 @@ const SECTION_ENABLES: Record<string, string[]> = {
 	results: [],
 };
 
-/** Section IDs visible in Basic (quick) mode */
-const BASIC_SECTION_IDS = new Set(["material", "print", "sales", "results"]);
+/** Section IDs visible in each level */
+const LEVEL_SECTIONS: Record<CalcLevel, string[]> = {
+	basic: ['material', 'print', 'sales', 'results'],
+	intermediate: ['material', 'print', 'failure', 'sales', 'results'],
+	advanced: ['material', 'print', 'failure', 'hardware', 'machine', 'fixedCost', 'labor', 'ops', 'sales', 'results'],
+}
+
+/** Fields visible at intermediate level per section (beyond basic fields) */
+const INTERMEDIATE_FIELDS: Record<string, string[]> = {
+	material: ['purgeWeight', 'spoolEfficiency', 'density', 'wasteMargin'],
+	print: ['selectedPrinter'],
+	failure: [],  // all failure fields visible at intermediate
+	sales: ['infillPercent', 'extrasCost', 'shippingCost', 'marketplace', 'taxPercent', 'markupPresets'],
+}
+
+/** Which fields are "basic" (always visible) per section */
+const BASIC_FIELDS: Record<string, string[]> = {
+	material: ['type', 'costPerKg', 'weightUsed', 'costPerLiter', 'volumeUsedMl'],
+	print: ['printTimeHours', 'printerPowerWatts', 'energyCostPerKwh'],
+	failure: ['failureMode', 'failureValue', 'riskMultiplier'],
+	sales: ['quantity', 'packagingCost', 'profitMarginPercent'],
+}
 
 export function Calculator() {
 	const { t } = useTranslation();
@@ -147,12 +169,40 @@ export function Calculator() {
 	};
 
 	const isFDM = store.activeTab === "fdm";
-	const isBasicMode = store.quickMode;
-	const isAdvanced = !isBasicMode;
-	const visibleSections = isBasicMode
-		? SECTIONS.filter((s) => BASIC_SECTION_IDS.has(s.id))
-		: SECTIONS;
+	const visibleSections = SECTIONS.filter((s) => LEVEL_SECTIONS[store.calcLevel].includes(s.id));
 	const { format: fmtCurrency, symbol: currencySymbol } = useCurrency();
+
+	const isFieldVisible = useCallback(
+		(sectionId: string, fieldId: string) => {
+			const level = store.calcLevel
+			const sectionFields = INTERMEDIATE_FIELDS[sectionId] ?? []
+			const basicFields = BASIC_FIELDS[sectionId] ?? []
+
+			// Basic level: only basic fields
+			if (level === 'basic') return basicFields.includes(fieldId)
+			// Intermediate level: basic + intermediate fields
+			if (level === 'intermediate') return basicFields.includes(fieldId) || sectionFields.includes(fieldId)
+			// Advanced: everything (unless hidden via customizer)
+			return !store.hiddenFields.includes(`${sectionId}.${fieldId}`)
+		},
+		[store.calcLevel, store.hiddenFields]
+	)
+
+	const [openCustomizer, setOpenCustomizer] = useState<string | null>(null)
+	const customizerRef = useRef<HTMLDivElement>(null)
+
+	// Click outside to close customizer
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (customizerRef.current && !customizerRef.current.contains(e.target as Node)) {
+				setOpenCustomizer(null)
+			}
+		}
+		if (openCustomizer) {
+			document.addEventListener('mousedown', handleClickOutside)
+			return () => document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [openCustomizer])
 
 	const handleFileDrop = useCallback(
 		async (file: File) => {
@@ -321,7 +371,9 @@ export function Calculator() {
 		Icon: LucideIcon,
 		title: string,
 		subtitle?: string,
+		sectionId?: string,
 	) {
+		const isCustomizable = sectionId && INTERMEDIATE_FIELDS[sectionId]?.length > 0 && store.calcLevel !== 'basic'
 		return (
 			<div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-white/[0.06]">
 				<Icon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
@@ -331,6 +383,39 @@ export function Calculator() {
 						<p className="text-[10px] text-slate-500 truncate">{subtitle}</p>
 					)}
 				</div>
+				{isCustomizable && sectionId && (
+					<div className="relative" ref={openCustomizer === sectionId ? customizerRef : undefined}>
+						<button
+							type="button"
+							onClick={() => setOpenCustomizer(openCustomizer === sectionId ? null : sectionId)}
+							className="p-1 rounded-md hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-colors"
+							title={t('calc.customizeFields')}
+						>
+							<Settings className="w-3.5 h-3.5" />
+						</button>
+						{openCustomizer === sectionId && (
+							<div className="absolute right-0 top-8 z-50 w-56 glass border border-white/10 rounded-xl p-2 shadow-xl">
+								<p className="text-[10px] font-semibold text-slate-400 px-2 py-1 uppercase tracking-wide">
+									{t('calc.customizeFields')}
+								</p>
+								{(INTERMEDIATE_FIELDS[sectionId] ?? []).map((fieldId) => (
+									<label
+										key={fieldId}
+										className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] cursor-pointer text-xs text-slate-300"
+									>
+										<input
+											type="checkbox"
+											checked={!store.hiddenFields.includes(`${sectionId}.${fieldId}`)}
+											onChange={() => store.toggleField(`${sectionId}.${fieldId}`)}
+											className="rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500"
+										/>
+										{fieldId}
+									</label>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 		);
 	}
@@ -338,18 +423,19 @@ export function Calculator() {
 	function renderMaterialSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					isFDM ? Layers : FlaskConical,
-					t("calc.material"),
-					t(
-						isFDM
-							? "calc.sectionDesc.fdmMaterial"
-							: "calc.sectionDesc.resinMaterial",
-					),
-				)}
+			{renderSectionHeader(
+				isFDM ? Layers : FlaskConical,
+				t("calc.material"),
+				t(
+					isFDM
+						? "calc.sectionDesc.fdmMaterial"
+						: "calc.sectionDesc.resinMaterial",
+				),
+				"material",
+			)}
 				{isFDM ? (
 					<>
-						{isAdvanced && (store.selectedPrinter.maxFilaments ?? 1) > 1 && (
+						{isFieldVisible("material", "purgeWeight") && (store.selectedPrinter.maxFilaments ?? 1) > 1 && (
 							<div className="flex items-center justify-end gap-2 mb-3">
 								<span className="text-[10px] font-semibold text-sky-400 uppercase tracking-wide">
 									AMS Multi-material
@@ -572,52 +658,54 @@ export function Calculator() {
 									type="number"
 									unit="g"
 								/>
-								{isAdvanced && (
-									<>
-										<InputGroup
-											label={t("calc.purge")}
-											value={store.fdmMaterial.purgeWeight}
-											onChange={(v) =>
-												handleInput(v, (val) =>
-													store.setFdmMaterial({
-														...store.fdmMaterial,
-														purgeWeight: val,
-													}),
-												)
-											}
-											type="number"
-											unit="g"
-										/>
-										<InputGroup
-											label={t("calc.spoolEfficiency")}
-											value={store.fdmMaterial.spoolEfficiency}
-											onChange={(v) =>
-												handleInput(v, (val) =>
-													store.setFdmMaterial({
-														...store.fdmMaterial,
-														spoolEfficiency: val,
-													}),
-												)
-											}
-											type="number"
-											unit="%"
-										/>
-										<InputGroup
-											label={t("calc.density")}
-											value={store.fdmMaterial.density}
-											onChange={(v) =>
-												handleInput(v, (val) =>
-													store.setFdmMaterial({
-														...store.fdmMaterial,
-														density: val,
-													}),
-												)
-											}
-											type="number"
-											unit="g/cm³"
-										/>
-									</>
-								)}
+							{isFieldVisible("material", "purgeWeight") && (
+								<InputGroup
+									label={t("calc.purge")}
+									value={store.fdmMaterial.purgeWeight}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												purgeWeight: val,
+											}),
+										)
+									}
+									type="number"
+									unit="g"
+								/>
+							)}
+							{isFieldVisible("material", "spoolEfficiency") && (
+								<InputGroup
+									label={t("calc.spoolEfficiency")}
+									value={store.fdmMaterial.spoolEfficiency}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												spoolEfficiency: val,
+											}),
+										)
+									}
+									type="number"
+									unit="%"
+								/>
+							)}
+							{isFieldVisible("material", "density") && (
+								<InputGroup
+									label={t("calc.density")}
+									value={store.fdmMaterial.density}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												density: val,
+											}),
+										)
+									}
+									type="number"
+									unit="g/cm³"
+								/>
+							)}
 							</div>
 						)}
 						<div className="sm:col-span-2 mt-3">
@@ -739,22 +827,22 @@ export function Calculator() {
 							type="number"
 							unit="ml"
 						/>
-						{isAdvanced && (
-							<InputGroup
-								label={t("calc.wasteMargin")}
-								value={store.resinMaterial.wasteMarginPercent}
-								onChange={(v) =>
-									handleInput(v, (val) =>
-										store.setResinMaterial({
-											...store.resinMaterial,
-											wasteMarginPercent: val,
-										}),
-									)
-								}
-								type="number"
-								unit="%"
-							/>
-						)}
+					{isFieldVisible("material", "wasteMargin") && (
+						<InputGroup
+							label={t("calc.wasteMargin")}
+							value={store.resinMaterial.wasteMarginPercent}
+							onChange={(v) =>
+								handleInput(v, (val) =>
+									store.setResinMaterial({
+										...store.resinMaterial,
+										wasteMarginPercent: val,
+									}),
+								)
+							}
+							type="number"
+							unit="%"
+						/>
+					)}
 					</div>
 				)}
 			</div>
@@ -764,11 +852,12 @@ export function Calculator() {
 	function renderPrintSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					SlidersHorizontal,
-					t("calc.printParams"),
-					t("calc.sectionDesc.print"),
-				)}
+			{renderSectionHeader(
+				SlidersHorizontal,
+				t("calc.printParams"),
+				t("calc.sectionDesc.print"),
+				"print",
+			)}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<InputGroup
 						label={t("calc.printTime")}
@@ -840,7 +929,7 @@ export function Calculator() {
 						unit="R$/kWh"
 						step="0.01"
 					/>
-					{isFDM && isAdvanced && (
+					{isFDM && isFieldVisible("print", "selectedPrinter") && (
 						<div className="sm:col-span-2">
 							<Select
 								label={t("calc.printer")}
@@ -887,11 +976,12 @@ export function Calculator() {
 
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					AlertTriangle,
-					t("calc.failure.title"),
-					t("calc.failure.description"),
-				)}
+			{renderSectionHeader(
+				AlertTriangle,
+				t("calc.failure.title"),
+				t("calc.failure.description"),
+				"failure",
+			)}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between glass rounded-xl px-4 py-3">
 						<span className="text-xs font-semibold text-gray-400">
@@ -956,15 +1046,16 @@ export function Calculator() {
 	function renderHardwareSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5 space-y-6">
-				{renderSectionHeader(
-					Wrench,
-					t("calc.fdmHardware"),
-					t(
-						isFDM
-							? "calc.sectionDesc.fdmHardware"
-							: "calc.sectionDesc.resinHardware",
-					),
-				)}
+			{renderSectionHeader(
+				Wrench,
+				t("calc.fdmHardware"),
+				t(
+					isFDM
+						? "calc.sectionDesc.fdmHardware"
+						: "calc.sectionDesc.resinHardware",
+				),
+				"hardware",
+			)}
 				{isFDM && (
 					<>
 						<div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
@@ -1250,11 +1341,12 @@ export function Calculator() {
 	function renderMachineSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					Printer,
-					t("calc.machine"),
-					t("calc.sectionDesc.machine"),
-				)}
+			{renderSectionHeader(
+				Printer,
+				t("calc.machine"),
+				t("calc.sectionDesc.machine"),
+				"machine",
+			)}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<InputGroup
 						label={t("calc.machineCost")}
@@ -1385,11 +1477,12 @@ export function Calculator() {
 	function renderFixedCostsSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					Receipt,
-					t("calc.fixedCost.title"),
-					t("calc.fixedCost.description"),
-				)}
+			{renderSectionHeader(
+				Receipt,
+				t("calc.fixedCost.title"),
+				t("calc.fixedCost.description"),
+				"fixedCost",
+			)}
 				<div className="flex items-center justify-between mb-3">
 					<span className="text-xs text-gray-400">
 						{t("calc.fixedCost.title")}
@@ -1434,11 +1527,12 @@ export function Calculator() {
 	function renderLaborSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					HardHat,
-					t("calc.labor"),
-					t("calc.sectionDesc.labor"),
-				)}
+			{renderSectionHeader(
+				HardHat,
+				t("calc.labor"),
+				t("calc.sectionDesc.labor"),
+				"labor",
+			)}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<InputGroup
 						label={t("calc.setupTime")}
@@ -1512,11 +1606,12 @@ export function Calculator() {
 	function renderOpsSection() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
-				{renderSectionHeader(
-					ShieldCheck,
-					t("calc.opsSoftware"),
-					t("calc.sectionDesc.ops"),
-				)}
+			{renderSectionHeader(
+				ShieldCheck,
+				t("calc.opsSoftware"),
+				t("calc.sectionDesc.ops"),
+				"ops",
+			)}
 				<div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
 					<div>
 						<div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
@@ -1634,10 +1729,11 @@ export function Calculator() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
 				{renderSectionHeader(
-					DollarSign,
-					t("calc.sales"),
-					t("calc.sectionDesc.sales"),
-				)}
+				DollarSign,
+				t("calc.sales"),
+				t("calc.sectionDesc.sales"),
+				 "sales",
+					)}
 				<div className="space-y-4">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<InputGroup
@@ -1649,9 +1745,9 @@ export function Calculator() {
 							type="number"
 							unit="un"
 						/>
-						{isAdvanced && (
-							<InputGroup
-								label={t("calc.infillPercent")}
+						{isFieldVisible("sales", "infillPercent") && (
+						<InputGroup
+						label={t("calc.infillPercent")}
 								value={store.infillPercent}
 								onChange={(v) =>
 									handleInput(v, (val) => store.setInfillPercent(val))
@@ -1661,9 +1757,9 @@ export function Calculator() {
 							/>
 						)}
 					</div>
-					{isAdvanced && (
-						<InputGroup
-							label={t("calc.extras")}
+					{isFieldVisible("sales", "extrasCost") && (
+					<InputGroup
+					label={t("calc.extras")}
 							value={
 								isFDM
 									? store.fdmExtras.extrasCost
@@ -1704,9 +1800,9 @@ export function Calculator() {
 							type="number"
 							prefix={currencySymbol}
 						/>
-						{isAdvanced && (
-							<InputGroup
-								label={t("calc.shipping")}
+						{isFieldVisible("sales", "shippingCost") && (
+						<InputGroup
+						label={t("calc.shipping")}
 								value={
 									isFDM
 										? store.fdmSales.shippingCost
@@ -1730,11 +1826,11 @@ export function Calculator() {
 							/>
 						)}
 					</div>
-					{isAdvanced && (
-						<>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-								<Select
-									label={t("calc.marketplace")}
+					{isFieldVisible("sales", "marketplace") && (
+					<>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+					<Select
+					label={t("calc.marketplace")}
 									value={store.selectedMarketplace.id}
 									onChange={handleMarketplaceChange}
 									options={catalogMarketplaces.map((m) => ({
@@ -1899,22 +1995,18 @@ export function Calculator() {
 						</button>
 					</div>
 
-					{/* Basic / Advanced toggle */}
+					{/* Level toggle */}
 					<div className="segmented-control">
-						<button
-							type="button"
-							onClick={() => store.setQuickMode(true)}
-							className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isBasicMode ? "active-basic" : ""}`}
-						>
-							{t("calc.basic")}
-						</button>
-						<button
-							type="button"
-							onClick={() => store.setQuickMode(false)}
-							className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isAdvanced ? "active-advanced" : ""}`}
-						>
-							{t("calc.advanced")}
-						</button>
+						{(['basic', 'intermediate', 'advanced'] as const).map((level) => (
+							<button
+								key={level}
+								type="button"
+								onClick={() => store.setCalcLevel(level)}
+								className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${store.calcLevel === level ? `active-${level}` : ''}`}
+							>
+								{level === 'basic' ? t('calc.basic') : level === 'intermediate' ? t('calc.intermediate') : t('calc.advanced')}
+							</button>
+						))}
 					</div>
 
 					{/* Product Name */}
