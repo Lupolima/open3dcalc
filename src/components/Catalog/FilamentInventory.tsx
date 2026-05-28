@@ -249,7 +249,7 @@ export function FilamentInventory() {
               <div className="flex items-center gap-3">
                 <SpoolIcon color={hex} size={44} />
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold text-white text-[15px] leading-tight truncate pr-4">{s.color}</p>
+                  <p className="font-bold text-white text-[15px] leading-tight break-words pr-4">{s.color}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{s.material} · {s.brand}</p>
                 </div>
               </div>
@@ -406,7 +406,7 @@ export function FilamentInventory() {
                   return (
                     <div key={s.id} className="flex flex-col items-center gap-1.5">
                       <div className="w-12 h-12 rounded-xl border border-white/10" style={{ backgroundColor: hex }} />
-                      <p className="text-[10px] text-gray-300 text-center leading-tight truncate w-full font-medium">{s.color}</p>
+                      <p className="text-[10px] text-gray-300 text-center leading-tight break-words w-full font-medium">{s.color}</p>
                       <p className="text-[9px] text-gray-500 text-center">{s.material}</p>
                     </div>
                   )

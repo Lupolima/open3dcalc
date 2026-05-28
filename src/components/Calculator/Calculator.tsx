@@ -2152,7 +2152,7 @@ export function Calculator() {
 				</div>
 
 				{/* Desktop right sidebar — always visible */}
-				<div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0">
+				<div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0 sticky top-6 self-start">
 					{renderRightSidebar()}
 				</div>
 			</div>

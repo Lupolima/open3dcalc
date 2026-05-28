@@ -224,7 +224,7 @@ function OptionItem({ opt, idx, focusIdx, value, onSelect }: {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <div className="truncate">{opt.label}</div>
+        <div className="whitespace-normal break-words">{opt.label}</div>
         {opt.subtitle && <div className="text-[10px] text-gray-500 truncate">{opt.subtitle}</div>}
       </div>
       {isSelected && <Check className="w-4 h-4 text-indigo-400 shrink-0" />}

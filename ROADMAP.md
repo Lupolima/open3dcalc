@@ -250,6 +250,8 @@
 - **Responsividade** — grids 2 itens/linha, padding reduzido, unidades fora dos inputs
 - **UX** — modo rápido reposicionado, headers sem toggle, seções colapsáveis
 - **3-Level Calculator** — sistema Básico/Intermediário/Avançado com toggle de 3 botões, campos customizáveis por seção via engrenagem (⚙️), persistência localStorage
+- **Fix: Nomes longos no dropdown** — nomes de materiais (ex: "PETG + Fibra de Carbono") agora quebram linha no Select ao invés de truncar
+- **Fix: Sidebar de preço sticky** — painel ResultsPanel agora acompanha o scroll no desktop (sticky top-6)
 
 ### 📋 Pendente (Fases 3 e 4)
 
