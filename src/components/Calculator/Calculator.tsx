@@ -140,6 +140,12 @@ const BASIC_FIELDS: Record<string, string[]> = {
 	sales: ['quantity', 'packagingCost', 'profitMarginPercent'],
 }
 
+const LEVEL_LABELS: Record<CalcLevel, 'calc.basic' | 'calc.intermediate' | 'calc.advanced'> = {
+	basic: 'calc.basic',
+	intermediate: 'calc.intermediate',
+	advanced: 'calc.advanced',
+}
+
 export function Calculator() {
 	const { t } = useTranslation();
 	const store = useCalculatorStore();
@@ -1732,11 +1738,11 @@ export function Calculator() {
 		return (
 			<div className="glass rounded-2xl p-4 sm:p-5">
 				{renderSectionHeader(
-				DollarSign,
-				t("calc.sales"),
-				t("calc.sectionDesc.sales"),
-				 "sales",
-					)}
+					DollarSign,
+					t("calc.sales"),
+					t("calc.sectionDesc.sales"),
+					"sales",
+				)}
 				<div className="space-y-4">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 						<InputGroup
@@ -1749,8 +1755,8 @@ export function Calculator() {
 							unit="un"
 						/>
 						{isFieldVisible("sales", "infillPercent") && (
-						<InputGroup
-						label={t("calc.infillPercent")}
+							<InputGroup
+								label={t("calc.infillPercent")}
 								value={store.infillPercent}
 								onChange={(v) =>
 									handleInput(v, (val) => store.setInfillPercent(val))
@@ -1761,8 +1767,8 @@ export function Calculator() {
 						)}
 					</div>
 					{isFieldVisible("sales", "extrasCost") && (
-					<InputGroup
-					label={t("calc.extras")}
+						<InputGroup
+							label={t("calc.extras")}
 							value={
 								isFDM
 									? store.fdmExtras.extrasCost
@@ -1804,8 +1810,8 @@ export function Calculator() {
 							prefix={currencySymbol}
 						/>
 						{isFieldVisible("sales", "shippingCost") && (
-						<InputGroup
-						label={t("calc.shipping")}
+							<InputGroup
+								label={t("calc.shipping")}
 								value={
 									isFDM
 										? store.fdmSales.shippingCost
@@ -1830,10 +1836,10 @@ export function Calculator() {
 						)}
 					</div>
 					{isFieldVisible("sales", "marketplace") && (
-					<>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<Select
-					label={t("calc.marketplace")}
+						<>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<Select
+									label={t("calc.marketplace")}
 									value={store.selectedMarketplace.id}
 									onChange={handleMarketplaceChange}
 									options={catalogMarketplaces.map((m) => ({
@@ -2007,7 +2013,7 @@ export function Calculator() {
 								onClick={() => store.setCalcLevel(level)}
 								className={`segmented-btn focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${store.calcLevel === level ? `active-${level}` : ''}`}
 							>
-								{level === 'basic' ? t('calc.basic') : level === 'intermediate' ? t('calc.intermediate') : t('calc.advanced')}
+								{t(LEVEL_LABELS[level])}
 							</button>
 						))}
 					</div>
