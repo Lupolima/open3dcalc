@@ -327,6 +327,16 @@ select {
   color: #6ee7b7;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
+.segmented-btn.active-intermediate {
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.2),
+    rgba(202, 138, 4, 0.15)
+  );
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #fde68a;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.2);
+}
 .segmented-btn.active-advanced {
   background: linear-gradient(
     135deg,

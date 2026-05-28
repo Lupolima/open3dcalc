@@ -123,6 +123,8 @@
     "quickMode": "Quick Mode",
     "basic": "Basic",
     "advanced": "Advanced",
+    "intermediate": "Intermediate",
+    "customizeFields": "Customize fields",
     "productName": "Product Name",
     "productNamePlaceholder": "E.g.: Decorative Vase",
     "costPerGram": "Cost per Gram",
