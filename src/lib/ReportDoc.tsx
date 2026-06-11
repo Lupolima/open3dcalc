@@ -15,11 +15,17 @@ const styles = StyleSheet.create({
   profit: { fontSize: 12, fontWeight: 'bold', color: '#ea580c', marginTop: 5 },
 })
 
-function fmt(v: number) {
-  return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-export function ReportDoc({ result }: { result: CalculationResult }) {
+export function ReportDoc({
+  result,
+  locale = 'pt-BR',
+  currency = 'BRL',
+}: {
+  result: CalculationResult
+  locale?: string
+  currency?: string
+}) {
+  const fmt = (v: number) =>
+    (v || 0).toLocaleString(locale, { style: 'currency', currency })
   return (
     <Document>
       <Page size="A4" style={styles.page}>

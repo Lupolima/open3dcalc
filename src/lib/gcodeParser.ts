@@ -33,12 +33,15 @@ export function parseGcode(text: string): GcodeInfo {
       info.printTimeMinutes = Math.round(parseFloat(trimmed.split(':')[1]) / 60)
     }
     if (trimmed.startsWith(';Filament used:')) {
-      const match = trimmed.match(/([\d.]+)\s*m/)
-      if (match) info.filamentUsedMm = parseFloat(match[1]) * 1000
-    }
-    if (trimmed.startsWith(';Filament used:')) {
-      const match = trimmed.match(/([\d.]+)/)
-      if (match) info.filamentUsedMm = parseFloat(match[1])
+      // Try meters pattern first (e.g. "2.34m"), convert to mm
+      const metersMatch = trimmed.match(/([\d.]+)\s*m/)
+      if (metersMatch) {
+        info.filamentUsedMm = parseFloat(metersMatch[1]) * 1000
+      } else {
+        // Fallback to plain number (already in mm)
+        const mmMatch = trimmed.match(/([\d.]+)/)
+        if (mmMatch) info.filamentUsedMm = parseFloat(mmMatch[1])
+      }
     }
     if (trimmed.startsWith(';MINX:')) {
       const minX = parseFloat(trimmed.split(':')[1])

@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.5.1] — 2026-06-11
+
+### 🔧 Melhorias
+
+- **Calculator.tsx decomposto**: de 2225 para 1395 linhas, com 6 componentes de seção extraídos (FixedCostsSection, LaborSection, MachineSection, MaterialSection, PrintSection, FailureSection)
+- **Dynamic imports**: loaders STL/OBJ agora são carregados sob demanda, reduzindo o bundle inicial em ~60-100KB
+- **ReportDoc.tsx**: locale e moeda agora são configuráveis via props (antes hardcoded BRL)
+
+### 🐛 Correções
+
+- **gcodeParser.ts**: corrigida duplicação no parsing de filament (dois blocos `;Filament used:` mesclados)
+
+### 🧪 Testes
+
+- **207 testes** (era 40) — aumento de 417%
+- **calculatorStore**: cobertura de 60.67% para 93.25%
+- **marketplace.ts**: cobertura de 16.66% para 100%
+- **printers.ts**: cobertura de 33.33% para 100%
+- Novos arquivos de teste: marketplace, printers, stlParser, MaterialSection, PrintSection, FailureSection
+
 ## [1.5.0] — 2026-05-28
 
 ### ✨ Novo

@@ -1,6 +1,4 @@
 import * as THREE from 'three'
-import { STLLoader } from 'three/addons/loaders/STLLoader.js'
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
 
 export interface MeshAnalysis {
   triangleCount: number
@@ -115,6 +113,7 @@ export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.Buf
   }
 
   if (ext === 'stl') {
+    const { STLLoader } = await import('three/addons/loaders/STLLoader.js')
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = e => {
@@ -135,6 +134,7 @@ export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.Buf
   }
 
   if (ext === 'obj') {
+    const { OBJLoader } = await import('three/addons/loaders/OBJLoader.js')
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = e => {
