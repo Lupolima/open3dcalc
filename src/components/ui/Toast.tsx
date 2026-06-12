@@ -20,7 +20,7 @@ const typeStyles: Record<ToastItem['type'], string> = {
 
 export function ToastContainer({ items, onDismiss }: ToastProps) {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm" role="region" aria-label="Notificações" aria-live="polite">
+    <div className="fixed bottom-4 left-4 right-4 sm:top-4 sm:right-4 sm:left-auto sm:bottom-auto z-50 flex flex-col gap-2 sm:max-w-sm" role="region" aria-label="Notificações" aria-live="polite">
       {items.map(item => (
         <ToastItem key={item.id} item={item} onDismiss={onDismiss} />
       ))}

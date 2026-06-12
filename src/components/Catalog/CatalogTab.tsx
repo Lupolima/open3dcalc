@@ -11,6 +11,8 @@ type Section = 'printers' | 'materials' | 'marketplaces'
 
 const uid = () => Math.random().toString(36).slice(2, 9)
 
+const SECTION_ORDER: Section[] = ['printers', 'materials', 'marketplaces']
+
 export function CatalogTab() {
   const { t } = useTranslation()
   const store = useCatalogStore()
@@ -24,6 +26,17 @@ export function CatalogTab() {
     materials: store.materials.length,
     marketplaces: store.marketplaces.length,
   }), [store.printers.length, store.materials.length, store.marketplaces.length])
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, current: Section) => {
+    const idx = SECTION_ORDER.indexOf(current)
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      setSection(SECTION_ORDER[(idx + 1) % SECTION_ORDER.length])
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      setSection(SECTION_ORDER[(idx - 1 + SECTION_ORDER.length) % SECTION_ORDER.length])
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -39,15 +52,42 @@ export function CatalogTab() {
         </div>
       </div>
 
-      <div className="glass rounded-2xl p-2 flex gap-2">
-        <button onClick={() => setSection('printers')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'printers' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.printers')}</button>
-        <button onClick={() => setSection('materials')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'materials' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.materials')}</button>
-        <button onClick={() => setSection('marketplaces')} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'marketplaces' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>{t('catalog.marketplaces')}</button>
+      <div className="glass rounded-2xl p-2 flex gap-2" role="tablist" aria-label={t('catalog.title')}>
+        <button
+          role="tab"
+          aria-selected={section === 'printers'}
+          aria-controls="tabpanel-printers"
+          onClick={() => setSection('printers')}
+          onKeyDown={(e) => handleTabKeyDown(e, 'printers')}
+          className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'printers' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+        >
+          {t('catalog.printers')}
+        </button>
+        <button
+          role="tab"
+          aria-selected={section === 'materials'}
+          aria-controls="tabpanel-materials"
+          onClick={() => setSection('materials')}
+          onKeyDown={(e) => handleTabKeyDown(e, 'materials')}
+          className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'materials' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+        >
+          {t('catalog.materials')}
+        </button>
+        <button
+          role="tab"
+          aria-selected={section === 'marketplaces'}
+          aria-controls="tabpanel-marketplaces"
+          onClick={() => setSection('marketplaces')}
+          onKeyDown={(e) => handleTabKeyDown(e, 'marketplaces')}
+          className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${section === 'marketplaces' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+        >
+          {t('catalog.marketplaces')}
+        </button>
       </div>
 
-      {section === 'printers' && <PrinterManager />}
-      {section === 'materials' && <MaterialManager />}
-      {section === 'marketplaces' && <MarketplaceManager />}
+      {section === 'printers' && <div id="tabpanel-printers" role="tabpanel"><PrinterManager /></div>}
+      {section === 'materials' && <div id="tabpanel-materials" role="tabpanel"><MaterialManager /></div>}
+      {section === 'marketplaces' && <div id="tabpanel-marketplaces" role="tabpanel"><MarketplaceManager /></div>}
     </div>
   )
 }

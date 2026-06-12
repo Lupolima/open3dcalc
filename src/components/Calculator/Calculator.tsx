@@ -1079,8 +1079,36 @@ export function Calculator() {
 		<>
 			<ToastContainer items={toastItems} onDismiss={dismissToast} />
 			<div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
-				{/* Desktop sidebar — icon + label + cost toggle dot */}
-				<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-[92px] h-fit">
+			{/* Tablet section nav — icons only */}
+			<nav className="hidden md:flex lg:hidden flex-col gap-0.5 w-14 shrink-0 sticky top-[92px] h-fit">
+				{visibleSections.map((s) => {
+					const keys = SECTION_ENABLES[s.id] || [];
+					const anyEnabled = keys.length === 0 || keys.some((k) => store.enabledSections[k]);
+					return (
+						<div key={s.id} className="px-1">
+							<button
+								onClick={() => {
+									setActiveSection(s.id);
+									document.getElementById(`section-${s.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+								}}
+								className={`w-full py-2 px-1 rounded-xl flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+									activeSection === s.id
+										? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
+										: `text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent ${
+											keys.length > 0 && !anyEnabled ? "opacity-50" : ""
+										}`
+								}`}
+								title={t(s.label)}
+							>
+								<s.Icon className={`w-4 h-4 ${activeSection === s.id ? "text-indigo-400" : ""}`} />
+							</button>
+						</div>
+					);
+				})}
+			</nav>
+
+			{/* Desktop sidebar — icon + label + cost toggle dot */}
+			<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-[92px] h-fit">
 					{visibleSections.map((s) => {
 						const keys = SECTION_ENABLES[s.id] || [];
 						const anyEnabled =
@@ -1363,30 +1391,34 @@ export function Calculator() {
 						borderTop: "1px solid rgba(255,255,255,0.07)",
 					}}
 				>
-					<div className="flex h-12 overflow-x-auto">
-						{visibleSections.map((s) => (
-							<button
-								key={s.id}
-								onClick={() => {
-									setActiveSection(s.id);
-									document
-										.getElementById(`section-${s.id}`)
-										?.scrollIntoView({ behavior: "smooth", block: "start" });
-								}}
-								className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-									activeSection === s.id
-										? "text-indigo-400"
-										: "text-slate-600 hover:text-slate-400"
-								}`}
-							>
-								<s.Icon
-									className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? "scale-110" : ""}`}
-								/>
-								<span className="truncate max-w-[48px] leading-tight">
-									{t(s.shortKey)}
-								</span>
-							</button>
-						))}
+					<div className="relative">
+						<div className="flex h-12 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+							{visibleSections.map((s) => (
+								<button
+									key={s.id}
+									onClick={() => {
+										setActiveSection(s.id);
+										document
+											.getElementById(`section-${s.id}`)
+											?.scrollIntoView({ behavior: "smooth", block: "start" });
+									}}
+									className={`flex flex-col items-center justify-center gap-0.5 min-w-[52px] flex-shrink-0 min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+										activeSection === s.id
+											? "text-indigo-400"
+											: "text-slate-600 hover:text-slate-400"
+									}`}
+								>
+									<s.Icon
+										className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? "scale-110" : ""}`}
+									/>
+									<span className="truncate max-w-[52px] leading-tight">
+										{t(s.shortKey)}
+									</span>
+								</button>
+							))}
+						</div>
+						{/* Fade gradient on right edge to indicate scrollability */}
+						<div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[rgba(6,8,24,0.95)] to-transparent pointer-events-none" />
 					</div>
 				</nav>
 			</div>

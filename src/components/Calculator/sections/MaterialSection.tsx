@@ -4,6 +4,8 @@ import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
 import type { BufferGeometry } from 'three'
 import type { CalculatorState } from '@/stores/calculatorStore'
+import type { FilamentSpool } from '@/stores/filamentInventory'
+import type { AMSSlot } from '@/types'
 import { selectSpool } from '@/stores/storeBridge'
 
 // Lazy-loaded STL preview
@@ -39,13 +41,7 @@ export interface MaterialSectionProps {
 	handleFileDrop: (file: File) => void
 	showSpoolSelector: boolean
 	setShowSpoolSelector: (show: boolean) => void
-	inventorySpools: Array<{
-		id: string
-		brand: string
-		color: string
-		material: string
-		costPerKg: number
-	}>
+	inventorySpools: FilamentSpool[]
 	catalogMaterials: Array<{
 		name: string
 		type: string
@@ -115,7 +111,7 @@ export function MaterialSection({
 					)}
 					{store.fdmAmsEnabled ? (
 						<div className="space-y-2">
-							{store.fdmAmsSlots.map((slot, i) => (
+							{store.fdmAmsSlots.map((slot: AMSSlot, i: number) => (
 								<div
 									key={i}
 									className="glass rounded-xl p-3 border-l-4"

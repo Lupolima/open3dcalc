@@ -68,7 +68,7 @@
 
 body {
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
   background-color: var(--color-bg-base);
   background-image:
     radial-gradient(
@@ -85,6 +85,12 @@ body {
   color: var(--color-text-primary);
   min-height: 100dvh;
   overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
 }
 
 /* ===================================================================
@@ -495,6 +501,27 @@ select {
   }
 }
 
+/* Very small screens: minimal blur */
+@media (max-width: 480px) {
+  .glass {
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  }
+  .glass-elevated {
+    backdrop-filter: blur(10px) saturate(1.2);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  }
+}
+
+/* Reduced motion: no blur at all */
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .glass-elevated {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* ===================================================================
    ANIMATIONS
    =================================================================== */
@@ -559,4 +586,72 @@ select {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* ===================================================================
+   REDUCED MOTILITY
+   =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-left,
+  .animate-shimmer {
+    animation: none !important;
+  }
+}
+
+/* ===================================================================
+   PRINT STYLESHEET
+   =================================================================== */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .glass,
+  .glass-elevated {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+  header,
+  nav,
+  .fixed,
+  footer,
+  button,
+  .animate-fade-up {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .gradient-text {
+    background: none !important;
+    -webkit-text-fill-color: black !important;
+    color: black !important;
+  }
+  /* Show results for printing */
+  .result-hero {
+    border: 2px solid #10b981 !important;
+    break-inside: avoid;
+  }
+}
+
+/* ===================================================================
+   STANDARD SCROLLBAR (Firefox)
+   =================================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 70, 229, 0.25) transparent;
 }

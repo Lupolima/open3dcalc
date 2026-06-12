@@ -148,8 +148,8 @@ export function ComparisonModal({ entryA, entryB, onClose }: ComparisonModalProp
         </div>
 
         {/* Entry names row */}
-        <div className="grid grid-cols-[1fr_1fr_1fr] gap-3 mb-4 text-sm">
-          <div className="text-gray-500 font-medium">{t('history.compareField')}</div>
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-[1fr_1fr_1fr] gap-3 mb-4 text-sm">
+          <div className="hidden min-[400px]:block text-gray-500 font-medium">{t('history.compareField')}</div>
           <div className="text-indigo-300 font-semibold text-center truncate px-1" title={entryA.name}>
             {entryA.name}
           </div>
@@ -169,16 +169,18 @@ export function ComparisonModal({ entryA, entryB, onClose }: ComparisonModalProp
             return (
               <div
                 key={field.key}
-                className="grid grid-cols-[1fr_1fr_1fr] gap-3 py-2.5 px-2 rounded-xl border-b border-white/5 last:border-b-0 hover:bg-white/[0.03] transition-colors text-sm"
+                className="grid grid-cols-1 min-[400px]:grid-cols-[1fr_1fr_1fr] gap-2 min-[400px]:gap-3 py-2.5 px-2 rounded-xl border-b border-white/5 last:border-b-0 hover:bg-white/[0.03] transition-colors text-sm"
               >
-                <div className="text-gray-400 flex items-center">
+                <div className="text-gray-400 flex items-center font-medium min-[400px]:font-normal">
                   {t(field.labelKey)}
                 </div>
-                <div className={`text-center font-medium flex items-center justify-center gap-1 ${aClass || 'text-gray-200'}`}>
+                <div className={`flex items-center justify-between min-[400px]:justify-center gap-1 ${aClass || 'text-gray-200'}`}>
+                  <span className="text-[10px] min-[400px]:hidden text-indigo-300">{entryA.name}:</span>
                   {formatMoney(valueA)}
                   {aIcon}
                 </div>
-                <div className={`text-center font-medium flex items-center justify-center gap-1 ${bClass || 'text-gray-200'}`}>
+                <div className={`flex items-center justify-between min-[400px]:justify-center gap-1 ${bClass || 'text-gray-200'}`}>
+                  <span className="text-[10px] min-[400px]:hidden text-amber-300">{entryB.name}:</span>
                   {formatMoney(valueB)}
                   {bIcon}
                 </div>

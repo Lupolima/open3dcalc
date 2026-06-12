@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useId, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Search, Check, ChevronDown } from 'lucide-react'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 
 export interface SelectOption {
   value: string
@@ -34,6 +35,7 @@ export function Select({
   search = true, groups = false, portal = false, className = '',
 }: SelectProps) {
   const id = useId()
+  const prefersReduced = useReducedMotion()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [focusIdx, setFocusIdx] = useState(-1)
@@ -141,7 +143,7 @@ export function Select({
           initial={{ opacity: 0, scaleY: 0.95, transformOrigin: 'top' }}
           animate={{ opacity: 1, scaleY: 1 }}
           exit={{ opacity: 0, scaleY: 0.95 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
+          transition={{ duration: prefersReduced ? 0 : 0.15, ease: 'easeOut' }}
           className="z-50 w-full mt-1.5 glass border border-white/10 rounded-xl shadow-2xl overflow-hidden"
           style={portal ? { position: 'absolute', left: 0, top: '100%' } : {}}
         >

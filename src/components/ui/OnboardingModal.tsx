@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, ChevronRight, ArrowLeft } from 'lucide-react'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 
 const ONBOARDING_KEY = 'open3dcalc_onboarded'
 
@@ -26,6 +27,7 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   const { t } = useTranslation()
+  const prefersReduced = useReducedMotion()
   const [[slideIndex, direction], setSlideState] = useState([0, 0])
   const [visible, setVisible] = useState(() => !localStorage.getItem(ONBOARDING_KEY))
 
@@ -111,7 +113,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: prefersReduced ? 0 : 0.25, ease: 'easeInOut' }}
               className="flex flex-col items-center gap-4 w-full"
             >
               <span className="text-5xl" role="img" aria-hidden="true">

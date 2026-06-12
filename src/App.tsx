@@ -169,6 +169,25 @@ function App() {
 
       <div className="flex flex-1 w-full max-w-[1440px] mx-auto">
 
+        {/* ── Tablet Sidebar — icons only ── */}
+        <aside className="hidden md:flex lg:hidden flex-col gap-1 w-16 shrink-0 px-2 py-6 sticky top-[68px] h-[calc(100dvh-68px)] overflow-y-auto border-r border-white/[0.06]">
+          <p className="text-[9px] font-semibold text-slate-500 px-2 mb-2 uppercase tracking-wider">Nav</p>
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
+                activeTab === tab.id
+                  ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] border border-transparent'
+              }`}
+              title={t(tab.labelKey)}
+            >
+              {tab.icon}
+            </button>
+          ))}
+        </aside>
+
         {/* ── Desktop Sidebar ── */}
         <aside className="hidden lg:flex flex-col gap-1 w-56 xl:w-64 shrink-0 px-4 py-6 sticky top-[68px] h-[calc(100dvh-68px)] overflow-y-auto border-r border-white/[0.06]">
           <p className="label-xs px-3 mb-2">Navegação</p>

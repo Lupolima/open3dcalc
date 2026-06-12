@@ -14,28 +14,30 @@ const createMockStore = (overrides: Partial<CalculatorState> = {}): CalculatorSt
 			spoolEfficiency: 95,
 		},
 		fdmAmsEnabled: false,
-		fdmAmsSlots: [
-			{
-				materialType: 'PLA',
-				costPerKg: 80,
-				weightUsedGrams: 50,
-				purgeWeightGrams: 5,
-				density: 1.24,
-				spoolEfficiency: 95,
-				color: '#ff0000',
-				enabled: true,
-			},
-			{
-				materialType: 'PETG',
-				costPerKg: 100,
-				weightUsedGrams: 30,
-				purgeWeightGrams: 3,
-				density: 1.27,
-				spoolEfficiency: 90,
-				color: '#0000ff',
-				enabled: false,
-			},
-		],
+	fdmAmsSlots: [
+		{
+			materialType: 'PLA',
+			costPerKg: 80,
+			weightUsedGrams: 50,
+			purgeWeightGrams: 5,
+			transitionPurgeGrams: 3,
+			density: 1.24,
+			spoolEfficiency: 95,
+			color: '#ff0000',
+			enabled: true,
+		},
+		{
+			materialType: 'PETG',
+			costPerKg: 100,
+			weightUsedGrams: 30,
+			purgeWeightGrams: 3,
+			transitionPurgeGrams: 3,
+			density: 1.27,
+			spoolEfficiency: 90,
+			color: '#0000ff',
+			enabled: false,
+		},
+	],
 		resinMaterial: {
 			type: 'Standard Resin',
 			costPerLiter: 250,
@@ -45,8 +47,11 @@ const createMockStore = (overrides: Partial<CalculatorState> = {}): CalculatorSt
 		selectedPrinter: {
 			id: 'printer-1',
 			name: 'Test Printer',
+			brand: 'Test',
 			power: 200,
 			value: 2000,
+			usefulLife: 5000,
+			maintenancePerHour: 10,
 			maxFilaments: 4,
 		},
 		setFdmMaterial: vi.fn(),
@@ -65,8 +70,8 @@ const mockCatalogMaterials = [
 ]
 
 const mockInventorySpools = [
-	{ id: 'spool-1', brand: 'Bambu', color: 'White', material: 'PLA', costPerKg: 75 },
-	{ id: 'spool-2', brand: 'eSUN', color: 'Black', material: 'PETG', costPerKg: 90 },
+	{ id: 'spool-1', brand: 'Bambu', material: 'PLA', color: 'White', colorHex: '#ffffff', weightGrams: 750, originalWeightGrams: 1000, costPerKg: 75, diameterMm: 1.75, dateAdded: Date.now(), notes: '', status: 'in_stock' as const, purchaseStore: '' },
+	{ id: 'spool-2', brand: 'eSUN', material: 'PETG', color: 'Black', colorHex: '#000000', weightGrams: 900, originalWeightGrams: 1000, costPerKg: 90, diameterMm: 1.75, dateAdded: Date.now(), notes: '', status: 'in_stock' as const, purchaseStore: '' },
 ]
 
 const defaultProps = {
@@ -149,7 +154,7 @@ describe('MaterialSection', () => {
 				{...defaultProps}
 				store={store}
 				isFDM={true}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'purgeWeight')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'purgeWeight')}
 			/>,
 		)
 		expect(screen.getByText('calc.purge')).toBeInTheDocument()
@@ -175,7 +180,7 @@ describe('MaterialSection', () => {
 				{...defaultProps}
 				store={store}
 				isFDM={true}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'spoolEfficiency')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'spoolEfficiency')}
 			/>,
 		)
 		expect(screen.getByText('calc.spoolEfficiency')).toBeInTheDocument()
@@ -188,7 +193,7 @@ describe('MaterialSection', () => {
 				{...defaultProps}
 				store={store}
 				isFDM={true}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'density')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'density')}
 			/>,
 		)
 		expect(screen.getByText('calc.density')).toBeInTheDocument()
@@ -201,7 +206,7 @@ describe('MaterialSection', () => {
 				{...defaultProps}
 				store={store}
 				isFDM={false}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'wasteMargin')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'wasteMargin')}
 			/>,
 		)
 		expect(screen.getByText('calc.wasteMargin')).toBeInTheDocument()
@@ -222,14 +227,14 @@ describe('MaterialSection', () => {
 
 	it('shows AMS toggle when printer has multiple filaments and purgeWeight is visible', () => {
 		const store = createMockStore({
-			selectedPrinter: { id: 'printer-1', name: 'Test Printer', power: 200, value: 2000, maxFilaments: 4 },
+			selectedPrinter: { id: 'printer-1', name: 'Test Printer', brand: 'Test', power: 200, value: 2000, usefulLife: 5000, maintenancePerHour: 10, maxFilaments: 4 },
 		})
 		render(
 			<MaterialSection
 				{...defaultProps}
 				store={store}
 				isFDM={true}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'purgeWeight')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'purgeWeight')}
 			/>,
 		)
 		expect(screen.getByText('AMS Multi-material')).toBeInTheDocument()
@@ -237,14 +242,14 @@ describe('MaterialSection', () => {
 
 	it('hides AMS toggle when printer has only one filament', () => {
 		const store = createMockStore({
-			selectedPrinter: { id: 'printer-1', name: 'Test Printer', power: 200, value: 2000, maxFilaments: 1 },
+			selectedPrinter: { id: 'printer-1', name: 'Test Printer', brand: 'Test', power: 200, value: 2000, usefulLife: 5000, maintenancePerHour: 10, maxFilaments: 1 },
 		})
 		render(
 			<MaterialSection
 				{...defaultProps}
 				store={store}
 				isFDM={true}
-				isFieldVisible={vi.fn((section: string, field: string) => field === 'purgeWeight')}
+				isFieldVisible={vi.fn((_section: string, field: string) => field === 'purgeWeight')}
 			/>,
 		)
 		expect(screen.queryByText('AMS Multi-material')).not.toBeInTheDocument()
@@ -252,7 +257,7 @@ describe('MaterialSection', () => {
 
 	it('hides AMS toggle when purgeWeight field is not visible', () => {
 		const store = createMockStore({
-			selectedPrinter: { id: 'printer-1', name: 'Test Printer', power: 200, value: 2000, maxFilaments: 4 },
+			selectedPrinter: { id: 'printer-1', name: 'Test Printer', brand: 'Test', power: 200, value: 2000, usefulLife: 5000, maintenancePerHour: 10, maxFilaments: 4 },
 		})
 		render(
 			<MaterialSection

@@ -207,35 +207,37 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
         {t('history.title')}
       </h2>
 
-      {/* Filter type tabs */}
-      <div className="flex gap-2 mb-4">
-        {filterTabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => store.setFilterType(tab.key)}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
-              store.filterType === tab.key
-                ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/30'
-                : 'bg-white/5 text-gray-400 hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <Select
-          label=""
-          value={store.sortBy}
-          onChange={v => store.setSortBy(v as 'date' | 'price' | 'profit' | 'name')}
-          options={[
-            { label: t('history.sort.date'), value: 'date' },
-            { label: t('history.sort.price'), value: 'price' },
-            { label: t('history.sort.profit'), value: 'profit' },
-            { label: t('history.sort.name'), value: 'name' },
-          ]}
-          search={false}
-          className="w-28"
-        />
+      {/* Filter type tabs + actions */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0" style={{ scrollbarWidth: 'none' }}>
+          {filterTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => store.setFilterType(tab.key)}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap ${
+                store.filterType === tab.key
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 items-center flex-wrap">
+          <Select
+            label=""
+            value={store.sortBy}
+            onChange={v => store.setSortBy(v as 'date' | 'price' | 'profit' | 'name')}
+            options={[
+              { label: t('history.sort.date'), value: 'date' },
+              { label: t('history.sort.price'), value: 'price' },
+              { label: t('history.sort.profit'), value: 'profit' },
+              { label: t('history.sort.name'), value: 'name' },
+            ]}
+            search={false}
+            className="w-28"
+          />
           <button onClick={() => setShowComparison(true)} disabled={selectedForCompare.length !== 2}
             className={`px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center gap-1.5 ${
               selectedForCompare.length === 2 ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-white/5 text-gray-500 cursor-not-allowed'
@@ -243,6 +245,7 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
           >
             <CheckSquare className="w-3.5 h-3.5" /> {t('history.compare')} ({selectedForCompare.length}/2)
           </button>
+        </div>
       </div>
 
       <div className="relative mb-4">
@@ -259,7 +262,7 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
       {filtered.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-8">{t('history.empty')}</p>
       ) : (
-        <div className="space-y-2 max-h-80 overflow-y-auto">
+        <div className="space-y-2 max-h-[60vh] sm:max-h-80 overflow-y-auto">
           {filtered.map(entry => (
             <div key={entry.id} className={`glass rounded-xl p-3 flex items-center gap-3 hover:bg-white/5 transition-colors ${selectedForCompare.includes(entry.id) ? 'ring-2 ring-indigo-500/50' : ''}`}>
               <input type="checkbox" checked={selectedForCompare.includes(entry.id)} onChange={() => toggleCompare(entry.id)}

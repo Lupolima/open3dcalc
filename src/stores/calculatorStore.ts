@@ -84,7 +84,7 @@ const DEFAULT_AMS_SLOTS: AMSSlot[] = Array.from({ length: 4 }, (_, i) => ({
 
 export type CalcLevel = 'basic' | 'intermediate' | 'advanced'
 
-interface CalculatorState {
+export interface CalculatorState {
   activeTab: 'fdm' | 'resin'
   setActiveTab: (tab: 'fdm' | 'resin') => void
 

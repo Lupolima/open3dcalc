@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 describe('stlParser dynamic imports', () => {
   it('should NOT have static imports of STLLoader or OBJLoader', () => {
@@ -10,7 +14,7 @@ describe('stlParser dynamic imports', () => {
     // Should NOT have top-level static import statements for three/addons loaders
     const staticImportPattern = /^import\s+.*from\s+['"]three\/addons\/loaders\//
     const lines = source.split('\n')
-    const staticImports = lines.filter(line => staticImportPattern.test(line.trim()))
+    const staticImports = lines.filter((line: string) => staticImportPattern.test(line.trim()))
 
     expect(staticImports).toHaveLength(0)
   })
