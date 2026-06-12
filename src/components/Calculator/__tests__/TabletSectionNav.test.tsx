@@ -40,6 +40,9 @@ vi.mock('@/components/Calculator/sections/FixedCostsSection', () => ({
 vi.mock('@/components/Calculator/sections/LaborSection', () => ({
   LaborSection: () => <div>LaborSection</div>,
 }))
+vi.mock('@/components/Calculator/SectionRenderer', () => ({
+  SectionRenderer: () => <div data-testid="section-renderer" />,
+}))
 
 vi.mock('@/stores/calculatorStore', () => ({
   useCalculatorStore: Object.assign(

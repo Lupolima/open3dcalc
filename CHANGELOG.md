@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.2] — 2026-06-12
+
+### 🔧 Técnico
+
+- **Calculator.tsx refatorado**: de 1459 para 234 linhas — 11 componentes extraídos (TechToggle, LevelToggle, ProductName, SectionNav, SectionRenderer, MobileBottomBar, SectionHeader, HardwareSection, OpsSection, SalesSection, Calculator.constants).
+- **calculatorStore.ts refatorado**: de 561 para 278 linhas — types, defaults, helpers e compute extraídos para 4 arquivos.
+- **calculatorStore.test.ts dividido**: de 1483 linhas para 4 arquivos independentes (fdm 406, resin 439, logic 354, test-utils 52) — todos ≤ 500 linhas.
+- **useShallow do Zustand**: aplicado em 10 componentes para eliminar re-renders desnecessários.
+- **Lazy load recharts**: bundle principal reduzido de 1.115 kB para 614 kB (-45%), recharts em chunk lazy separado.
+- **Dead code removido**: 7 arquivos eliminados (productStore, skuManager, ErrorBoundary, SummaryRow, PwaUpdatePrompt, useKeyboardShortcuts, usePwaUpdate).
+- **PDF/CSV Export mobile**: botões de exportação rápida na bottom bar da calculadora.
+
+### ✅ Testes
+
+- **301 testes** (era 207 no v1.5.0) — 27 arquivos de teste, 100% passando.
+- Novos testes: historyStore +12, filamentInventory +11, Calculator mobile export +3.
+- Cobertura de testes do calculatorStore mantida em 93%.
+
 ## [1.5.1] — 2026-06-12
 
 ### ✨ Novo

@@ -178,4 +178,153 @@ describe('useHistoryStore (integration)', () => {
     const filtered = useHistoryStore.getState().getFilteredEntries()
     expect(filtered).toHaveLength(2)
   })
+
+  // ══════════════════════════════════════════════════════════
+  // NOVOS TESTES
+  // ══════════════════════════════════════════════════════════
+
+  // ── getEntry pelo ID ─────────────────────────────────────
+  it('getEntry retorna entrada pelo ID', () => {
+    const id = useHistoryStore.getState().addEntry(entryData({ name: 'Find Me' }))
+    const entry = useHistoryStore.getState().getEntry(id)
+
+    expect(entry).toBeDefined()
+    expect(entry!.id).toBe(id)
+    expect(entry!.name).toBe('Find Me')
+  })
+
+  // ── getEntry ID inexistente ──────────────────────────────
+  it('getEntry retorna undefined para ID inexistente', () => {
+    useHistoryStore.getState().addEntry(entryData({ name: 'Some Entry' }))
+    const entry = useHistoryStore.getState().getEntry('non_existent_id')
+
+    expect(entry).toBeUndefined()
+  })
+
+  // ── setSearch ────────────────────────────────────────────
+  it('setSearch atualiza o campo search', () => {
+    expect(useHistoryStore.getState().search).toBe('')
+
+    useHistoryStore.getState().setSearch('benchy')
+    expect(useHistoryStore.getState().search).toBe('benchy')
+
+    useHistoryStore.getState().setSearch('')
+    expect(useHistoryStore.getState().search).toBe('')
+  })
+
+  // ── setSortBy / setSortOrder ─────────────────────────────
+  it('setSortBy e setSortOrder atualizam sort', () => {
+    expect(useHistoryStore.getState().sortBy).toBe('date')
+    expect(useHistoryStore.getState().sortOrder).toBe('desc')
+
+    useHistoryStore.getState().setSortBy('name')
+    expect(useHistoryStore.getState().sortBy).toBe('name')
+
+    useHistoryStore.getState().setSortOrder('asc')
+    expect(useHistoryStore.getState().sortOrder).toBe('asc')
+
+    useHistoryStore.getState().setSortBy('profit')
+    expect(useHistoryStore.getState().sortBy).toBe('profit')
+  })
+
+  // ── setFilterType ────────────────────────────────────────
+  it('setFilterType atualiza o filtro', () => {
+    expect(useHistoryStore.getState().filterType).toBe('all')
+
+    useHistoryStore.getState().setFilterType('fdm')
+    expect(useHistoryStore.getState().filterType).toBe('fdm')
+
+    useHistoryStore.getState().setFilterType('resin')
+    expect(useHistoryStore.getState().filterType).toBe('resin')
+
+    useHistoryStore.getState().setFilterType('all')
+    expect(useHistoryStore.getState().filterType).toBe('all')
+  })
+
+  // ── getFilteredEntries - ordenação por profit ────────────
+  it('getFilteredEntries ordena por profit asc/desc', () => {
+    useHistoryStore.getState().addEntry(entryData({ profit: 50, name: 'Medium Profit' }))
+    useHistoryStore.getState().addEntry(entryData({ profit: 10, name: 'Low Profit' }))
+    useHistoryStore.getState().addEntry(entryData({ profit: 100, name: 'High Profit' }))
+
+    useHistoryStore.getState().setSortBy('profit')
+    useHistoryStore.getState().setSortOrder('asc')
+    const asc = useHistoryStore.getState().getFilteredEntries()
+    expect(asc[0].name).toBe('Low Profit')
+    expect(asc[1].name).toBe('Medium Profit')
+    expect(asc[2].name).toBe('High Profit')
+
+    useHistoryStore.getState().setSortOrder('desc')
+    const desc = useHistoryStore.getState().getFilteredEntries()
+    expect(desc[0].name).toBe('High Profit')
+    expect(desc[2].name).toBe('Low Profit')
+  })
+
+  // ── getFilteredEntries - ordenação por nome ──────────────
+  it('getFilteredEntries ordena por name asc/desc', () => {
+    useHistoryStore.getState().addEntry(entryData({ name: 'Zebra' }))
+    useHistoryStore.getState().addEntry(entryData({ name: 'Apple' }))
+    useHistoryStore.getState().addEntry(entryData({ name: 'Banana' }))
+
+    useHistoryStore.getState().setSortBy('name')
+    useHistoryStore.getState().setSortOrder('asc')
+    const asc = useHistoryStore.getState().getFilteredEntries()
+    expect(asc[0].name).toBe('Apple')
+    expect(asc[1].name).toBe('Banana')
+    expect(asc[2].name).toBe('Zebra')
+
+    useHistoryStore.getState().setSortOrder('desc')
+    const desc = useHistoryStore.getState().getFilteredEntries()
+    expect(desc[0].name).toBe('Zebra')
+    expect(desc[2].name).toBe('Apple')
+  })
+
+  // ── getFilteredEntries - search sem resultados ───────────
+  it('getFilteredEntries com search sem resultados retorna vazio', () => {
+    useHistoryStore.getState().addEntry(entryData({ name: 'Benchy', summary: 'A boat' }))
+    useHistoryStore.getState().addEntry(entryData({ name: 'Vase', summary: 'A vase' }))
+
+    useHistoryStore.getState().setSearch('xyz_nonexistent')
+    const filtered = useHistoryStore.getState().getFilteredEntries()
+
+    expect(filtered).toHaveLength(0)
+  })
+
+  // ── getFilteredEntries com entries vazios ────────────────
+  it('getFilteredEntries com entries vazios retorna array vazio', () => {
+    // store está vazio pelo beforeEach
+    useHistoryStore.getState().setSearch('')
+    useHistoryStore.getState().setFilterType('all')
+    const filtered = useHistoryStore.getState().getFilteredEntries()
+
+    expect(filtered).toEqual([])
+  })
+
+  // ── getFilteredEntries com filterType all ────────────────
+  it('getFilteredEntries com filterType all retorna todas', () => {
+    useHistoryStore.getState().addEntry(entryData({ type: 'fdm', name: 'FDM Item' }))
+    useHistoryStore.getState().addEntry(entryData({ type: 'resin', name: 'Resin Item' }))
+
+    useHistoryStore.getState().setFilterType('all')
+    const filtered = useHistoryStore.getState().getFilteredEntries()
+
+    expect(filtered).toHaveLength(2)
+  })
+
+  // ── addEntry com ID fornecido ────────────────────────────
+  it('addEntry com ID fornecido usa esse ID', () => {
+    const customId = 'my_custom_id_123'
+    const id = useHistoryStore.getState().addEntry(entryData({ id: customId, name: 'Custom ID' }))
+
+    expect(id).toBe(customId)
+    expect(useHistoryStore.getState().entries[0].id).toBe(customId)
+  })
+
+  // ── addEntry com timestamp fornecido ─────────────────────
+  it('addEntry com timestamp fornecido usa esse timestamp', () => {
+    const customTimestamp = 1_600_000_000_000
+    useHistoryStore.getState().addEntry(entryData({ timestamp: customTimestamp, name: 'Timeless' }))
+
+    expect(useHistoryStore.getState().entries[0].timestamp).toBe(customTimestamp)
+  })
 })

@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Code2, Globe, ChevronDown } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency'
 import { useCurrency } from '@/hooks/useCurrency'
 
 export function Header() {
   const { t, i18n } = useTranslation()
-  const currencySetting = useCalculatorStore(s => s.currency)
-  const setCurrency = useCalculatorStore(s => s.setCurrency)
+  const { currency: currencySetting, setCurrency } = useCalculatorStore(
+    useShallow((s) => ({ currency: s.currency, setCurrency: s.setCurrency })),
+  )
   const { symbol } = useCurrency()
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)

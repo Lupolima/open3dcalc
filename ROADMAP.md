@@ -43,6 +43,8 @@
 | **ResultsPanel** | Dois sistemas de histórico separados (sidebar vs HistoryTab) — duplicação  | Alto     |
 | **Mobile**       | Navegação inferior funcional, mas sem acesso rápido a PDF/CSV no mobile    | Baixo    |
 
+> ✅ Resolvido em v1.5.1: Responsividade aprimorada para tablet e mobile, scroll horizontal na calculadora, toast adaptativo, tipografia fluida, glassmorphism otimizado
+
 ---
 
 ## 🚀 Fases de Implementação
@@ -252,21 +254,33 @@
 - **3-Level Calculator** — sistema Básico/Intermediário/Avançado com toggle de 3 botões, campos customizáveis por seção via engrenagem (⚙️), persistência localStorage
 - **Fix: Nomes longos no dropdown** — nomes de materiais (ex: "PETG + Fibra de Carbono") agora quebram linha no Select ao invés de truncar
 - **Fix: Sidebar de preço sticky** — painel ResultsPanel agora acompanha o scroll no desktop (sticky top-6)
+- **Onboarding para Novos Usuários** — modal de boas-vindas com 3 slides, detecção de primeira visita via localStorage
+- **Tooltips Informativos** — Floating UI, delay 400ms, 4 direções
+- **Atalhos de Teclado** — Ctrl/Cmd+S, Ctrl/Cmd+H, Ctrl/Cmd+D, Escape com indicadores visuais
+- **Inventário — Dedução Livre** — input numérico livre, filtro por marca e material
+- **Catálogo — Edição Inline** — ✏️ em cards, Enter/blur salva, Escape cancela
+- **Error Boundaries** — ResultsPanel, Dashboard e StlPreview com fallback estilizado
+- **PWA & Offline** — service worker, notificação "Nova versão disponível"
+- **Markdown na página Novidades** — renderização de `**bold**` e `` `code` `` inline
+- **v1.5.1: Responsividade Aprimorada** — layout tablet (768px-1024px) com sidebar de ícones, bottom bar com scroll horizontal e fade, tipografia fluida com clamp()
+- **v1.5.1: Acessibilidade** — prefers-reduced-motion (CSS + hook useReducedMotion), ARIA roles no Catálogo (role="tablist", role="tab"), navegação por teclado com setas
+- **v1.5.1: Performance Mobile** — glassmorphism em 3 tiers (768px/480px/reduced-motion), background-attachment: scroll em <768px
+- **v1.5.1: Print Stylesheet** — impressão limpa sem navegação, resultados destacados
+- **v1.5.1: UI Responsiva** — Toast posicionado bottom-center em mobile, ComparisonModal empilha abaixo de 400px, filtros do Histórico com scroll horizontal
+- **v1.5.1: Testes** — 264 testes (22 arquivos), todos passando, 100% de aprovação
 
-### 📋 Pendente (Fases 3 e 4)
+### 📋 Pendente (Próximos passos)
 
-- **3.1 Onboarding** — modal de boas-vindas para novos usuários
-- **3.2 Tooltips** — ícone `ⓘ` em campos não-óbvios com explicações
-- **3.3 Inventário edição livre** — edição inline, dedução livre, filtros
-- **3.4 Catálogo edição inline** — lápis em cada card, input substitui texto
-- **3.5 Atalhos de teclado** — Ctrl+S salvar, Ctrl+H histórico, Esc fechar
-- **Fase 4: Qualidade** — testes unitários/integração, error boundaries, PWA, performance
+- **Fase 4.2: Testes de integração** — historyStore (add, remove, merge, export, import), filamentInventory (addSpool, deductWeight, getLowStock)
+- **Fase 4.4: Performance — Memoization** — auditar useCalculatorStore para re-renders, verificar cobertura de lazy loading (StlPreview, recharts)
+- **PDF/CSV acesso rápido no mobile** — botão na navegação inferior para exportar direto
+- **Clean up técnico** — revisar tipos, remover dead code, padronizar padrões de componentes
 
-| Item                                | Status                          |
-| ----------------------------------- | ------------------------------- |
-| Fase 1 — Fundação & Quick Wins      | ✅ Concluída                    |
-| Fase 2 — Histórico & Dashboard      | ✅ Concluída                    |
-| Fase 3 — Usabilidade & Experiência  | 🟡 Parcial (3-Level Calc feito) |
-| Fase 4 — Qualidade & Infraestrutura | 📋 Planejado                    |
+| Item                                | Status                                           |
+| ----------------------------------- | ------------------------------------------------ |
+| Fase 1 — Fundação & Quick Wins      | ✅ Concluída                                     |
+| Fase 2 — Histórico & Dashboard      | ✅ Concluída                                     |
+| Fase 3 — Usabilidade & Experiência  | ✅ Concluída                                     |
+| Fase 4 — Qualidade & Infraestrutura | 🟡 Parcial (Tests, PWA, Error Boundaries feitos) |
 
-> Atualizado em: 28 de Maio de 2026
+> Atualizado em: 12 de Junho de 2026

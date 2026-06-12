@@ -1,12 +1,13 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useShallow } from 'zustand/react/shallow'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { useHistoryStore } from '@/stores/historyStore'
 import { useFilamentInventory } from '@/stores/filamentInventory'
 import type { FilamentSpool } from '@/stores/filamentInventory'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useCurrency } from '@/hooks/useCurrency'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from '@/components/Dashboard/RechartsLazy'
 import {
   FolderOpen, Save, FileText, BarChart2, CheckCircle2, ScrollText, Database,
 } from 'lucide-react'
@@ -18,15 +19,23 @@ interface ResultsPanelProps {
 
 export function ResultsPanel({ variant }: ResultsPanelProps) {
   const { t, i18n } = useTranslation()
-  const results = useCalculatorStore(s => s.results)
-  const productName = useCalculatorStore(s => s.productName)
-  const addToHistory = useCalculatorStore(s => s.addToHistory)
-  const clearHistory = useHistoryStore(s => s.clearHistory)
-  const historyEntries = useHistoryStore(s => s.entries)
-  const historyCount = useHistoryStore(s => s.entries.length)
+  const { results, productName, addToHistory, saveSettings, activeTab, fdmType, resinType } =
+    useCalculatorStore(useShallow((s) => ({
+      results: s.results,
+      productName: s.productName,
+      addToHistory: s.addToHistory,
+      saveSettings: s.saveSettings,
+      activeTab: s.activeTab,
+      fdmType: s.fdmMaterial.type,
+      resinType: s.resinMaterial.type,
+    })))
+  const { clearHistory, entries: historyEntries, historyCount } =
+    useHistoryStore(useShallow((s) => ({
+      clearHistory: s.clearHistory,
+      entries: s.entries,
+      historyCount: s.entries.length,
+    })))
   const recentEntries = useMemo(() => historyEntries.slice(0, 3), [historyEntries])
-  const saveSettings = useCalculatorStore(s => s.saveSettings)
-  const activeTab = useCalculatorStore(s => s.activeTab)
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -39,10 +48,9 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inventoryBtnRef = useRef<HTMLButtonElement>(null)
 
-  const spools = useFilamentInventory(s => s.spools)
-  const deductWeightFromSpool = useFilamentInventory(s => s.deductWeight)
-  const fdmType = useCalculatorStore(s => s.fdmMaterial.type)
-  const resinType = useCalculatorStore(s => s.resinMaterial.type)
+  const { spools, deductWeight: deductWeightFromSpool } = useFilamentInventory(
+    useShallow((s) => ({ spools: s.spools, deductWeight: s.deductWeight })),
+  )
   const currentMaterial = activeTab === 'fdm' ? fdmType : resinType
   const unitWeight = results?.unitWeight ?? 0
 
@@ -155,41 +163,48 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       </div>
 
       {chartData.length > 0 && (
-        <div className="glass-elevated rounded-2xl p-4 sm:p-5">
-          <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
-          <div className="space-y-3">
-            {chartData.map(item => (
-              <div key={item.name}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs sm:text-sm text-gray-400">{item.name}</span>
-                  <span className="text-xs sm:text-sm font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
-                </div>
-                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }}
-                  />
-                </div>
-              </div>
-            ))}
+        <Suspense fallback={
+          <div className="glass-elevated rounded-2xl p-4 sm:p-5">
+            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
+            <p className="text-sm text-gray-500 text-center py-8">{t('dashboard.loadingCharts')}</p>
           </div>
-          <div className={`mt-4 w-full ${isSidebar ? 'h-44 sm:h-48' : 'h-48 sm:h-56'}`}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={chartData} cx="40%" cy="50%" innerRadius={isSidebar ? 48 : 52} outerRadius={isSidebar ? 68 : 72} paddingAngle={3} dataKey="value">
-                  {chartData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => fmtCurrency(value)}
-                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
-                  itemStyle={{ color: '#e2e8f0' }} />
-                <Legend layout="vertical" verticalAlign="middle" align="right"
-                  iconType="circle" wrapperStyle={{ fontSize: '11px', maxWidth: '42%' }} />
-              </PieChart>
-            </ResponsiveContainer>
+        }>
+          <div className="glass-elevated rounded-2xl p-4 sm:p-5">
+            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{t('calc.costDistribution')}</div>
+            <div className="space-y-3">
+              {chartData.map(item => (
+                <div key={item.name}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs sm:text-sm text-gray-400">{item.name}</span>
+                    <span className="text-xs sm:text-sm font-mono font-bold text-white">{fmtCurrency(item.value)}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={`mt-4 w-full ${isSidebar ? 'h-44 sm:h-48' : 'h-48 sm:h-56'}`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={isSidebar ? 48 : 52} outerRadius={isSidebar ? 68 : 72} paddingAngle={3} dataKey="value">
+                    {chartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: unknown) => fmtCurrency(Number(value))}
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
+                    itemStyle={{ color: '#e2e8f0' }} />
+                  <Legend layout="vertical" verticalAlign="middle" align="right"
+                    iconType="circle" wrapperStyle={{ fontSize: '11px', maxWidth: '42%' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        </Suspense>
       )}
 
       <button onClick={() => addToHistory()}

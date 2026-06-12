@@ -1,9 +1,20 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { useHistoryStore } from '@/stores/historyStore'
 import { InputGroup } from '@/components/ui/InputGroup'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts'
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from './RechartsLazy'
 import { useCurrency } from '@/hooks/useCurrency'
 
 const DASHBOARD_KEY = 'open3dcalc_dashboard_v1'
@@ -170,37 +181,39 @@ export function Dashboard() {
       </div>
 
       {/* Cost Breakdown Chart */}
-      {chartData.length > 1 && (
-        <div className="glass rounded-2xl p-4">
-          <p className="text-sm font-semibold text-gray-300 mb-3">{t('breakdown.title')}</p>
-          <div className="flex items-center gap-4">
-            <div className="w-40 h-40 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={chartData} dataKey="value" cx="50%" cy="50%" outerRadius={60} label={false}>
-                    {chartData.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                    formatter={(value: number) => formatMoney(value)}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-              {chartData.map((d, i) => (
-                <div key={d.name} className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  <span className="text-gray-400">{d.name}</span>
-                  <span className="text-gray-200 font-semibold ml-auto">{formatMoney(d.value)}</span>
-                </div>
-              ))}
+      <Suspense fallback={<div className="glass rounded-2xl p-4"><p className="text-sm text-gray-500 text-center py-8">{t('dashboard.loadingCharts')}</p></div>}>
+        {chartData.length > 1 && (
+          <div className="glass rounded-2xl p-4">
+            <p className="text-sm font-semibold text-gray-300 mb-3">{t('breakdown.title')}</p>
+            <div className="flex items-center gap-4">
+              <div className="w-40 h-40 flex-shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={chartData} dataKey="value" cx="50%" cy="50%" outerRadius={60} label={false}>
+                      {chartData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                      formatter={(value: unknown) => formatMoney(Number(value))}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                {chartData.map((d, i) => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span className="text-gray-400">{d.name}</span>
+                    <span className="text-gray-200 font-semibold ml-auto">{formatMoney(d.value)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Suspense>
 
       {/* Monthly Projection */}
       <div className="glass rounded-2xl p-5">
@@ -289,59 +302,61 @@ export function Dashboard() {
       </div>
 
       {/* Profit Trend Chart */}
-      <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-bold text-white mb-4">{t('dashboard.trend')}</h3>
-        {trendData.length > 1 ? (
-          <div className="w-full h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={v => new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { notation: 'compact', maximumFractionDigits: 1 }).format(v)}
-                  width={50}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: '#1e293b',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                  }}
-                  formatter={(value: number) => formatMoney(value)}
-                  labelStyle={{ color: '#94a3b8' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="profit"
-                  stroke="#818cf8"
-                  strokeWidth={2}
-                  fill="url(#profitGradient)"
-                  dot={{ fill: '#818cf8', r: 3, strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: '#a5b4fc', strokeWidth: 0 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-500 text-center py-8">{t('dashboard.noHistory')}</p>
-        )}
-      </div>
+      <Suspense fallback={<div className="glass rounded-2xl p-5"><p className="text-sm text-gray-500 text-center py-16">{t('dashboard.loadingCharts')}</p></div>}>
+        <div className="glass rounded-2xl p-5">
+          <h3 className="text-sm font-bold text-white mb-4">{t('dashboard.trend')}</h3>
+          {trendData.length > 1 ? (
+            <div className="w-full h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#818cf8" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: '#64748b' }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#64748b' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v: number) => new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { notation: 'compact', maximumFractionDigits: 1 }).format(v)}
+                    width={50}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#1e293b',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                    formatter={(value: unknown) => formatMoney(Number(value))}
+                    labelStyle={{ color: '#94a3b8' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="profit"
+                    stroke="#818cf8"
+                    strokeWidth={2}
+                    fill="url(#profitGradient)"
+                    dot={{ fill: '#818cf8', r: 3, strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: '#a5b4fc', strokeWidth: 0 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 text-center py-8">{t('dashboard.noHistory')}</p>
+          )}
+        </div>
+      </Suspense>
 
       {/* Target Margin Mode */}
       <div className="glass rounded-2xl p-5">
