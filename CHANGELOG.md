@@ -1,24 +1,42 @@
 # Changelog
 
-## [1.5.1] — 2026-06-11
+## [1.5.1] — 2026-06-12
 
-### 🔧 Melhorias
+### ✨ Novo
 
+- **Responsividade aprimorada** — layout adaptável para celular (320px), tablet (768px) e desktop (1024px+). Sidebar compacta com ícones em tablet. Tipografia fluida com clamp(). Scroll horizontal na barra inferior da calculadora com indicador de fade.
+- **Acessibilidade** — suporte a prefers-reduced-motion (CSS + hook React useReducedMotion). Roles ARIA nos tabs do Catálogo (role="tablist", role="tab", aria-selected). Navegação por teclado com setas nos tabs.
+- **Performance mobile** — glassmorphism reduzido em telas pequenas (3 tiers: 768px, 480px, reduced-motion). background-attachment: scroll em <768px.
+- **Print stylesheet** — impressão limpa sem elementos de navegação, resultados destacados.
 - **Calculator.tsx decomposto**: de 2225 para 1395 linhas, com 6 componentes de seção extraídos (FixedCostsSection, LaborSection, MachineSection, MaterialSection, PrintSection, FailureSection)
 - **Dynamic imports**: loaders STL/OBJ agora são carregados sob demanda, reduzindo o bundle inicial em ~60-100KB
 - **ReportDoc.tsx**: locale e moeda agora são configuráveis via props (antes hardcoded BRL)
+
+### 🎨 UX
+
+- Toast notifications posicionadas no centro-inferior em mobile, canto-superior em desktop.
+- ComparisonModal com layout responsivo (grid empilha abaixo de 400px).
+- Filtros do Histórico com scroll horizontal em telas estreitas.
+- Dropdown e inventário com nomes longos agora quebram linha ao invés de truncar.
 
 ### 🐛 Correções
 
 - **gcodeParser.ts**: corrigida duplicação no parsing de filament (dois blocos `;Filament used:` mesclados)
 
+### 🔧 Técnico
+
+- `src/hooks/useReducedMotion.ts` — hook SSR-safe para detecção de prefers-reduced-motion.
+- `src/test/setup.ts` — mock global de window.matchMedia para testes.
+- Sticky sidebars agora usam `--header-height` (CSS custom property) em vez de valores hardcoded.
+
 ### 🧪 Testes
 
-- **207 testes** (era 40) — aumento de 417%
+- **264 testes** (era 207) — 22 arquivos de teste, 100% passando.
+- Novos testes: useReducedMotion (6), CatalogTab ARIA (5), HistoryTab overflow (3), TabletOptimization (10), TabletSectionNav (5).
+- Cobertura de seções da calculadora (MaterialSection, FailureSection, PrintSection, MachineSection, FixedCostsSection, LaborSection).
 - **calculatorStore**: cobertura de 60.67% para 93.25%
 - **marketplace.ts**: cobertura de 16.66% para 100%
 - **printers.ts**: cobertura de 33.33% para 100%
-- Novos arquivos de teste: marketplace, printers, stlParser, MaterialSection, PrintSection, FailureSection
 
 ## [1.5.0] — 2026-05-28
 
