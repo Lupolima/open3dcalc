@@ -11,7 +11,7 @@ interface VersionEntry {
 
 export function ChangelogPage() {
   const { t } = useTranslation()
-  const [expanded, setExpanded] = useState<string>('1.4.0')
+  const [expanded, setExpanded] = useState<string>('')
 
   const raw = t('changelog.versions', { returnObjects: true })
   const changelogData: VersionEntry[] = Array.isArray(raw) ? (raw as VersionEntry[]) : []
