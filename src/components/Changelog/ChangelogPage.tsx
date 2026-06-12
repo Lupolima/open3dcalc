@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { renderInlineMarkdown } from './renderInlineMarkdown'
 
 interface VersionEntry {
   version: string
@@ -79,7 +80,7 @@ export function ChangelogPage() {
                         {section.items.map((item, i) => (
                           <li key={i} className="text-xs text-gray-400 flex items-start gap-2 pl-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-1.5 flex-shrink-0" />
-                            {item}
+                            {renderInlineMarkdown(item)}
                           </li>
                         ))}
                       </ul>
