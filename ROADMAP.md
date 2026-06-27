@@ -269,6 +269,13 @@
 - **v1.5.1: UI Responsiva** — Toast posicionado bottom-center em mobile, ComparisonModal empilha abaixo de 400px, filtros do Histórico com scroll horizontal
 - **v1.5.1: Testes** — 264 testes (22 arquivos), todos passando, 100% de aprovação
 
+### v1.6.0 — Tutorial Interativo & Comunidade
+
+- 🎓 Tutorial interativo com 7 passos, spotlight/tooltip, navegação por teclado
+- 📲 Canal Telegram Impressão 3D BR no header e sidebar
+- 🌐 Créditos do desenvolvedor (ofertachina.com.br) no rodapé
+- 🌍 i18n completa — todas as strings hardcoded extraídas para tradução
+
 ### 📋 Pendente (Próximos passos)
 
 - **Fase 4.2: Testes de integração** — historyStore (add, remove, merge, export, import), filamentInventory (addSpool, deductWeight, getLowStock)
@@ -283,4 +290,4 @@
 | Fase 3 — Usabilidade & Experiência  | ✅ Concluída                                     |
 | Fase 4 — Qualidade & Infraestrutura | 🟡 Parcial (Tests, PWA, Error Boundaries feitos) |
 
-> Atualizado em: 12 de Junho de 2026
+> Atualizado em: 27 de Junho de 2026

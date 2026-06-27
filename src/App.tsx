@@ -184,7 +184,7 @@ function App() {
     <div className="min-h-dvh flex flex-col">
       <Header />
 
-      <div className="flex flex-1 w-full max-w-[1440px] mx-auto">
+      <div className="flex flex-1 w-full max-w-[1440px] mx-auto overflow-hidden">
 
         {/* ── Tablet Sidebar — icons only ── */}
         <aside className="hidden md:flex lg:hidden flex-col gap-1 w-16 shrink-0 px-2 py-6 sticky top-[68px] h-[calc(100dvh-68px)] overflow-y-auto border-r border-white/[0.06]">

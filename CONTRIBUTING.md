@@ -111,6 +111,25 @@ npm run build         # Build de produção — sucesso
 
 > 💡 **Dica:** Se instalou os hooks do Husky (recomendado), isso roda automaticamente no commit.
 
+### Sistema de Tutorial
+
+O tutorial interativo usa um store Zustand (`src/stores/tutorialStore.ts`) e um componente spotlight (`src/components/ui/Tutorial.tsx`).
+
+**Adicionar novo passo:**
+
+1. Adicione o step em `STEPS` array no `Tutorial.tsx`
+2. Adicione `data-tutorial="step-name"` no elemento alvo
+3. Adicione chaves i18n em `pt-BR.json` e `en-US.json` sob `tutorial.steps`
+4. Atualize `TUTORIAL_TOTAL_STEPS` no store
+
+**Targets usam seletores CSS:**
+
+- `data-tutorial="material"` — Seção de material
+- `data-tutorial="print"` — Seção de impressão
+- `data-tutorial="sales"` — Seção de vendas
+- `data-tutorial="results-sidebar"` — Painel de resultados (desktop)
+- `data-tutorial="export"` — Botões de exportação
+
 ### 5. Abra o Pull Request
 
 1. Faça push da sua branch:

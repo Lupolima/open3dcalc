@@ -25,7 +25,7 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 
 	return (
 		<div
-			className="fixed bottom-0 left-0 right-0 z-30 lg:hidden"
+			className="fixed bottom-0 left-0 right-0 z-[41] lg:hidden"
 			style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
 		>
 			{/* Results mini-bar */}

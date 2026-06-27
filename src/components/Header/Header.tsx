@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Code2, Globe, ChevronDown, HelpCircle } from 'lucide-react'
+import { Box, Code2, Globe, ChevronDown, BookOpen } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { useTutorialStore } from '@/stores/tutorialStore'
@@ -94,11 +94,12 @@ export function Header() {
           {/* Tutorial trigger */}
           <button
             onClick={() => useTutorialStore.getState().startTutorial()}
-            className="p-2.5 lg:p-3 text-slate-400 hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none rounded-xl"
+            className="flex items-center gap-2 p-2.5 lg:px-3.5 lg:py-2.5 text-indigo-300/70 hover:text-indigo-200 hover:bg-indigo-500/10 transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none rounded-xl border border-indigo-500/0 hover:border-indigo-500/20"
             title={t('nav.tutorial')}
             aria-label={t('nav.tutorial')}
           >
-            <HelpCircle className="w-5 h-5" />
+            <BookOpen className="w-5 h-5" />
+            <span className="hidden lg:inline text-[13px] font-semibold">{t('nav.tutorial')}</span>
           </button>
 
           {/* Currency selector */}

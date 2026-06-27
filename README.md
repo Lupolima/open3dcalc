@@ -97,6 +97,8 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - 🔄 **Auto-save** — formulário salvo automaticamente a cada alteração (800ms debounce)
 - 📋 **Carregar do histórico** — restaure qualquer cálculo salvo completo na calculadora
 - ✅ **ConfirmDialog** — modais de confirmação estilizados no lugar de `confirm()` nativo
+- 🎓 **Tutorial interativo** — assistência guiada com 7 passos, spotlight/tooltip, navegação por teclado e suporte a `prefers-reduced-motion`
+- 📲 **Canal Telegram** — comunidade em [Impressão 3D BR](https://t.me/Impressao3DBR)
 
 ---
 
@@ -349,6 +351,13 @@ Use o template de [Bug Report](https://github.com/ils15/open3dcalc/issues/new?la
 ### Código de Conduta
 
 Todo contribuidor deve seguir nosso [Código de Conduta](CODE_OF_CONDUCT.md).
+
+---
+
+## 🤝 Comunidade
+
+- **Telegram**: [Impressão 3D BR](https://t.me/Impressao3DBR) — canal oficial para discussões, suporte e dicas de impressão 3D
+- **GitHub Issues**: para bugs e feature requests
 
 ---
 

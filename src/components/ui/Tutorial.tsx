@@ -320,6 +320,22 @@ export function Tutorial() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isActive, currentStep, nextStep, previousStep, finishTutorial, completeStep])
 
+  // Pause tutorial when a modal/dialog is open
+  useEffect(() => {
+    if (!isActive) return
+    const checkModal = () => {
+      const modal = document.querySelector('[role="dialog"][aria-modal="true"]')
+      if (modal) {
+        // Modal opened — skip to next step or pause
+        skipTutorial()
+      }
+    }
+    // Use MutationObserver to detect modal insertion
+    const observer = new MutationObserver(checkModal)
+    observer.observe(document.body, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [isActive, skipTutorial])
+
   // Mark step as completed when navigating forward
   const handleNext = useCallback(() => {
     completeStep(currentStep)
