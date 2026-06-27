@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0] — 2026-06-27
+
+### ✨ Novo
+
+- **Tutorial interativo**: assistência guiada com 7 passos, spotlight/tooltip, navegação por teclado e suporte a `prefers-reduced-motion`
+- **Canal Telegram**: link para o canal [Impressão 3D BR](https://t.me/Impressao3DBR) no header e sidebar
+- **Créditos do desenvolvedor**: `oftackina.com.br` no rodapé
+
+### 🎨 UX
+
+- **Internacionalização completa**: todas as strings hardcoded em português extraídas para chaves de tradução (pt-BR/en-US)
+- **Botão de ajuda**: ícone `?` no header para reiniciar o tutorial a qualquer momento
+- **Auto-trigger do tutorial**: inicia automaticamente na primeira visita após 1.5s
+
+### 🧪 Testes
+
+- 301 testes passando, cobertura estable
+- Build limpo, TypeScript strict sem erros
+
 ## [1.5.2] — 2026-06-12
 
 ### 🔧 Técnico

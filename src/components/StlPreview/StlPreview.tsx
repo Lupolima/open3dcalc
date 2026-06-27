@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Center } from '@react-three/drei'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BufferGeometry } from 'three'
 
 interface StlPreviewProps {
@@ -27,10 +28,12 @@ function Model({ geometry }: { geometry: BufferGeometry }) {
 }
 
 export function StlPreview({ geometry }: StlPreviewProps) {
+  const { t } = useTranslation()
+
   if (!geometry) {
     return (
       <div className="glass rounded-xl h-48 flex items-center justify-center">
-        <p className="text-sm text-gray-400">Nenhum modelo carregado</p>
+        <p className="text-sm text-gray-400">{t('stl.noModel')}</p>
       </div>
     )
   }

@@ -97,7 +97,7 @@ export function SectionRenderer(props: SectionRendererProps) {
 				switch (s.id) {
 					case "material":
 						return (
-							<div key="material" id="section-material" className="scroll-mt-24">
+							<div key="material" id="section-material" data-tutorial="material" className="scroll-mt-24">
 								<MaterialSection
 									renderSectionHeader={renderSectionHeader}
 									t={t}
@@ -120,7 +120,7 @@ export function SectionRenderer(props: SectionRendererProps) {
 						);
 					case "print":
 						return (
-							<div key="print" id="section-print" className="scroll-mt-24">
+							<div key="print" id="section-print" data-tutorial="print" className="scroll-mt-24">
 								<PrintSection
 									renderSectionHeader={renderSectionHeader}
 									t={t}
@@ -199,13 +199,13 @@ export function SectionRenderer(props: SectionRendererProps) {
 						);
 					case "sales":
 						return (
-							<div key="sales" id="section-sales" className="scroll-mt-24">
+							<div key="sales" id="section-sales" data-tutorial="sales" className="scroll-mt-24">
 								<SalesSection />
 							</div>
 						);
 					case "results":
 						return (
-							<div key="results" id="section-results" className="scroll-mt-24 lg:hidden">
+							<div key="results" id="section-results" data-tutorial="results" className="scroll-mt-24 lg:hidden">
 								<ResultsPanel variant="mobile" />
 							</div>
 						);

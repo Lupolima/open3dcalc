@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Code2, Globe, ChevronDown } from 'lucide-react'
+import { Box, Code2, Globe, ChevronDown, HelpCircle } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCalculatorStore } from '@/stores/calculatorStore'
+import { useTutorialStore } from '@/stores/tutorialStore'
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency'
 import { useCurrency } from '@/hooks/useCurrency'
 
@@ -69,6 +70,18 @@ export function Header() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           <a
+            href="https://t.me/Impressao3DBR"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2.5 lg:p-3 text-slate-400 hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none rounded-xl"
+            title={t('nav.telegram')}
+            aria-label={t('nav.telegram')}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.061 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.441-.751-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141a.506.506 0 0 1 .171.325c.016.093.036.306.02.472z"/>
+            </svg>
+          </a>
+          <a
             href="https://github.com/ils15/open3dcalc"
             target="_blank"
             rel="noopener noreferrer"
@@ -77,6 +90,16 @@ export function Header() {
           >
             <Code2 className="w-5 h-5 lg:w-5 lg:h-5" />
           </a>
+
+          {/* Tutorial trigger */}
+          <button
+            onClick={() => useTutorialStore.getState().startTutorial()}
+            className="p-2.5 lg:p-3 text-slate-400 hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none rounded-xl"
+            title={t('nav.tutorial')}
+            aria-label={t('nav.tutorial')}
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
 
           {/* Currency selector */}
           <div ref={menuRef} className="relative">
@@ -122,7 +145,7 @@ export function Header() {
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none min-w-[44px]"
-            title="Mudar idioma"
+            title={t('nav.language')}
           >
             <Globe className="w-4 h-4" />
             <span className="hidden sm:inline">{i18n.language === 'pt-BR' ? 'EN' : 'PT'}</span>

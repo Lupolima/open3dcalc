@@ -192,7 +192,7 @@ export function Calculator() {
 	if (!results) {
 		return (
 			<div className="flex items-center justify-center py-20">
-				<div className="text-slate-500 text-sm">Carregando...</div>
+				<div className="text-slate-500 text-sm">{t('common.loading')}</div>
 			</div>
 		);
 	}
@@ -226,7 +226,7 @@ export function Calculator() {
 						handlePrinterSelect={handlePrinterSelect}
 					/>
 				</div>
-				<div className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0 sticky top-[92px] self-start max-h-[calc(100vh-92px)] overflow-y-auto">
+				<div data-tutorial="results-sidebar" className="hidden lg:flex flex-col gap-4 w-[320px] xl:w-[360px] shrink-0 sticky top-[92px] self-start max-h-[calc(100vh-92px)] overflow-y-auto">
 					<ResultsPanel variant="sidebar" />
 				</div>
 			</div>

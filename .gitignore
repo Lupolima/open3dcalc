@@ -27,3 +27,4 @@ OLD_REF
 *.plan.md
 docs/
 coverage
+.pantheon/

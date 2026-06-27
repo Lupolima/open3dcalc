@@ -10,7 +10,12 @@
     "dashboard": "Dashboard",
     "infill": "Calc. Infill",
     "inventory": "Filamentos",
-    "changelog": "Novidades"
+    "changelog": "Novidades",
+    "telegram": "Canal Telegram",
+    "tutorial": "Tutorial",
+    "language": "Mudar idioma",
+    "navigation": "Navegação",
+    "mainNavigation": "Navegação principal"
   },
   "dashboard": {
     "totalCost": "Custo Total",
@@ -193,7 +198,10 @@
     "parse3mf": "Parse 3MF",
     "markupPresets": "Presets de Markup",
     "annualProfit": "Lucro Anual",
-    "cheaper": "Mais Barato"
+    "cheaper": "Mais Barato",
+    "costLabel": "Custo",
+    "saleLabel": "Venda",
+    "profitLabel": "Lucro"
   },
   "catalog": {
     "title": "Cadastros e Presets",
@@ -232,6 +240,13 @@
     "noFreeShipping": "Sem frete grátis",
     "save": "Salvar",
     "remove": "Remover"
+  },
+  "inventory": {
+    "title": "Estoque",
+    "newSpool": "Novo Rolo",
+    "editSpool": "Editar Rolo",
+    "saveSpool": "Salvar Rolo",
+    "saveChanges": "Salvar Alterações"
   },
   "product": {
     "title": "Dados da Peça",
@@ -343,7 +358,8 @@
     "vertices": "Vértices",
     "estimatedWeight": "Peso Estimado",
     "invalidFile": "Arquivo inválido. Envie um STL, OBJ ou 3MF.",
-    "notManifold": "A malha não é manifold (pode não ser hermética)"
+    "notManifold": "A malha não é manifold (pode não ser hermética)",
+    "noModel": "Nenhum modelo carregado"
   },
   "common": {
     "save": "Salvar",
@@ -371,6 +387,44 @@
     "deductSelect": "Selecionar carretel para deduzir",
     "deductAvailable": "{{weight}}g disponíveis"
   },
+  "tutorial": {
+    "start": "Iniciar Tutorial",
+    "skip": "Pular",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "finish": "Concluir",
+    "stepOf": "Passo {{current}} de {{total}}",
+    "steps": {
+      "welcome": {
+        "title": "Bem-vindo ao Open3DCalc",
+        "description": "Calculadora 3D completa para estimar custos de impressão."
+      },
+      "material": {
+        "title": "Escolha o Material",
+        "description": "Selecione o tipo de filamento ou resina e defina o custo por kg/L."
+      },
+      "print": {
+        "title": "Parâmetros de Impressão",
+        "description": "Defina o tempo de impressão e potência da impressora."
+      },
+      "sales": {
+        "title": "Precificação",
+        "description": "Configure embalagem, frete, marketplace e margem de lucro."
+      },
+      "results": {
+        "title": "Veja os Resultados",
+        "description": "O preço de venda, custo total e lucro são calculados automaticamente."
+      },
+      "export": {
+        "title": "Exporte e Salve",
+        "description": "Exporte PDF, CSV, ou salve no histórico para comparar depois."
+      },
+      "complete": {
+        "title": "Tutorial Concluído!",
+        "description": "Pronto! Você já sabe usar a calculadora. Acesse o Dashboard para gráficos."
+      }
+    }
+  },
   "tooltip": {
     "costPerKg": "Preço médio do kg do filamento. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
     "purge": "Peso desperdiçado na torre de purga ou troca de cor. Pode ser maior que a peça em prints multicolor!",
@@ -393,6 +447,35 @@
     "header": "{{versions}} versões · {{changes}} mudanças",
     "viewAllOnGitHub": "Ver todas as releases no GitHub",
     "versions": [
+      {
+        "version": "1.6.0",
+        "date": "2026-06-27",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "**Tutorial interativo**: assistência guiada com 7 passos, spotlight/tooltip, navegação por teclado e suporte a `prefers-reduced-motion`",
+              "**Canal Telegram**: link para o canal [Impressão 3D BR](https://t.me/Impressao3DBR) no header e sidebar",
+              "**Créditos do desenvolvedor**: `ofertachina.com.br` no rodapé"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "**Internacionalização completa**: todas as strings hardcoded em português extraídas para chaves de tradução (pt-BR/en-US)",
+              "**Botão de ajuda**: ícone `?` no header para reiniciar o tutorial a qualquer momento",
+              "**Auto-trigger do tutorial**: inicia automaticamente na primeira visita após 1.5s"
+            ]
+          },
+          {
+            "title": "🧪 Testes",
+            "items": [
+              "301 testes passando, cobertura estable",
+              "Build limpo, TypeScript strict sem erros"
+            ]
+          }
+        ]
+      },
       {
         "version": "1.5.2",
         "date": "2026-06-12",

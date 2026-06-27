@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFilamentInventory, type FilamentSpool, type SpoolStatus } from '@/stores/filamentInventory'
 import { useCurrency } from '@/hooks/useCurrency'
 import { InputGroup } from '@/components/ui/InputGroup'
@@ -92,6 +93,7 @@ function spoolToForm(s: FilamentSpool): FormState {
 }
 
 export function FilamentInventory() {
+  const { t } = useTranslation()
   const store = useFilamentInventory()
   const { format: fmtCurrency, symbol } = useCurrency()
 
@@ -150,7 +152,7 @@ export function FilamentInventory() {
       {/* Header */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-white tracking-tight">Estoque</h2>
+          <h2 className="text-2xl font-black text-white tracking-tight">{t('inventory.title')}</h2>
           <p className="text-xs text-gray-500 mt-0.5">
             {store.spools.length} rolos cadastrados
             {lowCount > 0 && (
@@ -173,7 +175,7 @@ export function FilamentInventory() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-orange-500 text-white hover:bg-orange-400 active:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20"
           >
             <Plus className="w-4 h-4" />
-            Novo Rolo
+            {t('inventory.newSpool')}
           </button>
         </div>
       </div>
@@ -327,7 +329,7 @@ export function FilamentInventory() {
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-bold text-white">
-                {editingId ? 'Editar Rolo' : 'Novo Rolo'}
+                {editingId ? t('inventory.editSpool') : t('inventory.newSpool')}
               </h3>
               <button
                 onClick={closeForm}
@@ -370,7 +372,7 @@ export function FilamentInventory() {
               disabled={!form.brand.trim() || !form.color.trim() || !form.weight}
               className="mt-5 w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
             >
-              {editingId ? 'Salvar Alteracoes' : 'Salvar Rolo'}
+              {editingId ? t('inventory.saveChanges') : t('inventory.saveSpool')}
             </button>
           </div>
         </div>

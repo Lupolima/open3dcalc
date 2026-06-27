@@ -10,7 +10,12 @@
     "dashboard": "Dashboard",
     "infill": "Infill Calc.",
     "inventory": "Filaments",
-    "changelog": "Changelog"
+    "changelog": "Changelog",
+    "telegram": "Telegram Channel",
+    "tutorial": "Tutorial",
+    "language": "Change language",
+    "navigation": "Navigation",
+    "mainNavigation": "Main navigation"
   },
   "dashboard": {
     "totalCost": "Total Cost",
@@ -193,7 +198,10 @@
     "parse3mf": "Parse 3MF",
     "markupPresets": "Markup Presets",
     "annualProfit": "Annual Profit",
-    "cheaper": "Cheaper"
+    "cheaper": "Cheaper",
+    "costLabel": "Cost",
+    "saleLabel": "Sale",
+    "profitLabel": "Profit"
   },
   "catalog": {
     "title": "Catalogs & Presets",
@@ -232,6 +240,13 @@
     "noFreeShipping": "No free shipping",
     "save": "Save",
     "remove": "Remove"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "newSpool": "New Spool",
+    "editSpool": "Edit Spool",
+    "saveSpool": "Save Spool",
+    "saveChanges": "Save Changes"
   },
   "product": {
     "title": "Part Data",
@@ -343,7 +358,8 @@
     "vertices": "Vertices",
     "estimatedWeight": "Estimated Weight",
     "invalidFile": "Invalid file. Please upload STL, OBJ or 3MF.",
-    "notManifold": "Mesh is not manifold (may not be watertight)"
+    "notManifold": "Mesh is not manifold (may not be watertight)",
+    "noModel": "No model loaded"
   },
   "common": {
     "save": "Save",
@@ -371,6 +387,44 @@
     "deductSelect": "Select spool to deduct from",
     "deductAvailable": "{{weight}}g available"
   },
+  "tutorial": {
+    "start": "Start Tutorial",
+    "skip": "Skip",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "stepOf": "Step {{current}} of {{total}}",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Open3DCalc",
+        "description": "Complete 3D calculator to estimate printing costs."
+      },
+      "material": {
+        "title": "Choose Material",
+        "description": "Select the filament or resin type and set the cost per kg/L."
+      },
+      "print": {
+        "title": "Print Parameters",
+        "description": "Set the print time and printer power."
+      },
+      "sales": {
+        "title": "Pricing",
+        "description": "Configure packaging, shipping, marketplace and profit margin."
+      },
+      "results": {
+        "title": "See Results",
+        "description": "Sell price, total cost and profit are calculated automatically."
+      },
+      "export": {
+        "title": "Export & Save",
+        "description": "Export PDF, CSV, or save to history to compare later."
+      },
+      "complete": {
+        "title": "Tutorial Complete!",
+        "description": "You're ready! You know how to use the calculator. Check the Dashboard for charts."
+      }
+    }
+  },
   "tooltip": {
     "costPerKg": "Average price per kg of filament. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
     "purge": "Weight wasted in purge tower or color change. Can be larger than the part in multicolor prints!",
@@ -393,6 +447,35 @@
     "header": "{{versions}} versions · {{changes}} changes",
     "viewAllOnGitHub": "View all releases on GitHub",
     "versions": [
+      {
+        "version": "1.6.0",
+        "date": "2026-06-27",
+        "sections": [
+          {
+            "title": "✨ New",
+            "items": [
+              "**Tutorial interativo**: assistência guiada com 7 passos, spotlight/tooltip, navegação por teclado e suporte a `prefers-reduced-motion`",
+              "**Canal Telegram**: link para o canal [Impressão 3D BR](https://t.me/Impressao3DBR) no header e sidebar",
+              "**Créditos do desenvolvedor**: `ofertachina.com.br` no rodapé"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "**Internacionalização completa**: todas as strings hardcoded em português extraídas para chaves de tradução (pt-BR/en-US)",
+              "**Botão de ajuda**: ícone `?` no header para reiniciar o tutorial a qualquer momento",
+              "**Auto-trigger do tutorial**: inicia automaticamente na primeira visita após 1.5s"
+            ]
+          },
+          {
+            "title": "🧪 Testes",
+            "items": [
+              "301 testes passando, cobertura estable",
+              "Build limpo, TypeScript strict sem erros"
+            ]
+          }
+        ]
+      },
       {
         "version": "1.5.2",
         "date": "2026-06-12",

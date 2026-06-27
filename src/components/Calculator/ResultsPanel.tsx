@@ -244,7 +244,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div data-tutorial="export" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
           className={`py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
             saveStatus === 'saved'
@@ -337,11 +337,11 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       {content}
       <ConfirmDialog
         open={showClearConfirm}
-        title="Limpar histórico"
-        message={t('calc.clearConfirm') || 'Limpar histórico?'}
+        title={t('calc.clearHistory')}
+        message={t('calc.clearConfirm')}
         variant="danger"
-        confirmLabel="Limpar"
-        cancelLabel="Cancelar"
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
         onConfirm={() => { clearHistory(); setShowClearConfirm(false) }}
         onCancel={() => setShowClearConfirm(false)}
       />

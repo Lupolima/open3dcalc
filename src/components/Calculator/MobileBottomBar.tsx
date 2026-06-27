@@ -38,15 +38,15 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 			>
 				<div className="flex gap-3 text-[11px]">
 					<span className="text-slate-200">
-						<span className="text-slate-500 mr-1">Custo</span>
+						<span className="text-slate-500 mr-1">{t('calc.costLabel')}</span>
 						{fmtCurrency(results.totalCost)}
 					</span>
 					<span className="text-emerald-400 font-bold">
-						<span className="text-slate-500 mr-1">Venda</span>
+						<span className="text-slate-500 mr-1">{t('calc.saleLabel')}</span>
 						{fmtCurrency(results.sellPrice)}
 					</span>
 					<span className="text-amber-400">
-						<span className="text-slate-500 mr-1">Lucro</span>
+						<span className="text-slate-500 mr-1">{t('calc.profitLabel')}</span>
 						{fmtCurrency(results.profit)}
 					</span>
 				</div>
