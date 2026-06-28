@@ -412,7 +412,7 @@ export function QuoteDoc({
                     key={item.historyEntryId + idx}
                     style={[
                       styles.tableRow,
-                      idx % 2 === 1 && styles.tableRowAlt,
+                      (idx % 2 === 1 ? styles.tableRowAlt : {}),
                     ]}
                   >
                     <Text style={[styles.tableCell, { width: COL_QTY }]}>

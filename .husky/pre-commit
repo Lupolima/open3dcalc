@@ -1,1 +1,25 @@
+#!/bin/bash
+# ============================================================================
+# 🔒 PRE-COMMIT HOOK — Open3DCalc
+# ============================================================================
+
+cd "$(dirname "$0")/.."
+
+export PATH="$PWD/node_modules/.bin:$PATH"
+
+echo ""
+echo "🔒 Running pre-commit validation..."
+echo ""
+
 npx lint-staged
+
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-commit failed. Fix errors and try again."
+  exit 1
+fi
+
+echo ""
+echo "✅ Pre-commit passed."

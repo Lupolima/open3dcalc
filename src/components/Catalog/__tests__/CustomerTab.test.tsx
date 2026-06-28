@@ -141,7 +141,7 @@ describe('CustomerTab', () => {
     render(<CustomerTab />)
 
     // Find edit and delete buttons for first customer
-    const joaoCard = screen.getByText('João Silva').closest('[class*="glass"]')!
+    const joaoCard = screen.getByText('João Silva').closest('[class*="glass"]') as HTMLElement
     const editBtn = within(joaoCard).getByLabelText('customers.editCustomer')
     const deleteBtn = within(joaoCard).getByLabelText('customers.remove')
 

@@ -18,7 +18,8 @@
     "release:tag": "changelogen --release",
     "changelog:preview": "changelogen",
     "sync:changelog": "node scripts/sync-changelog-i18n.mjs",
-    "prebuild": "node scripts/sync-changelog-i18n.mjs"
+    "prebuild": "node scripts/sync-changelog-i18n.mjs",
+    "validate": "./scripts/pre-commit-check.sh"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
