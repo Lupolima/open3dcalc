@@ -146,8 +146,8 @@ describe('Phase 2 — Tablet Optimization', () => {
 
       expect(tabletSidebar).toBeDefined()
       const buttons = tabletSidebar!.querySelectorAll('button')
-      // TABS array has 7 items
-      expect(buttons.length).toBe(7)
+      // TABS array has 9 items
+      expect(buttons.length).toBe(9)
     })
 
     it('tablet sidebar buttons have title attribute for accessibility', () => {

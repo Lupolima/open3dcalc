@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCatalogStore } from '@/stores/catalogStore'
 import { InputGroup } from '@/components/ui/InputGroup'
 import { Select } from '@/components/ui/Select'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { printers } from '@/lib/printers'
 import { materials } from '@/lib/materials'
 import { marketplaces } from '@/lib/marketplace'
+import { Pencil, X } from 'lucide-react'
 
 type Section = 'printers' | 'materials' | 'marketplaces'
 
@@ -92,6 +94,19 @@ export function CatalogTab() {
   )
 }
 
+interface PrinterEditForm {
+  name: string
+  brand: string
+  power: string
+  value: string
+  usefulLife: string
+  maintenancePerHour: string
+}
+
+const emptyPrinterForm = (): PrinterEditForm => ({
+  name: '', brand: '', power: '', value: '', usefulLife: '3000', maintenancePerHour: '0.25',
+})
+
 function PrinterManager() {
   const store = useCatalogStore()
   const { t } = useTranslation()
@@ -101,6 +116,102 @@ function PrinterManager() {
   const [value, setValue] = useState('')
   const [usefulLife, setUsefulLife] = useState('3000')
   const [maintPerHour, setMaintPerHour] = useState('0.25')
+
+  // Edit modal state
+  const [editingPrinterId, setEditingPrinterId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<PrinterEditForm>(emptyPrinterForm())
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false)
+  const editFormRef = useRef<PrinterEditForm>(emptyPrinterForm())
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  const updEdit = (k: keyof PrinterEditForm, v: string) => {
+    setEditForm(f => {
+      const next = { ...f, [k]: v }
+      editFormRef.current = next
+      return next
+    })
+  }
+
+  const openEditPrinter = useCallback((p: { id: string; name: string; brand: string; power: number; value: number; usefulLife: number; maintenancePerHour: number }) => {
+    const form: PrinterEditForm = {
+      name: p.name,
+      brand: p.brand,
+      power: String(p.power),
+      value: String(p.value),
+      usefulLife: String(p.usefulLife),
+      maintenancePerHour: String(p.maintenancePerHour),
+    }
+    setEditingPrinterId(p.id)
+    setEditForm(form)
+    editFormRef.current = form
+    setShowEditModal(true)
+  }, [])
+
+  const closeEditPrinter = useCallback(() => {
+    setEditingPrinterId(null)
+    setEditForm(emptyPrinterForm())
+    editFormRef.current = emptyPrinterForm()
+    setShowEditModal(false)
+    setShowUnsavedConfirm(false)
+  }, [])
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!editingPrinterId) return false
+    const original = store.printers.find(p => p.id === editingPrinterId)
+    if (!original) return false
+    return (
+      editForm.name !== original.name ||
+      editForm.brand !== original.brand ||
+      editForm.power !== String(original.power) ||
+      editForm.value !== String(original.value) ||
+      editForm.usefulLife !== String(original.usefulLife) ||
+      editForm.maintenancePerHour !== String(original.maintenancePerHour)
+    )
+  }, [editingPrinterId, editForm, store.printers])
+
+  const requestClose = useCallback(() => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedConfirm(true)
+    } else {
+      closeEditPrinter()
+    }
+  }, [hasUnsavedChanges, closeEditPrinter])
+
+  const savePrinter = useCallback(() => {
+    if (!editingPrinterId) return
+    store.updatePrinter(editingPrinterId, {
+      name: editForm.name || 'Impressora',
+      brand: editForm.brand || 'Custom',
+      power: Number(editForm.power) || 0,
+      value: Number(editForm.value) || 0,
+      usefulLife: Number(editForm.usefulLife) || 3000,
+      maintenancePerHour: Number(editForm.maintenancePerHour) || 0.25,
+    })
+    closeEditPrinter()
+  }, [editingPrinterId, editForm, store, closeEditPrinter])
+
+  // Focus trap for edit modal
+  useEffect(() => {
+    if (!showEditModal) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { requestClose(); return }
+      if (e.key !== 'Tab') return
+      const dialog = modalRef.current
+      if (!dialog) return
+      const focusable = dialog.querySelectorAll<HTMLElement>('input, button, [tabindex]')
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showEditModal, requestClose])
 
   const add = () => {
     if (!name.trim()) return
@@ -138,11 +249,24 @@ function PrinterManager() {
         {store.printers.map(p => (
           <div key={p.id} className="glass rounded-2xl p-4 space-y-2">
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="font-semibold text-white">{p.name}</div>
-                <div className="text-xs text-gray-500">{p.brand}</div>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="min-w-0">
+                  <div className="font-semibold text-white truncate">{p.name}</div>
+                  <div className="text-xs text-gray-500">{p.brand}</div>
+                </div>
+                <button
+                  onClick={() => openEditPrinter(p)}
+                  className="shrink-0 p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
+                  aria-label={t('catalog.editPrinter')}
+                  title={t('catalog.editPrinter')}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
               </div>
-              {p.custom && <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-600/20 text-indigo-300">Custom</span>}
+              {p.custom
+                ? <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-600/20 text-indigo-300 shrink-0">Custom</span>
+                : <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-600/20 text-emerald-300 shrink-0">{t('catalog.defaultPrinter')}</span>
+              }
             </div>
             <div className="text-xs text-gray-400">{t('catalog.power')}: {p.power}W</div>
             <div className="text-xs text-gray-400">{t('catalog.value')}: R$ {p.value}</div>
@@ -152,6 +276,62 @@ function PrinterManager() {
           </div>
         ))}
       </div>
+
+      {/* Edit Printer Modal */}
+      {showEditModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={requestClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('catalog.editPrinter')}
+        >
+          <div
+            ref={modalRef}
+            className="glass rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-bold text-white">{t('catalog.editPrinter')}</h3>
+              <button
+                onClick={requestClose}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <InputGroup label={t('catalog.printerName')} value={editForm.name} onChange={v => updEdit('name', v)} />
+              <InputGroup label={t('catalog.printerBrand')} value={editForm.brand} onChange={v => updEdit('brand', v)} />
+              <InputGroup label={t('catalog.power')} value={editForm.power} onChange={v => updEdit('power', v)} type="number" unit="W" />
+              <InputGroup label={t('catalog.value')} value={editForm.value} onChange={v => updEdit('value', v)} type="number" prefix="R$" />
+              <InputGroup label={t('catalog.usefulLife')} value={editForm.usefulLife} onChange={v => updEdit('usefulLife', v)} type="number" unit="h" />
+              <InputGroup label={t('catalog.maintenancePerHour')} value={editForm.maintenancePerHour} onChange={v => updEdit('maintenancePerHour', v)} type="number" prefix="R$" />
+            </div>
+
+            <button
+              onClick={savePrinter}
+              disabled={!editForm.name.trim()}
+              className="mt-5 w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+            >
+              {t('catalog.saveChanges')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Unsaved changes confirmation */}
+      <ConfirmDialog
+        open={showUnsavedConfirm}
+        title={t('common.confirm')}
+        message="Você tem alterações não salvas. Deseja sair sem salvar?"
+        confirmLabel={t('catalog.cancel')}
+        cancelLabel={t('catalog.saveChanges')}
+        variant="warning"
+        onConfirm={closeEditPrinter}
+        onCancel={() => { setShowUnsavedConfirm(false) }}
+      />
     </div>
   )
 }

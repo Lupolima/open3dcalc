@@ -62,7 +62,7 @@ Suporta **FDM** (filamento) e **Resina** (SLA/DLP), com cálculo detalhado de:
 - ✅ **Cálculo Resina completo** — resina, lavagem, cura UV, LCD, FEP
 - ✅ **Upload STL/OBJ/3MF** — análise automática de volume, peso estimado, preview 3D
 - ✅ **Upload G-code** — extrai tempo de impressão e consumo de filamento automaticamente
-- ✅ **80+ impressoras** pré-cadastradas (Bambu Lab, Creality, Prusa, Elegoo, etc.) — suporte a multi-material (AMS, Prusa XL)
+- ✅ **385+ impressoras** pré-cadastradas (Bambu Lab, Creality, Prusa, Elegoo, etc.) — suporte a multi-material (AMS, Prusa XL)
 - ✅ **31 materiais** pré-cadastrados (PLA, PETG, ABS, TPU, Nylon, etc.)
 - ✅ **6 marketplaces** com taxas atualizadas (Shopee 2 faixas, Mercado Livre, Amazon, Etsy)
 - ✅ **Modo rápido** — esconde campos avançados para cálculos simples
@@ -156,11 +156,42 @@ Acesse pela aba **"Filamentos"**:
 3. Use os botões **-10g**, **-50g**, **-100g** para deduzir peso após cada print
 4. Acompanhe barras de progresso e alertas de estoque baixo
 
+### Clientes
+
+Acesse pela aba **"Clientes"**:
+
+1. Clique em **"+ Novo Cliente"**
+2. Preencha nome (obrigatório), empresa, email, telefone, endereço, observações
+3. Busque clientes por nome, empresa ou email
+4. Exporte/importe dados de clientes como JSON
+
+### Orçamentos
+
+Acesse pela aba **"Orçamentos"**:
+
+1. Clique em **"+ Novo Orçamento"**
+2. Dê um título e selecione um cliente (opcional)
+3. Adicione itens do histórico de cálculos
+4. Configure quantidades, descontos por item e desconto global
+5. Defina validade, condições de pagamento e prazo de entrega
+6. Exporte como **PDF profissional** com logo, dados do cliente e tabela de itens
+
+**Status:** Rascunho → Enviado → Aprovado/Recusado
+
+### Privacidade (LGPD/GDPR)
+
+O Open3DCalc é uma aplicação **100% client-side**. Todos os dados ficam no `localStorage` do seu navegador — nenhum dado é enviado para servidores.
+
+- **Banner de privacidade** — aviso fixo informando sobre o modelo de dados
+- **Consentimento** — modal na primeira vez que acessa Clientes/Orçamentos
+- **Política de privacidade** — 7 seções explicando direitos e segurança
+- **Export/import** — backup completo dos seus dados a qualquer momento
+
 ### Cadastros
 
 Gerencie impressoras, materiais e marketplaces:
 
-- **Impressoras** — 80+ modelos pré-cadastrados com busca e agrupamento por marca
+- **Impressoras** — 385+ modelos pré-cadastrados com busca, agrupamento por marca e edição inline
 - **Materiais** — 31 tipos com densidade e preço médio
 - **Marketplaces** — Taxas atualizadas (Shopee 2 faixas, ML, Amazon, Etsy)
 

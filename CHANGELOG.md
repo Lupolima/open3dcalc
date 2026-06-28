@@ -1,5 +1,52 @@
 # Changelog
 
+## [1.7.0] — 2026-06-28
+
+### ✨ Novo — Fase 5: Clientes & Orçamentos (LGPD-Safe)
+
+- **Cadastro de Clientes**: CRUD completo com busca por nome/empresa/email, export/import JSON, persistência em localStorage
+- **Orçamentos Multi-item**: crie orçamentos com múltiplos itens do histórico, vinculados a clientes, com cálculo automático de totais e descontos
+- **PDF Profissional**: template de orçamento com logo, dados do cliente, tabela de itens, condições de pagamento e nota de privacidade
+- **Dashboard de Orçamentos**: lista com filtros por status (Rascunho/Enviado/Aprovado/Recusado), busca e ordenação
+
+### ✨ Novo — Fase 6: Edição de Impressoras
+
+- **Edição inline de impressoras**: botão ✏️ em todas as impressoras (inclusive padrão) com modal de edição para nome, marca, potência, valor, vida útil e manutenção/h
+- **Banco de dados expandido**: 385 impressoras de 56 marcas (era 143) com dados reais de build volume, velocidade máxima, preço EUR/USD/BRL
+- **Fonte de dados**: swordlab/open-3d-printer-database (CC-BY-4.0) integrado ao catálogo
+
+### 🔒 Privacidade (LGPD/GDPR)
+
+- **Banner de privacidade**: aviso fixo no topo informando "Seus dados ficam apenas no seu navegador"
+- **Modal de consentimento**: exibido na primeira vez que o usuário acessa Clientes/Orçamentos
+- **Política de privacidade inline**: 7 seções explicando o modelo de dados, direitos do titular e segurança
+
+### 🎨 UX
+
+- **9 abas no app**: Calculator, Catalog, Customers, Inventory, Quotes, History, Changelog, Dashboard, Settings
+- **Botão "Criar Orçamento"** no ResultsPanel para gerar orçamento a partir do cálculo atual
+- **Badges de impressora**: "Padrão" (verde) para impressoras default, "Custom" (indigo) para personalizadas
+
+### 🌐 i18n
+
+- Novas chaves: `customers`, `quotes`, `privacy` (banner, consent, policy) em pt-BR e en-US
+- `nav.customers`, `nav.quotes` para navegação
+- `catalog.editPrinter`, `catalog.defaultPrinter`, `catalog.saveChanges`
+
+### 🧪 Testes
+
+- **383 testes passando** (era 301) — 34 arquivos de teste, zero falhas
+- Novos: customerStore (21), quoteStore (31), consentStore (9), QuoteDoc (5), QuoteSection (3), CustomerTab (10), printer-edit (3)
+- Cobertura de todas as novas stores e componentes
+
+### 📦 Dados
+
+- `src/data/printers-database.json` — 385 impressoras com specs detalhadas
+- `src/types/customer.ts` — interfaces Customer e CustomerFormData
+- `src/types/quote.ts` — interfaces Quote, QuoteItem, QuoteFormData
+
+# Changelog
+
 ## [1.6.0] — 2026-06-27
 
 ### ✨ Novo

@@ -8,10 +8,13 @@ import { Dashboard } from '@/components/Dashboard/Dashboard'
 import { ChangelogPage } from '@/components/Changelog/ChangelogPage'
 import { InfillCalculator } from '@/components/Calculator/InfillCalculator'
 import { FilamentInventory } from '@/components/Catalog/FilamentInventory'
+import { CustomerTab } from '@/components/Catalog/CustomerTab'
+import { QuoteSection } from '@/components/Calculator/QuoteSection'
 import { restoreAutoSnapshot } from '@/stores/storeBridge'
 import { useHistoryStore } from '@/stores/historyStore'
 import { useCalculatorStore } from '@/stores/calculatorStore'
 import { Tutorial } from './components/ui/Tutorial'
+import { PrivacyBanner } from './components/ui/PrivacyBanner'
 import { useTutorialStore } from '@/stores/tutorialStore'
 import type { CalculationResult, CalculationSnapshot } from '@/types'
 import {
@@ -22,9 +25,11 @@ import {
   Grid3x3,
   Spool,
   Sparkles,
+  FileText,
+  Users,
 } from 'lucide-react'
 
-type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory' | 'changelog'
+type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory' | 'changelog' | 'quotes' | 'customers'
 type LegacyProduct = {
   name?: string
   result?: CalculationResult
@@ -49,6 +54,8 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
   { id: 'catalog',    icon: <Settings2 className="w-[18px] h-[18px]" />,      labelKey: 'nav.catalog',    label: 'Catálogo' },
   { id: 'history',    icon: <Clock className="w-[18px] h-[18px]" />,          labelKey: 'nav.history',    label: 'Histórico' },
   { id: 'changelog',  icon: <Sparkles className="w-[18px] h-[18px]" />,     labelKey: 'nav.changelog',  label: 'Novidades' },
+  { id: 'quotes',     icon: <FileText className="w-[18px] h-[18px]" />,    labelKey: 'nav.quotes',     label: 'Quotes' },
+  { id: 'customers',  icon: <Users className="w-[18px] h-[18px]" />,      labelKey: 'nav.customers',  label: 'Clientes' },
 ]
 
 function App() {
@@ -183,6 +190,7 @@ function App() {
   return (
     <div className="min-h-dvh flex flex-col">
       <Header />
+      <PrivacyBanner />
 
       <div className="flex flex-1 w-full max-w-[1440px] mx-auto overflow-hidden">
 
@@ -259,6 +267,8 @@ function App() {
             {activeTab === 'catalog'    && <CatalogTab />}
             {activeTab === 'history'    && <HistoryTab onLoadToCalculator={() => setActiveTab('calculator')} />}
             {activeTab === 'changelog' && <ChangelogPage />}
+            {activeTab === 'quotes' && <QuoteSection />}
+            {activeTab === 'customers' && <CustomerTab />}
           </div>
         </main>
       </div>

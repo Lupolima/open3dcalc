@@ -11,11 +11,13 @@
     "infill": "Infill Calc.",
     "inventory": "Filaments",
     "changelog": "Changelog",
+    "customers": "Customers",
     "telegram": "Telegram Channel",
     "tutorial": "Tutorial",
     "language": "Change language",
     "navigation": "Navigation",
-    "mainNavigation": "Main navigation"
+    "mainNavigation": "Main navigation",
+    "quotes": "Quotes"
   },
   "dashboard": {
     "totalCost": "Total Cost",
@@ -239,7 +241,32 @@
     "hasFreeShipping": "Free shipping available",
     "noFreeShipping": "No free shipping",
     "save": "Save",
-    "remove": "Remove"
+    "remove": "Remove",
+    "editPrinter": "Edit Printer",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "defaultPrinter": "Default",
+    "editSuccess": "Printer updated successfully!"
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Manage your customers and contact information.",
+    "newCustomer": "New Customer",
+    "editCustomer": "Edit Customer",
+    "remove": "Remove Customer",
+    "name": "Name",
+    "company": "Company",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "notes": "Notes",
+    "noCustomers": "No customers registered yet",
+    "searchPlaceholder": "Search by name, company or email...",
+    "deleteConfirm": "Are you sure you want to delete this customer?",
+    "saveSuccess": "Customer saved successfully!",
+    "deleteSuccess": "Customer removed successfully!",
+    "export": "Export",
+    "import": "Import"
   },
   "inventory": {
     "title": "Inventory",
@@ -423,6 +450,26 @@
         "title": "Tutorial Complete!",
         "description": "You're ready! You know how to use the calculator. Check the Dashboard for charts."
       }
+    }
+  },
+  "privacy": {
+    "banner": {
+      "text": "🔒 Your data stays only in your browser. Nothing you type — customer data, quotes, or logs — is sent to servers. You have full control: export, import, or delete your data anytime.",
+      "dismiss": "Got it"
+    },
+    "consent": {
+      "title": "Your Data Privacy",
+      "text1": "By using Open3DCalc's customer and quote features, you acknowledge that:",
+      "item1": "All data is stored exclusively in your browser's localStorage.",
+      "item2": "No data is transmitted, copied, or stored on external servers.",
+      "item3": "You are solely responsible for data backup and security.",
+      "item4": "Data may be lost when clearing browser cache — we recommend periodic backups.",
+      "item5": "This software does not collect telemetry, analytics, or personal information.",
+      "accept": "✅ I understand and want to continue",
+      "readPolicy": "📖 Read full Privacy Policy"
+    },
+    "policy": {
+      "title": "Privacy Policy"
     }
   },
   "tooltip": {
@@ -739,5 +786,38 @@
         ]
       }
     ]
+  },
+  "quotes": {
+    "title": "Quotes",
+    "newQuote": "New Quote",
+    "editQuote": "Edit Quote",
+    "number": "Quote #{{number}}",
+    "customer": "Customer",
+    "selectCustomer": "Select customer",
+    "items": "Items",
+    "addItem": "Add item from History",
+    "quantity": "Qty",
+    "unitPrice": "Unit Price",
+    "discount": "Discount %",
+    "globalDiscount": "Global Discount %",
+    "subtotal": "Subtotal",
+    "discountAmount": "Discount",
+    "total": "TOTAL",
+    "validUntil": "Valid Until",
+    "paymentTerms": "Payment Terms",
+    "deliveryEstimate": "Delivery Estimate",
+    "footerNote": "Notes",
+    "status": "Status",
+    "statusDraft": "Draft",
+    "statusSent": "Sent",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "exportPdf": "Export PDF",
+    "exportJson": "Export JSON",
+    "noQuotes": "No quotes created yet",
+    "searchPlaceholder": "Search by title or customer...",
+    "emptyItems": "Add items from calculation history",
+    "saveSuccess": "Quote saved successfully!",
+    "deleteConfirm": "Are you sure you want to delete quote #{{number}}?"
   }
 }

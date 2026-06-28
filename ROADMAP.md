@@ -276,18 +276,197 @@
 - 🌐 Créditos do desenvolvedor (ofertachina.com.br) no rodapé
 - 🌍 i18n completa — todas as strings hardcoded extraídas para tradução
 
-### 📋 Pendente (Próximos passos)
+### ✅ Itens da Fase 4 já resolvidos
 
-- **Fase 4.2: Testes de integração** — historyStore (add, remove, merge, export, import), filamentInventory (addSpool, deductWeight, getLowStock)
-- **Fase 4.4: Performance — Memoization** — auditar useCalculatorStore para re-renders, verificar cobertura de lazy loading (StlPreview, recharts)
-- **PDF/CSV acesso rápido no mobile** — botão na navegação inferior para exportar direto
+Os seguintes itens marcados como pendentes foram verificados e **já estão implementados**:
+
+- ✅ **Fase 4.2: Testes de integração** — `historyStore.test.ts` e `filamentInventory.test.ts` existem com cobertura completa (add, remove, merge, export, import, addSpool, deductWeight, getLowStock)
+- ✅ **PDF/CSV acesso rápido no mobile** — já existe no `MobileBottomBar.tsx` com lazy loading de `pdfExport` e `csvExport`
+- ✅ **Dedução automática de estoque** (T-003) — implementada no ResultsPanel com dropdown e ConfirmDialog
+- ✅ **ComparisonModal** (T-006) — componente completo com 224 linhas de teste
+- ✅ **Dashboard persistente + break-even** (T-007) — implementado com localStorage e card break-even
+- ✅ **Import JSON no HistoryTab** (T-010) — implementado com merge inteligente
+
+### 📋 Backlog Técnico (Fase 4)
+
+- **Fase 4.4: Performance — Memoization** — auditar `useCalculatorStore` para re-renders, verificar cobertura de lazy loading (StlPreview, recharts)
 - **Clean up técnico** — revisar tipos, remover dead code, padronizar padrões de componentes
 
-| Item                                | Status                                           |
-| ----------------------------------- | ------------------------------------------------ |
-| Fase 1 — Fundação & Quick Wins      | ✅ Concluída                                     |
-| Fase 2 — Histórico & Dashboard      | ✅ Concluída                                     |
-| Fase 3 — Usabilidade & Experiência  | ✅ Concluída                                     |
-| Fase 4 — Qualidade & Infraestrutura | 🟡 Parcial (Tests, PWA, Error Boundaries feitos) |
+---
 
-> Atualizado em: 27 de Junho de 2026
+## 🚀 Fase 5 — Orçamentos & Clientes (LGPD-Safe)
+
+> **Meta:** Transformar o Open3DCalc em uma ferramenta de orçamento profissional **sem abrir mão da privacidade**. Tudo continua 100% no navegador do usuário — zero servidor, zero coleta de dados, zero backend.
+
+---
+
+### 🔒 Contexto de Privacidade
+
+O Open3DCalc é, e continuará sendo, uma aplicação **exclusivamente client-side**. Nenhum dado digitado pelo usuário — sejam parâmetros de cálculo, imagens de STL, dados de clientes ou logs de orçamento — trafega para qualquer servidor. Tudo permanece no `localStorage` do navegador.
+
+Isso é uma **vantagem competitiva e de compliance**: diferente de SaaS como Orçamento Fácil, Klipify ou Conta Azul, o Open3DCalc **não armazena dados em servidores externos**. A responsabilidade sobre os dados é integralmente do usuário, que pode exportar, importar ou limpar seus dados a qualquer momento.
+
+Referências do mercado que seguem o mesmo modelo:
+
+- **Excalidraw** — desenhos ficam 100% no navegador (salvam em arquivo .excalidraw)
+- **Tally Forms** — dados de formulários podem ser mantidos apenas localmente
+- **JSON Crack** — diagramas ficam no navegador até export
+
+**Importante**: O Open3DCalc não coleta telemetria, não usa cookies analíticos e não carrega scripts de terceiros que enviem dados para servidores externos. A única exceção é o cache de service worker para funcionamento offline, que nunca sai do dispositivo.
+
+---
+
+### 5.1 Cadastro de Clientes
+
+CRUD completo de clientes, armazenado em `localStorage` via Zustand + persist middleware (mesmo padrão do `historyStore`).
+
+| Item                                    | Descrição                                  | Prioridade | Esforço |
+| --------------------------------------- | ------------------------------------------ | ---------- | ------- |
+| `customerStore` com persist             | Store Zustand com persistência automática  | 🔴 Alta    | 2h      |
+| Tipo `Customer` em `types/index.ts`     | Interface com campos definidos             | 🔴 Alta    | 30min   |
+| CRUD UI: listar, criar, editar, excluir | Componente com tabela + formulário         | 🔴 Alta    | 6h      |
+| Validação de formulário                 | Nome obrigatório, email com formato válido | 🟡 Média   | 2h      |
+| Busca e filtro                          | Busca por nome, empresa, email             | 🟡 Média   | 2h      |
+
+**Interface `Customer`:**
+
+```typescript
+interface Customer {
+  id: string;
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+  createdAt: number;
+  updatedAt: number;
+  quoteCount: number;
+}
+```
+
+---
+
+### 5.2 Orçamento Multi-item
+
+Suporte a **múltiplos itens (cálculos) no mesmo orçamento**, cada um com sua própria configuração, vinculado opcionalmente a um cliente.
+
+| Item                               | Descrição                                       | Prioridade | Esforço |
+| ---------------------------------- | ----------------------------------------------- | ---------- | ------- |
+| `quoteStore` com persist           | Store de orçamentos (Zustand persist)           | 🔴 Alta    | 3h      |
+| Tipo `Quote` em `types/index.ts`   | Interface multi-item                            | 🔴 Alta    | 1h      |
+| Seleção de cliente                 | Dropdown searchable vinculado a `customerStore` | 🔴 Alta    | 2h      |
+| Adicionar itens do histórico       | Pegar cálculos salvos e agrupar num orçamento   | 🔴 Alta    | 4h      |
+| Campos: prazo, condições, validade | Datas, forma de pagamento, validade da proposta | 🟡 Média   | 2h      |
+| Número de proposta sequencial      | Auto-incremento via localStorage                | 🟢 Baixa   | 1h      |
+| Status do orçamento                | Rascunho / Enviado / Aprovado / Recusado        | 🟢 Baixa   | 1h      |
+
+---
+
+### 5.3 PDF Profissional
+
+Template de orçamento profissional completo usando `@react-pdf/renderer` (já presente no projeto).
+
+| Item                                 | Descrição                                | Prioridade | Esforço |
+| ------------------------------------ | ---------------------------------------- | ---------- | ------- |
+| `QuoteDoc.tsx` — novo componente PDF | Template completo de orçamento           | 🔴 Alta    | 6h      |
+| Cabeçalho com logo                   | Upload de imagem (base64 → localStorage) | 🔴 Alta    | 3h      |
+| Dados do cliente em destaque         | Nome, empresa, email, telefone           | 🔴 Alta    | 1h      |
+| Tabela de itens no PDF               | Qtd, descrição, valor unitário, total    | 🔴 Alta    | 2h      |
+| Condições de pagamento e prazo       | Seção no rodapé do PDF                   | 🟡 Média   | 1h      |
+| Manter `ReportDoc.tsx` original      | Relatório técnico continua disponível    | 🟢 Baixa   | 30min   |
+
+---
+
+### 5.4 LGPD/GDPR Compliance — Comunicação de Privacidade
+
+Como tudo fica no navegador, o foco é **comunicar com clareza** o modelo de dados para o usuário.
+
+| Item                            | Descrição                                      | Prioridade | Esforço |
+| ------------------------------- | ---------------------------------------------- | ---------- | ------- |
+| Banner "Dados no navegador"     | Banner fixo no topo da página de Clientes      | 🔴 Alta    | 2h      |
+| Modal de termo de consentimento | Exibido na 1ª vez que acessa "Clientes"        | 🔴 Alta    | 3h      |
+| Política de privacidade inline  | Texto completo explicando o modelo             | 🔴 Alta    | 2h      |
+| Indicador "offline-first"       | Badge visual: "💻 Dados locais"                | 🟡 Média   | 1h      |
+| Botão "Limpar todos os dados"   | Com confirmação dupla (via ConfirmDialog)      | 🟡 Média   | 1h      |
+| Rodapé do orçamento com aviso   | Texto no PDF: "Gerado localmente no navegador" | 🟢 Baixa   | 30min   |
+
+**Texto do banner:**
+
+> 🔒 **Seus dados ficam apenas no seu navegador.** Nada do que você digita — dados de clientes, orçamentos ou logs — é enviado para servidores. Você tem controle total: exporte, importe ou apague seus dados quando quiser.
+
+**Termo de consentimento (modal — 1 vez):**
+
+> Ao utilizar o cadastro de clientes e orçamentos do Open3DCalc, você declara estar ciente de que:
+>
+> 1. Todos os dados inseridos ficam armazenados **exclusivamente no `localStorage` do seu navegador**.
+> 2. Nenhum dado é transmitido, copiado ou armazenado em servidores externos.
+> 3. A responsabilidade pelo backup e segurança dos dados é integralmente sua.
+> 4. Os dados podem ser perdidos ao limpar o cache do navegador — recomendamos exportar backups periodicamente.
+> 5. Este software não coleta telemetria, dados analíticos ou informações pessoais.
+
+---
+
+### 5.5 Migração / Backup de Dados
+
+Ferramentas de export/import para backup voluntário.
+
+| Item                       | Descrição                                                  | Prioridade | Esforço |
+| -------------------------- | ---------------------------------------------------------- | ---------- | ------- |
+| Export completo            | JSON unificado: clientes + orçamentos + histórico + config | 🔴 Alta    | 3h      |
+| Import completo com merge  | Carregar JSON e mesclar sem duplicar                       | 🔴 Alta    | 3h      |
+| Botão "Fazer backup agora" | Export automático com data no nome                         | 🟡 Média   | 1h      |
+| Lembrete periódico         | Toast a cada 30 dias sem backup                            | 🟢 Baixa   | 1h      |
+
+---
+
+### 🧩 DAG de Dependências — Fase 5
+
+```
+Wave 1 (paralelo):
+  ├── 5.4 Banner LGPD + Termo de Consentimento
+  └── 5.1 CustomerStore + Customer CRUD UI
+
+Wave 2 (depende de 5.1):
+  ├── 5.2 QuoteStore + QuoteItem UI
+  └── 5.4 Política de Privacidade
+
+Wave 3 (depende de 5.2):
+  ├── 5.3 QuoteDoc.tsx (PDF profissional)
+  └── 5.2 Status + condições
+
+Wave 4 (depende de 5.1 + 5.2):
+  └── 5.5 Export/Import completo + backup
+```
+
+---
+
+### ✅ Critérios de Aceitação — Fase 5
+
+- [ ] `customerStore` com persistência localStorage, CRUD completo
+- [ ] Busca por nome/empresa/email funcional
+- [ ] `quoteStore` com suporte a múltiplos itens do histórico
+- [ ] Dropdown de cliente no orçamento
+- [ ] Orçamento PDF com cabeçalho, logo, dados do cliente, tabela de itens
+- [ ] Banner LGPD no topo da seção Clientes/Orçamentos
+- [ ] Modal de termo de consentimento na primeira visita
+- [ ] Export completo do banco local em JSON unificado
+- [ ] Botão "Limpar todos os dados" com confirmação dupla
+- [ ] Todos os textos traduzidos (pt-BR + en-US)
+- [ ] Cobertura de testes >80% nas novas stores e componentes
+- [ ] Nenhuma chamada de rede introduzida — zero servidor, zero backend
+
+---
+
+### 🏷️ Status
+
+| Item                                       | Status                                          |
+| ------------------------------------------ | ----------------------------------------------- |
+| Fase 1 — Fundação & Quick Wins             | ✅ Concluída                                    |
+| Fase 2 — Histórico & Dashboard             | ✅ Concluída                                    |
+| Fase 3 — Usabilidade & Experiência         | ✅ Concluída                                    |
+| Fase 4 — Qualidade & Infraestrutura        | 🟡 Parcial (Memoization audit + cleanup restam) |
+| Fase 5 — Orçamentos & Clientes (LGPD-Safe) | ✅ Concluída (v1.7.0)                           |
+| Fase 6 — Edição Impressoras + Banco Dados  | ✅ Concluída (v1.7.0)                           |
+
+> Atualizado em: 28 de Junho de 2026 (v1.7.0)

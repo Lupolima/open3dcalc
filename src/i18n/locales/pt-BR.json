@@ -10,7 +10,9 @@
     "dashboard": "Dashboard",
     "infill": "Calc. Infill",
     "inventory": "Filamentos",
+    "quotes": "Orçamentos",
     "changelog": "Novidades",
+    "customers": "Clientes",
     "telegram": "Canal Telegram",
     "tutorial": "Tutorial",
     "language": "Mudar idioma",
@@ -239,7 +241,32 @@
     "hasFreeShipping": "Oferece frete grátis",
     "noFreeShipping": "Sem frete grátis",
     "save": "Salvar",
-    "remove": "Remover"
+    "remove": "Remover",
+    "editPrinter": "Editar Impressora",
+    "saveChanges": "Salvar Alterações",
+    "cancel": "Cancelar",
+    "defaultPrinter": "Padrão",
+    "editSuccess": "Impressora atualizada com sucesso!"
+  },
+  "customers": {
+    "title": "Clientes",
+    "subtitle": "Gerencie seus clientes e dados de contato.",
+    "newCustomer": "Novo Cliente",
+    "editCustomer": "Editar Cliente",
+    "remove": "Remover Cliente",
+    "name": "Nome",
+    "company": "Empresa",
+    "email": "Email",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "notes": "Observações",
+    "noCustomers": "Nenhum cliente cadastrado ainda",
+    "searchPlaceholder": "Buscar por nome, empresa ou email...",
+    "deleteConfirm": "Tem certeza que deseja excluir este cliente?",
+    "saveSuccess": "Cliente salvo com sucesso!",
+    "deleteSuccess": "Cliente removido com sucesso!",
+    "export": "Exportar",
+    "import": "Importar"
   },
   "inventory": {
     "title": "Estoque",
@@ -423,6 +450,26 @@
         "title": "Tutorial Concluído!",
         "description": "Pronto! Você já sabe usar a calculadora. Acesse o Dashboard para gráficos."
       }
+    }
+  },
+  "privacy": {
+    "banner": {
+      "text": "🔒 Seus dados ficam apenas no seu navegador. Nada do que você digita — dados de clientes, orçamentos ou logs — é enviado para servidores. Você tem controle total: exporte, importe ou apague seus dados quando quiser.",
+      "dismiss": "Entendi"
+    },
+    "consent": {
+      "title": "Privacidade dos Seus Dados",
+      "text1": "Ao utilizar o cadastro de clientes e orçamentos do Open3DCalc, você declara estar ciente de que:",
+      "item1": "Todos os dados inseridos ficam armazenados exclusivamente no localStorage do seu navegador.",
+      "item2": "Nenhum dado é transmitido, copiado ou armazenado em servidores externos.",
+      "item3": "A responsabilidade pelo backup e segurança dos dados é integralmente sua.",
+      "item4": "Os dados podem ser perdidos ao limpar o cache do navegador — recomendamos exportar backups periodicamente.",
+      "item5": "Este software não coleta telemetria, dados analíticos ou informações pessoais.",
+      "accept": "✅ Entendi e quero continuar",
+      "readPolicy": "📖 Ler Política de Privacidade completa"
+    },
+    "policy": {
+      "title": "Política de Privacidade"
     }
   },
   "tooltip": {

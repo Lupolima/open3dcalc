@@ -176,6 +176,9 @@ export interface CalculationResult {
   actualMargin: number
 }
 
+export { type Customer, type CustomerFormData } from './customer'
+export { type Quote, type QuoteItem, type QuoteFormData } from './quote'
+
 export interface HistoryItem {
   id: string
   timestamp: number
