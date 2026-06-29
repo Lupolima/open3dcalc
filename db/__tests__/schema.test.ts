@@ -32,7 +32,7 @@ beforeAll(() => {
 })
 
 afterAll(() => {
-  sqlite.close()
+  sqlite?.close()
 })
 
 // ── Helper: generate IDs matching the existing app pattern ─────────────────

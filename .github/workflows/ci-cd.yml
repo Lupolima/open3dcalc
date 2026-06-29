@@ -25,11 +25,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Rebuild native modules
+        run: npm rebuild better-sqlite3 2>/dev/null || true
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:run -- --coverage
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Upload coverage
+        if: always() && hashFiles('coverage/') != ''
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage/
@@ -67,6 +70,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Rebuild native modules
+        run: npm rebuild better-sqlite3 2>/dev/null || true
       - run: npm run build:desktop
       - name: Verify desktop build
         run: ls -la dist/
