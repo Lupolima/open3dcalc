@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  release-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +32,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Setup Wine (Windows cross-compile)
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y wine64 wine32 2>/dev/null || true
+
       - name: Bump version with changelogen
         run: |
           if [ "${{ inputs.bump }}" = "auto" ]; then
@@ -41,10 +47,12 @@ jobs:
           fi
 
       - name: Build all targets
-        run: npm run build:all
+        run: |
+          npm run build:all
+          npm run build:electron
 
-      - name: Electron-builder (linux)
-        run: npx electron-builder --linux --publish never
+      - name: Electron-builder (Windows + Linux)
+        run: npx electron-builder --win --linux --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,9 +73,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=v$(node -p "require('./package.json').version")
-          # Collect artifacts from electron-builder output
           ARTIFACTS=""
-          for f in dist-electron/*.{exe,AppImage,dmg,deb,rpm,zip}; do
+          for f in dist-electron/Open3DCalc-*.exe dist-electron/Open3DCalc-*.AppImage dist-electron/Open3DCalc-*.dmg dist-electron/Open3DCalc-*.deb dist-electron/Open3DCalc-*.rpm dist-electron/Open3DCalc-*.zip; do
             if [ -f "$f" ]; then
               ARTIFACTS="$ARTIFACTS \"$f\""
             fi
@@ -75,13 +82,13 @@ jobs:
           if [ -n "$ARTIFACTS" ]; then
             # shellcheck disable=SC2086
             gh release create "$VERSION" \
-              --title "$VERSION" \
+              --title "v1.8.0 — Bifrost UI Redesign" \
               --generate-notes \
               --target ${{ github.sha }} \
               $ARTIFACTS
           else
             gh release create "$VERSION" \
-              --title "$VERSION" \
+              --title "v1.8.0 — Bifrost UI Redesign" \
               --generate-notes \
               --target ${{ github.sha }}
           fi
