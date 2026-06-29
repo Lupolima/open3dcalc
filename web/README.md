@@ -1,3 +1,6 @@
+> **⚠️ Nota:** Este diretório contém a documentação histórica do projeto web.
+> Para documentação atual do monorepo, veja [README.md](../README.md) na raiz.
+
 # Open3DCalc
 
 > Calculadora 3D Livre & Open-Source para precificação de impressões 3D
