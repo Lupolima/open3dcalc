@@ -21,10 +21,11 @@ jobs:
   release-linux:
     runs-on: ubuntu-latest
     steps:
+      # Usar PAT para checkout para poder fazer force push depois
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -69,6 +70,10 @@ jobs:
           git add -A
           git commit --no-verify -m "chore(release): $VERSION [skip ci]"
           git tag "$VERSION"
+          # Se RELEASE_TOKEN existir, usa ele (bypassa branch protection)
+          if [ -n "${{ secrets.RELEASE_TOKEN }}" ]; then
+            git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ils15/open3dcalc.git
+          fi
           git push --force --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,13 +83,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=v$(node -p "require('./package.json').version")
+          echo "Criando release $VERSION..."
           ARTIFACTS=""
-          for f in dist-electron/Open3DCalc-*.exe dist-electron/Open3DCalc-*.AppImage dist-electron/Open3DCalc-*.dmg dist-electron/Open3DCalc-*.deb dist-electron/Open3DCalc-*.rpm dist-electron/Open3DCalc-*.zip; do
+          for f in dist-electron/Open3DCalc-*.exe dist-electron/Open3DCalc-*.AppImage; do
             if [ -f "$f" ]; then
+              echo "  Artifact: $f ($(du -h "$f" | cut -f1))"
               ARTIFACTS="$ARTIFACTS \"$f\""
             fi
           done
           if [ -n "$ARTIFACTS" ]; then
+            # shellcheck disable=SC2086
             gh release create "$VERSION" \
               --title "$VERSION" \
               --generate-notes \
@@ -96,3 +104,4 @@ jobs:
               --generate-notes \
               --target ${{ github.sha }}
           fi
+          echo "✅ Release criada: https://github.com/ils15/open3dcalc/releases/tag/$VERSION"
