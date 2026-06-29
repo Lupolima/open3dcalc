@@ -6,6 +6,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+import type { Theme } from '@/shared/hooks/useTheme'
 import { loadThemePreference, saveThemePreference } from '../theme-persistence'
 
 /* ------------------------------------------------------------------ */
@@ -19,9 +21,9 @@ const mockDb = {
 
 function mockElectron(available: boolean): void {
   if (available) {
-    ;(window as any).electronAPI = { db: mockDb }
+    ;(window as unknown as Record<string, unknown>).electronAPI = { db: mockDb }
   } else {
-    delete (window as any).electronAPI
+    delete (window as unknown as Record<string, unknown>).electronAPI
   }
 }
 
@@ -86,7 +88,7 @@ describe('theme-persistence', () => {
 
     it('returns "system" for invalid stored values', async () => {
       mockElectron(false)
-      localStorage.setItem('open3dcalc_theme', 'neon')
+      localStorage.setItem('open3dcalc_theme', 'neon' as unknown as Theme)
       const theme = await loadThemePreference()
       expect(theme).toBe('system')
     })
@@ -130,7 +132,7 @@ describe('theme-persistence', () => {
 
     it('rejects invalid theme modes', async () => {
       mockElectron(false)
-      await saveThemePreference('neon' as any)
+      await saveThemePreference('neon' as unknown as Theme)
       expect(localStorage.getItem('open3dcalc_theme')).toBeNull()
     })
 

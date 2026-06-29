@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-type Theme = 'light' | 'dark'
+export type Theme = 'light' | 'dark'
 
 const STORAGE_KEY = 'open3dcalc_theme'
 

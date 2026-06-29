@@ -114,11 +114,11 @@ function setupIpcHandlers(): void {
   try {
     db = initDatabase()
     console.log('[main] Database initialized')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[main] Failed to initialize database:', error)
     // Don't throw - register handlers anyway, they'll fail gracefully
     // But create a null db object so handlers return meaningful errors
-    db = {} as any
+    db = {} as ReturnType<typeof initDatabase>
   }
 
   // ── db:load ──────────────────────────────────────────────────────
@@ -281,7 +281,7 @@ function setupIpcHandlers(): void {
 // ===== GLOBAL ERROR HANDLERS =====
 process.on('uncaughtException', (error: Error) => {
   console.error('[main] Uncaught exception:', error)
-  dialog.showErrorBox('Unexpected Error', `An unexpected error occurred:\n\n${error?.message ?? String(error)}\n\nThe application will now exit.`)
+  dialog.showErrorBox('Unexpected Error', `An unexpected error occurred:\n\n${(error as Error)?.message ?? String(error)}\n\nThe application will now exit.`)
   app.exit(1)
 })
 
@@ -295,9 +295,9 @@ app.whenReady().then(async () => {
   try {
     setupIpcHandlers()
     await createWindow()
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[main] Startup error:', error)
-    dialog.showErrorBox('Startup Error', `Failed to start Open3DCalc:\n\n${error?.message ?? String(error)}`)
+    dialog.showErrorBox('Startup Error', `Failed to start Open3DCalc:\n\n${(error as Error)?.message ?? String(error)}`)
     app.quit()
   }
 

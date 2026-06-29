@@ -698,7 +698,7 @@ export function QuoteSection() {
   // Sync search with store
   useEffect(() => {
     quoteStore.setSearchQuery(search)
-  }, [search, quoteStore.setSearchQuery])
+  }, [search, quoteStore.setSearchQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = quoteStore.getFilteredQuotes()
 
