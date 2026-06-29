@@ -1,7 +1,7 @@
 {
   "name": "open3dcalc",
   "private": true,
-  "version": "1.8.0",
+  "version": "1.8.1",
   "main": "electron/dist/electron/main.js",
   "type": "module",
   "scripts": {
@@ -100,7 +100,10 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "desktop/public/icon.png",
@@ -116,7 +119,11 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64", "universal"]
+          "arch": [
+            "x64",
+            "arm64",
+            "universal"
+          ]
         }
       ],
       "category": "public.app-category.utilities",
@@ -126,15 +133,26 @@
     },
     "dmg": {
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "linux": {
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "Utility",

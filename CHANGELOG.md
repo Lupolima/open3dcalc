@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.1
+
+[compare changes](https://github.com/ils15/open3dcalc/compare/v1.8.0...v1.8.1)
+
 ## v1.8.0 — Bifrost UI Redesign (2026-06-29)
 
 ### 🎨 UI/UX
