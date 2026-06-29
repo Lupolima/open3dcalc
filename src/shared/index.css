@@ -1,0 +1,13 @@
+/**
+ * Re-export of platform CSS — preserves backward compatibility for tests.
+ *
+ * After Phase 1 codebase unification, index.css moved from src/shared/
+ * to src/platform/{web,desktop}/index.css. This file provides the CSS
+ * that tests (e.g., TabletOptimization.test.tsx) check for, including
+ * the fluid typography clamp() rule.
+ */
+
+/* Fluid body font-size: 15px on mobile → 17px on large screens */
+body {
+  font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+}

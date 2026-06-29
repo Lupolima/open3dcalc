@@ -1,0 +1,83 @@
+# ──────────────────────────────────────────────────────────────────
+#  Open3DCalc Desktop — electron-builder configuration
+# ──────────────────────────────────────────────────────────────────
+
+appId: com.open3dcalc.desktop
+productName: Open3DCalc
+copyright: "Copyright © 2024-2026 Open3DCalc contributors"
+
+# ── Directories ───────────────────────────────────────────────────
+directories:
+  output: release
+  buildResources: public
+
+files:
+  - electron/dist/**/*
+  - dist/**/*
+  - package.json
+
+# Pack all node_modules into the asar (except native modules)
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**
+  - node_modules/bindings/**
+  - node_modules/file-uri-to-path/**
+
+# ── Windows ───────────────────────────────────────────────────────
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+  icon: public/icon.ico
+  artifactName: "${productName}-${version}-setup.${ext}"
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  installerIcon: public/icon.ico
+  uninstallerIcon: public/icon.ico
+  installerHeaderIcon: public/icon.ico
+
+# ── macOS ─────────────────────────────────────────────────────────
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.utilities
+  icon: public/icon.icns
+  hardenedRuntime: true
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ── Linux ─────────────────────────────────────────────────────────
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+  category: Utility
+  icon: public/icon.png
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+  synopsis: "Calculadora de custos de impressão 3D"
+  description: "Calculadora de custos de impressão 3D gratuita, open-source e segura."
+
+# ── Publish (placeholder — configure before releasing) ────────────
+# publish:
+#   provider: github
+#   owner: your-org
+#   repo: open3dcalc-desktop

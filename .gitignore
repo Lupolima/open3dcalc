@@ -1,30 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-web/
+dist-ssr/
+dist-electron/
+storybook-static/
+coverage/
+
+# Stale codebases — keep dirs but ignore their build artifacts
+web/node_modules/
+web/dist/
+web/coverage/
+web/storybook-static/
+desktop/node_modules/
+desktop/dist/
+desktop/release/
+desktop/*.db
+desktop/*.db-shm
+desktop/*.db-wal
+
+# Compiled JS artifacts in db/ directories (have .ts sources)
+db/**/*.js
+db/**/*.js.map
+desktop/db/**/*.js
+desktop/db/**/*.js.map
+
+# Pantheon / docs
+.pantheon/
+docs/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-storybook-static
-*.local
-OLD_REF
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# Editor
+.vscode/
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
-*.plan.md
-docs/
-coverage
-.pantheon/
+*.local

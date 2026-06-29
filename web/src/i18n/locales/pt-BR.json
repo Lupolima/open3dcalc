@@ -1,0 +1,853 @@
+{
+  "app": {
+    "title": "Open3DCalc",
+    "subtitle": "Calculadora 3D Livre & Open-Source"
+  },
+  "nav": {
+    "calculator": "Calculadora",
+    "catalog": "Cadastros",
+    "history": "Histórico",
+    "dashboard": "Dashboard",
+    "infill": "Calc. Infill",
+    "inventory": "Filamentos",
+    "quotes": "Orçamentos",
+    "changelog": "Novidades",
+    "customers": "Clientes",
+    "telegram": "Canal Telegram",
+    "tutorial": "Tutorial",
+    "language": "Mudar idioma",
+    "navigation": "Navegação",
+    "mainNavigation": "Navegação principal"
+  },
+  "dashboard": {
+    "totalCost": "Custo Total",
+    "salePrice": "Preço de Venda",
+    "profit": "Lucro Líquido",
+    "roi": "ROI",
+    "breakEven": "Ponto de Equilíbrio",
+    "breakEvenUnits": "Unidades necessárias",
+    "breakEvenRevenue": "Receita no equilíbrio",
+    "avgMargin": "Margem Média",
+    "trend": "Tendência de Lucro",
+    "noHistory": "Sem dados de histórico",
+    "cantBreakEven": "Preço não cobre custos",
+    "loadingCharts": "Carregando gráficos..."
+  },
+  "calc": {
+    "fdm": "Impressão FDM",
+    "resin": "Impressão em Resina",
+    "material": "Materiais",
+    "filamentType": "Tipo de Filamento",
+    "resinType": "Tipo de Resina",
+    "costPerKg": "Custo/kg",
+    "costPerLiter": "Custo/Litro",
+    "weight": "Peso da Peça",
+    "purge": "Purga / Perda",
+    "spoolEfficiency": "Eficiência do Carretel",
+    "density": "Densidade",
+    "volumeMl": "Volume Usado",
+    "wasteMargin": "Margem de Perda",
+    "printParams": "Parâmetros de Impressão",
+    "printTime": "Tempo de Impressão",
+    "printerPower": "Potência da Impressora",
+    "energyCost": "Custo da Energia",
+    "printer": "Impressora",
+    "failure": {
+      "title": "Risco e Falhas",
+      "description": "Custos com falhas de impressão",
+      "enableFailure": "Ativar custo de falha",
+      "mode": "Modo de falha",
+      "modePercent": "Percentual",
+      "modeFixed": "Fixo (R$)",
+      "value": "Valor da falha",
+      "valuePercent": "% de falha sobre custo base",
+      "valueFixed": "Custo fixo por falha",
+      "riskMultiplier": "Multiplicador de risco",
+      "riskMultiplierTooltip": "Aplica um multiplicador sobre o custo total para cenários de alto risco"
+    },
+    "noFailure": "Sem taxa",
+    "failureValue": "Valor",
+    "riskMultiplier": "Multiplicador de Risco",
+    "fdmHardware": "Desgaste de Hardware (FDM)",
+    "nozzle": "Bico (Nozzle)",
+    "nozzleCost": "Custo do Bico",
+    "nozzleLife": "Vida Útil",
+    "bed": "Mesa e Adesão",
+    "bedCost": "Custo Adesivo/Print",
+    "fdmFinishing": "Acabamento Físico",
+    "finishingSupplies": "Insumos Acabamento",
+    "resinPostProcess": "Lavagem e Cura",
+    "washing": "Lavagem (Álcool)",
+    "alcoholCost": "Custo do Álcool",
+    "alcoholVol": "Volume Consumido",
+    "curing": "Cura UV",
+    "cureTime": "Tempo de Cura",
+    "curePower": "Potência",
+    "resinHardware": "Hardware (Resina)",
+    "lcdCost": "Custo Tela LCD",
+    "lcdLife": "Vida Útil LCD",
+    "fepCost": "Custo Filme FEP",
+    "fepLife": "Durabilidade FEP",
+    "machine": "Custos da Máquina",
+    "machineCost": "Custo da Impressora",
+    "depreciationMonths": "Depreciação",
+    "hoursPerMonth": "Uso Mensal",
+    "maintenance": "Manutenção",
+    "maintenanceCost": "Custo Mensal Manutenção",
+    "labor": "Mão de Obra",
+    "setupTime": "Setup (Fatiamento)",
+    "postTime": "Pós-Processamento",
+    "hourlyRate": "Valor Hora",
+    "opsSoftware": "Operacional & Software",
+    "ppe": "EPIs / Consumíveis",
+    "ppeCost": "Custo EPI por Print",
+    "software": "Software e Arquivos",
+    "slicerCost": "Mensalidade Slicer",
+    "modelCost": "Custo do Arquivo STL",
+    "sales": "Custos Adicionais & Vendas",
+    "extras": "Peças e Extras",
+    "packaging": "Embalagem",
+    "shipping": "Frete",
+    "marketplace": "Marketplace",
+    "taxPercent": "Taxas / Impostos",
+    "profitMargin": "Margem de Lucro",
+    "costDistribution": "Distribuição de Custos",
+    "summary": "Resumo de Custos",
+    "directProduction": "Produção Direta",
+    "equipment": "Equipamento & Desgaste",
+    "operational": "Operacional & Trabalho",
+    "riskExtras": "Risco, Extras & Logística",
+    "totalCost": "Custo Total",
+    "sellPrice": "Preço de Venda",
+    "profit": "Lucro Líquido",
+    "addHistory": "Adicionar ao Histórico",
+    "saveSettings": "Salvar Configurações",
+    "saved": "Salvo!",
+    "exportPdf": "Exportar PDF",
+    "noCosts": "Sem custos para exibir",
+    "history": "Últimos Cálculos",
+    "clearHistory": "Limpar",
+    "clearConfirm": "Tem certeza? Isso apagará todo o histórico.",
+    "quickMode": "Modo Rápido",
+    "basic": "Básico",
+    "advanced": "Avançado",
+    "intermediate": "Intermediário",
+    "customizeFields": "Personalizar campos",
+    "productName": "Nome do Produto",
+    "productNamePlaceholder": "Ex: Vaso Decorativo",
+    "costPerGram": "Custo por Grama",
+    "quantity": "Quantidade",
+    "infillPercent": "Preenchimento (Infill)",
+    "targetMarginMode": "Modo Margem Alvo",
+    "targetMarginDesc": "Defina o preço de venda e calcule a margem",
+    "sellPriceTarget": "Preço de Venda Desejado",
+    "actualMargin": "Margem Real",
+    "monthlyProjection": "Projeção Mensal",
+    "printsPerMonth": "Prints por Mês",
+    "monthlyRevenue": "Receita Mensal",
+    "monthlyCost": "Custo Mensal",
+    "monthlyProfit": "Lucro Mensal",
+    "fixedCost": {
+      "title": "Custos Fixos",
+      "description": "Custos fixos mensais da oficina",
+      "monthlyCost": "Custo Fixo Mensal",
+      "monthlyCostTooltip": "Internet, aluguel, energia base, manutenção da oficina",
+      "monthlyHours": "Horas por Mês",
+      "monthlyHoursTooltip": "Horas estimadas de operação da impressora por mês"
+    },
+    "chartLabels": {
+      "energy": "Energia",
+      "machine": "Máquina",
+      "finishing": "Acabamento",
+      "consumables": "Consumíveis",
+      "software": "Software",
+      "labor": "Mão de Obra",
+      "failure": "Falha",
+      "extras": "Extras"
+    },
+    "sectionShort": {
+      "material": "Material",
+      "print": "Parâmetros",
+      "failure": "Falhas",
+      "hardware": "Hardware",
+      "machine": "Máquina",
+      "fixedCost": "C.Fixos",
+      "labor": "M.Obra",
+      "ops": "Soft/EPI",
+      "sales": "Vendas",
+      "results": "Resultado"
+    },
+    "sectionDesc": {
+      "fdmMaterial": "Filamento FDM",
+      "resinMaterial": "Resina fotopolimérica",
+      "print": "Tempo, energia e impressora",
+      "fdmHardware": "Bico, mesa e acabamento",
+      "resinHardware": "Lavagem, cura, LCD/FEP",
+      "machine": "Depreciação e manutenção",
+      "labor": "Setup, pós-processamento e taxa horária",
+      "ops": "EPI, slicer e licença de modelo",
+      "sales": "Embalagem, frete, marketplace e margem"
+    },
+    "printVsBuy": "Imprimir vs Comprar",
+    "buyPrice": "Preço de Compra",
+    "savings": "Economia",
+    "printCheaper": "Imprimir é mais barato",
+    "buyCheaper": "Comprar é mais barato",
+    "exportCsv": "Exportar CSV",
+    "gcodeUpload": "Upload G-code",
+    "gcodeParsed": "G-code parseado com sucesso!",
+    "gcodeError": "Erro ao parsear G-code",
+    "parse3mf": "Parse 3MF",
+    "markupPresets": "Presets de Markup",
+    "annualProfit": "Lucro Anual",
+    "cheaper": "Mais Barato",
+    "costLabel": "Custo",
+    "saleLabel": "Venda",
+    "profitLabel": "Lucro"
+  },
+  "catalog": {
+    "title": "Cadastros e Presets",
+    "subtitle": "Gerencie impressoras, materiais e marketplaces usados pela calculadora.",
+    "printers": "Impressoras",
+    "materials": "Materiais",
+    "marketplaces": "Marketplaces",
+    "addPrinter": "Nova impressora",
+    "selectPrinter": "Selecionar impressora",
+    "customPrinter": "Personalizada",
+    "orManual": "ou preencha manualmente",
+    "printerName": "Nome",
+    "printerBrand": "Marca",
+    "power": "Potência",
+    "value": "Valor",
+    "usefulLife": "Vida Útil",
+    "maintenancePerHour": "Manutenção/h",
+    "addMaterial": "Novo material",
+    "selectMaterial": "Selecionar material",
+    "customMaterial": "Personalizado",
+    "fdm": "FDM",
+    "resin": "Resina",
+    "materialName": "Nome do material",
+    "materialType": "Tipo",
+    "density": "Densidade",
+    "avgPrice": "Preço médio",
+    "addMarketplace": "Nova loja",
+    "selectMarketplace": "Selecionar loja",
+    "customMarketplace": "Personalizada",
+    "marketplaceName": "Nome da loja",
+    "feePercent": "Taxa %",
+    "feeFixed": "Taxa fixa",
+    "fee": "Taxa",
+    "freeShipping": "Frete grátis",
+    "hasFreeShipping": "Oferece frete grátis",
+    "noFreeShipping": "Sem frete grátis",
+    "save": "Salvar",
+    "remove": "Remover",
+    "editPrinter": "Editar Impressora",
+    "saveChanges": "Salvar Alterações",
+    "cancel": "Cancelar",
+    "defaultPrinter": "Padrão",
+    "editSuccess": "Impressora atualizada com sucesso!"
+  },
+  "customers": {
+    "title": "Clientes",
+    "subtitle": "Gerencie seus clientes e dados de contato.",
+    "newCustomer": "Novo Cliente",
+    "editCustomer": "Editar Cliente",
+    "remove": "Remover Cliente",
+    "name": "Nome",
+    "company": "Empresa",
+    "email": "Email",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "notes": "Observações",
+    "noCustomers": "Nenhum cliente cadastrado ainda",
+    "searchPlaceholder": "Buscar por nome, empresa ou email...",
+    "deleteConfirm": "Tem certeza que deseja excluir este cliente?",
+    "saveSuccess": "Cliente salvo com sucesso!",
+    "deleteSuccess": "Cliente removido com sucesso!",
+    "export": "Exportar",
+    "import": "Importar"
+  },
+  "inventory": {
+    "title": "Estoque",
+    "newSpool": "Novo Rolo",
+    "editSpool": "Editar Rolo",
+    "saveSpool": "Salvar Rolo",
+    "saveChanges": "Salvar Alterações"
+  },
+  "product": {
+    "title": "Dados da Peça",
+    "name": "Nome do Produto",
+    "namePlaceholder": "Ex: Vaso Decorativo",
+    "weight": "Peso (g)",
+    "weightPlaceholder": "100",
+    "volume": "Volume (cm³)",
+    "material": "Material",
+    "filamentPrice": "Preço Filamento (R$/kg)",
+    "time": "Tempo de Impressão (min)",
+    "timePlaceholder": "180",
+    "quantity": "Quantidade (unidades)",
+    "infill": "Preenchimento (Infill %)",
+    "purge": "Purga/Desperdício (%)",
+    "uploadStl": "Arraste um arquivo 3D ou clique para analisar",
+    "stlSupported": "Formatos suportados: STL, OBJ, 3MF",
+    "stlInfo": "Faça upload de um modelo 3D para extrair volume automaticamente",
+    "manualEntry": "Ou insira os dados manualmente"
+  },
+  "machine": {
+    "title": "Custos da Máquina",
+    "printer": "Impressora",
+    "printerValue": "Valor da Impressora (R$)",
+    "printerValuePlaceholder": "3500",
+    "usefulLife": "Vida Útil (horas)",
+    "usefulLifeHelper": "Geralmente 2000-5000h para FDM",
+    "power": "Potência (W)",
+    "powerPlaceholder": "300",
+    "energyRate": "Tarifa Energia (R$/kWh)",
+    "laborRate": "Mão de Obra (R$/h)",
+    "packaging": "Embalagem (R$/un)",
+    "finishing": "Acabamento (R$/un)",
+    "failureRate": "Taxa de Falhas (%)",
+    "shipping": "Frete (R$/un)",
+    "customPrinter": "Impressora Personalizada"
+  },
+  "pricing": {
+    "title": "Precificação",
+    "markup": "Margem de Lucro (%)",
+    "marketplace": "Marketplace",
+    "directSale": "Venda Direta (Sem Taxas)",
+    "shopee": "Shopee (14% + R$4)",
+    "mercadolivre": "Mercado Livre (16% + R$6)",
+    "amazon": "Amazon (15%)",
+    "etsy": "Etsy (6.5% + R$3)",
+    "taxRate": "Impostos (%)",
+    "cardFee": "Taxa Cartão (%)",
+    "calculate": "Calcular Custos",
+    "save": "Salvar Produto",
+    "saveSuccess": "Produto salvo com sucesso!",
+    "export": "Exportar Relatório",
+    "exportPdf": "Exportar PDF",
+    "saveFirst": "Salve um produto primeiro"
+  },
+  "history": {
+    "title": "Produtos Salvos",
+    "empty": "Nenhum produto salvo.",
+    "search": "Buscar produtos...",
+    "filter": "Filtrar",
+    "filters": {
+      "all": "Todos",
+      "resin": "Resina"
+    },
+    "sort": {
+      "date": "Data",
+      "price": "Preço",
+      "profit": "Lucro",
+      "name": "Nome"
+    },
+    "details": "Detalhes",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir este produto?",
+    "exportJson": "Exportar Dados (JSON)",
+    "importJson": "Importar JSON",
+    "importSuccess": "{{imported}} importados, {{skipped}} ignorados",
+    "importError": "Erro ao importar arquivo",
+    "compare": "Comparar",
+    "compareTitle": "Comparativo",
+    "compareSelect": "Selecione 2 registros para comparar",
+    "compareField": "Campo",
+    "valueA": "Registro A",
+    "valueB": "Registro B",
+    "compareBetter": "Melhor",
+    "compareWorse": "Pior",
+    "noResults": "Nenhum resultado encontrado"
+  },
+  "breakdown": {
+    "title": "Detalhamento de Custos",
+    "material": "Material",
+    "energy": "Energia",
+    "depreciation": "Depreciação",
+    "maintenance": "Manutenção",
+    "labor": "Mão de Obra",
+    "packaging": "Embalagem",
+    "finishing": "Acabamento",
+    "failure": "Taxa de Falhas",
+    "marketplaceFee": "Taxa Marketplace",
+    "shipping": "Frete",
+    "tax": "Impostos",
+    "cardFee": "Taxa Cartão"
+  },
+  "stl": {
+    "loading": "Analisando modelo 3D...",
+    "success": "Modelo analisado com sucesso!",
+    "error": "Erro ao analisar modelo 3D",
+    "volume": "Volume",
+    "faces": "Faces",
+    "vertices": "Vértices",
+    "estimatedWeight": "Peso Estimado",
+    "invalidFile": "Arquivo inválido. Envie um STL, OBJ ou 3MF.",
+    "notManifold": "A malha não é manifold (pode não ser hermética)",
+    "noModel": "Nenhum modelo carregado"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "grams": "g",
+    "reais": "R$",
+    "hours": "h",
+    "minutes": "min",
+    "watt": "W",
+    "noData": "Nenhum dado disponível",
+    "units": "unidades",
+    "entries": "entradas"
+  },
+  "results": {
+    "exportQuote": "Exportar Cotação",
+    "exportQuoteSuccess": "Cotação exportada com sucesso",
+    "deductFromInventory": "Deduzir do Estoque",
+    "deductConfirm": "Deduzir {{weight}}g do carretel {{spool}}?",
+    "deductSuccess": "Peso deduzido com sucesso!",
+    "deductSelect": "Selecionar carretel para deduzir",
+    "deductAvailable": "{{weight}}g disponíveis"
+  },
+  "tutorial": {
+    "start": "Iniciar Tutorial",
+    "skip": "Pular",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "finish": "Concluir",
+    "stepOf": "Passo {{current}} de {{total}}",
+    "steps": {
+      "welcome": {
+        "title": "Bem-vindo ao Open3DCalc",
+        "description": "Calculadora 3D completa para estimar custos de impressão."
+      },
+      "material": {
+        "title": "Escolha o Material",
+        "description": "Selecione o tipo de filamento ou resina e defina o custo por kg/L."
+      },
+      "print": {
+        "title": "Parâmetros de Impressão",
+        "description": "Defina o tempo de impressão e potência da impressora."
+      },
+      "sales": {
+        "title": "Precificação",
+        "description": "Configure embalagem, frete, marketplace e margem de lucro."
+      },
+      "results": {
+        "title": "Veja os Resultados",
+        "description": "O preço de venda, custo total e lucro são calculados automaticamente."
+      },
+      "export": {
+        "title": "Exporte e Salve",
+        "description": "Exporte PDF, CSV, ou salve no histórico para comparar depois."
+      },
+      "complete": {
+        "title": "Tutorial Concluído!",
+        "description": "Pronto! Você já sabe usar a calculadora. Acesse o Dashboard para gráficos."
+      }
+    }
+  },
+  "privacy": {
+    "banner": {
+      "text": "🔒 Seus dados ficam apenas no seu navegador. Nada do que você digita — dados de clientes, orçamentos ou logs — é enviado para servidores. Você tem controle total: exporte, importe ou apague seus dados quando quiser.",
+      "dismiss": "Entendi"
+    },
+    "consent": {
+      "title": "Privacidade dos Seus Dados",
+      "text1": "Ao utilizar o cadastro de clientes e orçamentos do Open3DCalc, você declara estar ciente de que:",
+      "item1": "Todos os dados inseridos ficam armazenados exclusivamente no localStorage do seu navegador.",
+      "item2": "Nenhum dado é transmitido, copiado ou armazenado em servidores externos.",
+      "item3": "A responsabilidade pelo backup e segurança dos dados é integralmente sua.",
+      "item4": "Os dados podem ser perdidos ao limpar o cache do navegador — recomendamos exportar backups periodicamente.",
+      "item5": "Este software não coleta telemetria, dados analíticos ou informações pessoais.",
+      "accept": "✅ Entendi e quero continuar",
+      "readPolicy": "📖 Ler Política de Privacidade completa"
+    },
+    "policy": {
+      "title": "Política de Privacidade"
+    }
+  },
+  "tooltip": {
+    "costPerKg": "Preço médio do kg do filamento. PLA ~R$90, PETG ~R$110, ABS ~R$100.",
+    "purge": "Peso desperdiçado na torre de purga ou troca de cor. Pode ser maior que a peça em prints multicolor!",
+    "spoolEfficiency": "Você nunca usa 100% do rolo. Sobras finais e trocas reduzem a eficiência. Padrão: 95-98%.",
+    "density": "PLA ~1.24, PETG ~1.27, ABS ~1.04 g/cm³.",
+    "wasteMargin": "Resina perdida no VAT, suportes extras, limpeza. Sugerido: 5-10%.",
+    "risk": "Aumenta o risco para geometrias complexas ou prints longos. 1.0 = Normal, 1.5 = Alto risco.",
+    "nozzleCost": "Latão é barato, Aço Endurecido é caro. O desgaste depende do material.",
+    "nozzleLife": "Quantos kg de filamento este bico dura? Latão c/ PLA: ~20kg. Aço c/ CF: ~10kg.",
+    "bedCost": "Custo estimado de spray, cola ou desgaste da folha PEI por impressão.",
+    "finishing": "Valor estimado de lixas, primer, tintas, massa plástica ou acetona gastos nesta peça.",
+    "ppe": "Luvas, máscaras, papel toalha, filtros, etc. Custo fixo por impressão.",
+    "extras": "Parafusos, colas, verniz, tintas, etc."
+  },
+  "settings": {
+    "currency": "Moeda",
+    "currencyAuto": "Automático"
+  },
+  "changelog": {
+    "header": "{{versions}} versões · {{changes}} mudanças",
+    "viewAllOnGitHub": "Ver todas as releases no GitHub",
+    "versions": [
+      {
+        "version": "1.7.0",
+        "date": "2026-06-28",
+        "sections": [
+          {
+            "title": "✨ Novo — Fase 5: Clientes & Orçamentos (LGPD-Safe)",
+            "items": [
+              "**Cadastro de Clientes**: CRUD completo com busca por nome/empresa/email, export/import JSON, persistência em localStorage",
+              "**Orçamentos Multi-item**: crie orçamentos com múltiplos itens do histórico, vinculados a clientes, com cálculo automático de totais e descontos",
+              "**PDF Profissional**: template de orçamento com logo, dados do cliente, tabela de itens, condições de pagamento e nota de privacidade",
+              "**Dashboard de Orçamentos**: lista com filtros por status (Rascunho/Enviado/Aprovado/Recusado), busca e ordenação"
+            ]
+          },
+          {
+            "title": "✨ Novo — Fase 6: Edição de Impressoras",
+            "items": [
+              "**Edição inline de impressoras**: botão ✏️ em todas as impressoras (inclusive padrão) com modal de edição para nome, marca, potência, valor, vida útil e manutenção/h",
+              "**Banco de dados expandido**: 385 impressoras de 56 marcas (era 143) com dados reais de build volume, velocidade máxima, preço EUR/USD/BRL",
+              "**Fonte de dados**: swordlab/open-3d-printer-database (CC-BY-4.0) integrado ao catálogo"
+            ]
+          },
+          {
+            "title": "🔒 Privacidade (LGPD/GDPR)",
+            "items": [
+              "**Banner de privacidade**: aviso fixo no topo informando \"Seus dados ficam apenas no seu navegador\"",
+              "**Modal de consentimento**: exibido na primeira vez que o usuário acessa Clientes/Orçamentos",
+              "**Política de privacidade inline**: 7 seções explicando o modelo de dados, direitos do titular e segurança"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "**9 abas no app**: Calculator, Catalog, Customers, Inventory, Quotes, History, Changelog, Dashboard, Settings",
+              "**Botão \"Criar Orçamento\"** no ResultsPanel para gerar orçamento a partir do cálculo atual",
+              "**Badges de impressora**: \"Padrão\" (verde) para impressoras default, \"Custom\" (indigo) para personalizadas"
+            ]
+          },
+          {
+            "title": "🌐 i18n",
+            "items": [
+              "Novas chaves: `customers`, `quotes`, `privacy` (banner, consent, policy) em pt-BR e en-US",
+              "`nav.customers`, `nav.quotes` para navegação",
+              "`catalog.editPrinter`, `catalog.defaultPrinter`, `catalog.saveChanges`"
+            ]
+          },
+          {
+            "title": "🧪 Testes",
+            "items": [
+              "**383 testes passando** (era 301) — 34 arquivos de teste, zero falhas",
+              "Novos: customerStore (21), quoteStore (31), consentStore (9), QuoteDoc (5), QuoteSection (3), CustomerTab (10), printer-edit (3)",
+              "Cobertura de todas as novas stores e componentes"
+            ]
+          },
+          {
+            "title": "📦 Dados",
+            "items": [
+              "`src/data/printers-database.json` — 385 impressoras com specs detalhadas",
+              "`src/types/customer.ts` — interfaces Customer e CustomerFormData",
+              "`src/types/quote.ts` — interfaces Quote, QuoteItem, QuoteFormData"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.6.0",
+        "date": "2026-06-27",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "**Tutorial interativo**: assistência guiada com 7 passos, spotlight/tooltip, navegação por teclado e suporte a `prefers-reduced-motion`",
+              "**Canal Telegram**: link para o canal [Impressão 3D BR](https://t.me/Impressao3DBR) no header e sidebar",
+              "**Créditos do desenvolvedor**: `ofertachina.com.br` no rodapé"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "**Internacionalização completa**: todas as strings hardcoded em português extraídas para chaves de tradução (pt-BR/en-US)",
+              "**Botão de ajuda**: ícone `?` no header para reiniciar o tutorial a qualquer momento",
+              "**Auto-trigger do tutorial**: inicia automaticamente na primeira visita após 1.5s"
+            ]
+          },
+          {
+            "title": "🧪 Testes",
+            "items": [
+              "301 testes passando, cobertura estable",
+              "Build limpo, TypeScript strict sem erros"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.5.2",
+        "date": "2026-06-12",
+        "sections": [
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "**Calculator.tsx refatorado**: de 1459 para 234 linhas — 11 componentes extraídos (TechToggle, LevelToggle, ProductName, SectionNav, SectionRenderer, MobileBottomBar, SectionHeader, HardwareSection, OpsSection, SalesSection, Calculator.constants).",
+              "**calculatorStore.ts refatorado**: de 561 para 278 linhas — types, defaults, helpers e compute extraídos para 4 arquivos.",
+              "**calculatorStore.test.ts dividido**: de 1483 linhas para 4 arquivos independentes (fdm 406, resin 439, logic 354, test-utils 52) — todos ≤ 500 linhas.",
+              "**useShallow do Zustand**: aplicado em 10 componentes para eliminar re-renders desnecessários.",
+              "**Lazy load recharts**: bundle principal reduzido de 1.115 kB para 614 kB (-45%), recharts em chunk lazy separado.",
+              "**Dead code removido**: 7 arquivos eliminados (productStore, skuManager, ErrorBoundary, SummaryRow, PwaUpdatePrompt, useKeyboardShortcuts, usePwaUpdate).",
+              "**PDF/CSV Export mobile**: botões de exportação rápida na bottom bar da calculadora."
+            ]
+          },
+          {
+            "title": "✅ Testes",
+            "items": [
+              "**301 testes** (era 207 no v1.5.0) — 27 arquivos de teste, 100% passando.",
+              "Novos testes: historyStore +12, filamentInventory +11, Calculator mobile export +3.",
+              "Cobertura de testes do calculatorStore mantida em 93%."
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.5.1",
+        "date": "2026-06-12",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "**Responsividade aprimorada** — layout adaptável para celular (320px), tablet (768px) e desktop (1024px+). Sidebar compacta com ícones em tablet. Tipografia fluida com clamp(). Scroll horizontal na barra inferior da calculadora com indicador de fade.",
+              "**Acessibilidade** — suporte a prefers-reduced-motion (CSS + hook React useReducedMotion). Roles ARIA nos tabs do Catálogo (role=\"tablist\", role=\"tab\", aria-selected). Navegação por teclado com setas nos tabs.",
+              "**Performance mobile** — glassmorphism reduzido em telas pequenas (3 tiers: 768px, 480px, reduced-motion). background-attachment: scroll em <768px.",
+              "**Print stylesheet** — impressão limpa sem elementos de navegação, resultados destacados.",
+              "**Calculator.tsx decomposto**: de 2225 para 1395 linhas, com 6 componentes de seção extraídos (FixedCostsSection, LaborSection, MachineSection, MaterialSection, PrintSection, FailureSection)",
+              "**Dynamic imports**: loaders STL/OBJ agora são carregados sob demanda, reduzindo o bundle inicial em ~60-100KB",
+              "**ReportDoc.tsx**: locale e moeda agora são configuráveis via props (antes hardcoded BRL)"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Toast notifications posicionadas no centro-inferior em mobile, canto-superior em desktop.",
+              "ComparisonModal com layout responsivo (grid empilha abaixo de 400px).",
+              "Filtros do Histórico com scroll horizontal em telas estreitas.",
+              "Dropdown e inventário com nomes longos agora quebram linha ao invés de truncar."
+            ]
+          },
+          {
+            "title": "🐛 Correções",
+            "items": [
+              "**gcodeParser.ts**: corrigida duplicação no parsing de filament (dois blocos `;Filament used:` mesclados)"
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "`src/hooks/useReducedMotion.ts` — hook SSR-safe para detecção de prefers-reduced-motion.",
+              "`src/test/setup.ts` — mock global de window.matchMedia para testes.",
+              "Sticky sidebars agora usam `--header-height` (CSS custom property) em vez de valores hardcoded."
+            ]
+          },
+          {
+            "title": "🧪 Testes",
+            "items": [
+              "**264 testes** (era 207) — 22 arquivos de teste, 100% passando.",
+              "Novos testes: useReducedMotion (6), CatalogTab ARIA (5), HistoryTab overflow (3), TabletOptimization (10), TabletSectionNav (5).",
+              "Cobertura de seções da calculadora (MaterialSection, FailureSection, PrintSection, MachineSection, FixedCostsSection, LaborSection).",
+              "**calculatorStore**: cobertura de 60.67% para 93.25%",
+              "**marketplace.ts**: cobertura de 16.66% para 100%",
+              "**printers.ts**: cobertura de 33.33% para 100%"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.5.0",
+        "date": "2026-05-28",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "**Onboarding para Novos Usuários** — modal de boas-vindas com 3 slides (\"O que é\", \"Como calcular\", \"Como salvar\"), detecção de primeira visita via localStorage, navegação entre slides com bolinhas, botão \"Pular\" persistente.",
+              "**Tooltips Informativos** — sistema de tooltips com Floating UI, delay 400ms, posicionamento inteligente em campos não-óbvios (taxa de falha, vida útil da máquina, break-even).",
+              "**Atalhos de Teclado** — Ctrl/Cmd+S (salvar configurações), Ctrl/Cmd+H (navegar para histórico), Ctrl/Cmd+D (navegar para dashboard), Escape (fechar modais). Indicadores visuais nos botões de navegação.",
+              "**Inventário — Dedução Livre** — campo de input numérico para deduzir peso exato em cada carretel, validação de saldo, combinado com filtro por marca (pills clicáveis) e filtro de material.",
+              "**Catálogo — Edição Inline** — ícone ✏️ em cards de impressora/material/marketplace, input substitui texto com Enter/blur para salvar, Escape para cancelar.",
+              "**Error Boundaries** — envolve ResultsPanel, Dashboard e StlPreview com fallback estilizado, botões \"Tentar novamente\" e \"Resetar calculadora\".",
+              "**PWA & Offline** — service worker com cache total de assets, notificação \"Nova versão disponível\" com botão de atualização."
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Tooltips com ícone ⓘ nos InputGroup com delay de 400ms e posicionamento automático (Floating UI).",
+              "Filtro combinado de material + marca no inventário com feedback visual.",
+              "Indicadores de atalho de teclado nos botões de navegação (Ctrl+H, Ctrl+D).",
+              "Glassmorphism consistente em todos os novos componentes (OnboardingModal, Tooltip, ErrorBoundary, PwaUpdatePrompt).",
+              "Edição inline no catálogo com confirmação visual (check verde / X vermelho)."
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "`src/hooks/useKeyboardShortcuts.ts` — hook de atalhos com supressão em inputs/textarea/select.",
+              "`src/hooks/usePwaUpdate.ts` — hook de atualização PWA com service worker registration.",
+              "`src/components/ui/OnboardingModal.tsx` — modal com 3 slides, Framer Motion `AnimatePresence`, lazy initializer.",
+              "`src/components/ui/Tooltip.tsx` — tooltip com Floating UI, `useMergeRefs`, suporte a 4 direções.",
+              "`src/components/ui/ErrorBoundary.tsx` — ErrorBoundary classe com `componentDidCatch`, fallback com retry e reset.",
+              "`src/components/ui/PwaUpdatePrompt.tsx` — banner de atualização com `skipWaiting()` + reload.",
+              "`src/components/Catalog/FilamentInventory.tsx` — input de dedução livre + brand filter pills.",
+              "`src/components/Catalog/CatalogTab.tsx` — componente `InlineField` para edição inline nos 3 gerenciadores.",
+              "`vite.config.ts` — PWA config com runtime caching e globPatterns completo.",
+              "`src/main.tsx` — integração do PwaUpdatePrompt no root."
+            ]
+          },
+          {
+            "title": "📚 Qualidade",
+            "items": [
+              "**53 testes unitários** em `calculator.ts` — cobertura de **99.19%** (statements) e **82.95%** (branches).",
+              "**25 testes de integração** nas stores (calculatorStore 8, historyStore 9, filamentInventory 8).",
+              "**79 testes no total** passando, 0 lint errors, build limpo.",
+              "Performance: memoização com `useMemo`/`useShallow`, lazy loading de StlPreview e PDF.",
+              "Error Boundaries nos 3 componentes críticos com fallback padronizado."
+            ]
+          },
+          {
+            "title": "🤖 CI & Automação",
+            "items": [
+              "**changelogen** configurado para geração de changelog a partir de conventional commits.",
+              "`.changelogenrc` com categorias em português e emojis personalizados.",
+              "Workflow de Release manual no GitHub Actions (`release.yml`) com bump semântico e GitHub Release."
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.4.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "Dedução Automática de Estoque — botão \"Deduzir do Estoque\" no ResultsPanel com dropdown de carretéis",
+              "Dashboard Aprimorado — persistência localStorage, Break-Even, Margem Média, Tendência de Lucro",
+              "Comparativo de Histórico — checkboxes, modal lado a lado com destaque verde/vermelho",
+              "Importação JSON — file picker + importJson() com merge inteligente sem duplicatas"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Dropdown de carretéis com indicador visual de cor, marca e peso restante",
+              "Checkbox nos registros do histórico com destaque ao selecionar",
+              "Feedback visual de sucesso na dedução e importação"
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "ResultsPanel.tsx: integração com useFilamentInventory, dropdown com click-outside",
+              "Dashboard.tsx: persistência localStorage, break-even, AreaChart com gradiente",
+              "ComparisonModal.tsx: focus trap, ESC close, 10 campos comparativos",
+              "HistoryTab.tsx: selectedForCompare, file input com FileReader",
+              "14 novas chaves i18n em pt-BR e en-US"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.3.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "Sistema Multi-Moeda — suporte a BRL/USD/EUR/GBP com auto-detecção",
+              "Seletor de Moeda no Header — dropdown com opções Automático, BRL, USD, EUR, GBP",
+              "Inventário Reformulado — SVG spool icons, busca, filtros, edição, paleta de cores",
+              "Status de Carretéis — campo status e purchaseStore com migração automática",
+              "Custos Fixos na Navegação — seção adicionada à navegação lateral"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Seletor de moeda com fallback automático (pt-BR → BRL)",
+              "Loader \"Carregando...\" quando resultados estão nulos",
+              "Labels e descrições internacionalizadas via i18n"
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "lib/currency.ts + hooks/useCurrency.ts — formatação locale-aware",
+              "calculatorStore: novo campo currency com persistência localStorage",
+              "filamentInventory: novos campos colorHex, status, purchaseStore, updateSpool()",
+              "Todas ocorrências de R$ substituídas pelo useCurrency hook"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.2.0",
+        "date": "2026-05-25",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "Estrutura de Colaboração — CONTRIBUTING.md, templates de PR/issue, SECURITY.md",
+              "CODEOWNERS — revisão automática para todo código",
+              "MAINTAINERS.md — documentação de papéis e responsabilidades"
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "CI/CD com jobs paralelos (lint, typecheck, test, build) + coverage report",
+              "Husky + commitlint + lint-staged para validação automática"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "2026-05-20",
+        "sections": [
+          {
+            "title": "✨ Novo",
+            "items": [
+              "AMS Multi-material — suporte a impressoras multifilamento (Bambu Lab, Prusa XL)",
+              "Inventário → Calculadora — selecione carretéis para preencher custo/kg",
+              "Catálogo → Calculadora — impressoras e materiais customizados nos selects",
+              "Carregar do Histórico — snapshot completo restaurável na calculadora",
+              "Auto-save — formulário salvo a cada 800ms + beforeunload",
+              "ConfirmDialog — modal estilizado substituindo confirm() nativo",
+              "StoreBridge — orquestração entre stores"
+            ]
+          },
+          {
+            "title": "🎨 UX",
+            "items": [
+              "Unidades movidas para fora dos inputs — visual mais limpo",
+              "Headers de seção simplificados — sem toggles \"setinha\"",
+              "Grids responsivos — máximo 2 itens por linha",
+              "Padding reduzido em cards e grids"
+            ]
+          },
+          {
+            "title": "🔧 Técnico",
+            "items": [
+              "Novos tipos: AMSSlot, PrinterProfile.maxFilaments, CalculationSnapshot",
+              "calculatorStore: auto-save com debounce, loadHistoryItem()",
+              "ConfirmDialog: focus trap, ESC close, 3 variantes",
+              "Cálculo AMS integrado ao computeStoreResults()"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

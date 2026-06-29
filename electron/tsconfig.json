@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "node16",
+    "lib": ["ES2023"],
+    "outDir": "dist",
+    "rootDir": "..",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": [
+    "main.ts",
+    "preload.ts",
+    "../db/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "../node_modules",
+    "../db/__tests__/**"
+  ]
+}

@@ -1,0 +1,495 @@
+import { FlaskConical, Layers, Upload } from 'lucide-react'
+import { Suspense } from 'react'
+import { InputGroup } from '@/shared/components/ui/InputGroup'
+import { Select } from '@/shared/components/ui/Select'
+import type { BufferGeometry } from 'three'
+import type { CalculatorState } from '@/shared/stores/calculatorStore'
+import type { FilamentSpool } from '@/shared/stores/filamentInventory'
+import type { AMSSlot } from '@/shared/types'
+import { selectSpool } from '@/shared/stores/storeBridge'
+
+// Lazy-loaded STL preview
+import { lazy } from 'react'
+const StlPreview = lazy(() =>
+	import("@/shared/components/StlPreview/StlPreview").then((m) => ({
+		default: m.StlPreview,
+	})),
+)
+
+export interface MaterialSectionProps {
+	renderSectionHeader: (
+		Icon: typeof Layers,
+		title: string,
+		subtitle?: string,
+		sectionId?: string,
+	) => React.ReactNode
+	t: (key: string) => string
+	currencySymbol: string
+	handleInput: (value: string, setter: (v: number) => void) => void
+	isFDM: boolean
+	store: CalculatorState
+	isFieldVisible: (sectionId: string, fieldId: string) => boolean
+	fileInputRef: React.RefObject<HTMLInputElement | null>
+	stlGeometry: BufferGeometry | null
+	stlInfo: {
+		volume: number
+		faces: number
+		vertices: number
+		dimensions: { x: number; y: number; z: number }
+	} | null
+	stlLoading: boolean
+	handleFileDrop: (file: File) => void
+	showSpoolSelector: boolean
+	setShowSpoolSelector: (show: boolean) => void
+	inventorySpools: FilamentSpool[]
+	catalogMaterials: Array<{
+		name: string
+		type: string
+	}>
+}
+
+export function MaterialSection({
+	renderSectionHeader,
+	t,
+	currencySymbol,
+	handleInput,
+	isFDM,
+	store,
+	isFieldVisible,
+	fileInputRef,
+	stlGeometry,
+	stlInfo,
+	stlLoading,
+	handleFileDrop,
+	showSpoolSelector,
+	setShowSpoolSelector,
+	inventorySpools,
+	catalogMaterials,
+}: MaterialSectionProps) {
+	return (
+		<div className="surface rounded-xl p-4 sm:p-5">
+			{renderSectionHeader(
+				isFDM ? Layers : FlaskConical,
+				t("calc.material"),
+				t(
+					isFDM
+						? "calc.sectionDesc.fdmMaterial"
+						: "calc.sectionDesc.resinMaterial",
+				),
+				"material",
+			)}
+			{isFDM ? (
+				<>
+					{isFieldVisible("material", "purgeWeight") && (store.selectedPrinter.maxFilaments ?? 1) > 1 && (
+						<div className="flex items-center justify-end gap-2 mb-3">
+							<span className="text-[10px] font-semibold text-[var(--color-info)] uppercase tracking-wide">
+								AMS Multi-material
+							</span>
+							<button
+								onClick={() => {
+									const was = store.fdmAmsEnabled;
+									if (!was) {
+										const slot0 = { ...store.fdmAmsSlots[0] };
+										slot0.materialType = store.fdmMaterial.type;
+										slot0.costPerKg = store.fdmMaterial.costPerKg;
+										slot0.weightUsedGrams = store.fdmMaterial.weightUsed;
+										slot0.purgeWeightGrams = store.fdmMaterial.purgeWeight;
+										slot0.density = store.fdmMaterial.density;
+										slot0.spoolEfficiency = store.fdmMaterial.spoolEfficiency;
+										store.setFdmAmsSlot(0, slot0);
+									}
+									store.setFdmAmsEnabled(!was);
+								}}
+								aria-pressed={store.fdmAmsEnabled}
+								className={`relative w-9 h-4 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none shrink-0 ${store.fdmAmsEnabled ? "bg-[var(--color-info)]" : "bg-[var(--color-bg-elevated)]"}`}
+							>
+								<span
+									className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-all duration-200 ${store.fdmAmsEnabled ? "left-[18px]" : "left-0.5"}`}
+								/>
+							</button>
+						</div>
+					)}
+					{store.fdmAmsEnabled ? (
+						<div className="space-y-2">
+							{store.fdmAmsSlots.map((slot: AMSSlot, i: number) => (
+								<div
+									key={i}
+									className="surface rounded-xl p-3 border-l-4"
+									style={{ borderLeftColor: slot.color }}
+								>
+									<div className="flex items-center justify-between mb-2">
+										<span className="text-[10px] font-bold text-[var(--color-text-secondary)]">
+											Slot {i + 1}
+										</span>
+										<div className="flex items-center gap-2">
+											<input
+												type="color"
+												value={slot.color}
+												onChange={(e) =>
+													store.setFdmAmsSlot(i, {
+														...slot,
+														color: e.target.value,
+													})
+												}
+												className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0"
+											/>
+											<button
+												onClick={() => {
+													const s = { ...slot, enabled: !slot.enabled };
+													store.setFdmAmsSlot(i, s);
+												}}
+												className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${slot.enabled ? "bg-[var(--color-info)]/30 text-[var(--color-info)]" : "bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]"}`}
+											>
+												{slot.enabled ? "Ativo" : "Inativo"}
+											</button>
+										</div>
+									</div>
+									{slot.enabled && (
+										<div className="space-y-2">
+											<Select
+												label=""
+												value={slot.materialType}
+												onChange={(v) =>
+													store.setFdmAmsSlot(i, { ...slot, materialType: v })
+												}
+												options={catalogMaterials
+													.filter((m) => m.type === "fdm")
+													.map((m) => ({ label: m.name, value: m.name }))}
+											/>
+											<div className="grid grid-cols-2 gap-2">
+												<InputGroup
+													label="R$/kg"
+													value={slot.costPerKg}
+													onChange={(v) =>
+														store.setFdmAmsSlot(i, {
+															...slot,
+															costPerKg: parseFloat(v) || 0,
+														})
+													}
+													type="number"
+													prefix={currencySymbol}
+												/>
+												<InputGroup
+													label="Peso (g)"
+													value={slot.weightUsedGrams}
+													onChange={(v) =>
+														store.setFdmAmsSlot(i, {
+															...slot,
+															weightUsedGrams: parseFloat(v) || 0,
+														})
+													}
+													type="number"
+													unit="g"
+												/>
+											</div>
+											<div className="grid grid-cols-2 gap-2">
+												<InputGroup
+													label="Purga (g)"
+													value={slot.purgeWeightGrams}
+													onChange={(v) =>
+														store.setFdmAmsSlot(i, {
+															...slot,
+															purgeWeightGrams: parseFloat(v) || 0,
+														})
+													}
+													type="number"
+													unit="g"
+												/>
+												<InputGroup
+													label="Dens."
+													value={slot.density}
+													onChange={(v) =>
+														store.setFdmAmsSlot(i, {
+															...slot,
+															density: parseFloat(v) || 0,
+														})
+													}
+													type="number"
+													unit="g/cm³"
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							))}
+						</div>
+					) : (
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<Select
+								label={t("calc.filamentType")}
+								value={store.fdmMaterial.type}
+								onChange={(v) =>
+									store.setFdmMaterial({ ...store.fdmMaterial, type: v })
+								}
+								options={catalogMaterials
+									.filter((m) => m.type === "fdm")
+									.map((m) => ({ label: m.name, value: m.name }))}
+							/>
+							<div className="relative">
+								<InputGroup
+									label={t("calc.costPerKg")}
+									value={store.fdmMaterial.costPerKg}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												costPerKg: val,
+											}),
+										)
+									}
+									type="number"
+									prefix={currencySymbol}
+								/>
+								{inventorySpools.length > 0 && (
+									<button
+										type="button"
+										onClick={() => setShowSpoolSelector(!showSpoolSelector)}
+										className={`absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md transition-colors ${
+											showSpoolSelector
+												? "bg-[var(--color-accent)]/30 text-[var(--color-accent)] border border-[var(--color-accent)]/40"
+												: "bg-[var(--color-accent)]/30 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/50"
+										}`}
+									>
+										Inventário
+									</button>
+								)}
+								{showSpoolSelector && (
+									<div className="absolute z-20 mt-1 w-full surface border border-[var(--color-border)] rounded-xl p-1 max-h-48 overflow-y-auto shadow-xl">
+										{inventorySpools
+											.filter(
+												(s) =>
+													s.material.toLowerCase() ===
+														store.fdmMaterial.type.toLowerCase() ||
+													showSpoolSelector,
+											)
+											.slice(0, 10)
+											.map((spool) => (
+												<button
+													key={spool.id}
+													type="button"
+													onClick={() => {
+														selectSpool(spool);
+														setShowSpoolSelector(false);
+													}}
+													className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors flex justify-between"
+												>
+													<span className="text-[var(--color-text-primary)]">
+														{spool.brand} - {spool.color}
+													</span>
+													<span className="text-[var(--color-accent)]">
+														R$ {spool.costPerKg.toFixed(2)}/kg
+													</span>
+												</button>
+											))}
+										{inventorySpools.length === 0 && (
+											<p className="text-xs text-[var(--color-text-muted)] text-center py-2">
+												Nenhum carretel no inventário
+											</p>
+										)}
+									</div>
+								)}
+							</div>
+							<InputGroup
+								label={t("calc.weight")}
+								value={store.fdmMaterial.weightUsed}
+								onChange={(v) =>
+									handleInput(v, (val) =>
+										store.setFdmMaterial({
+											...store.fdmMaterial,
+											weightUsed: val,
+										}),
+									)
+								}
+								type="number"
+								unit="g"
+							/>
+							{isFieldVisible("material", "purgeWeight") && (
+								<InputGroup
+									label={t("calc.purge")}
+									value={store.fdmMaterial.purgeWeight}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												purgeWeight: val,
+											}),
+										)
+									}
+									type="number"
+									unit="g"
+								/>
+							)}
+							{isFieldVisible("material", "spoolEfficiency") && (
+								<InputGroup
+									label={t("calc.spoolEfficiency")}
+									value={store.fdmMaterial.spoolEfficiency}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												spoolEfficiency: val,
+											}),
+										)
+									}
+									type="number"
+									unit="%"
+								/>
+							)}
+							{isFieldVisible("material", "density") && (
+								<InputGroup
+									label={t("calc.density")}
+									value={store.fdmMaterial.density}
+									onChange={(v) =>
+										handleInput(v, (val) =>
+											store.setFdmMaterial({
+												...store.fdmMaterial,
+												density: val,
+											}),
+										)
+									}
+									type="number"
+									unit="g/cm³"
+								/>
+							)}
+						</div>
+					)}
+					<div className="sm:col-span-2 mt-3">
+						<button
+							type="button"
+							onDragOver={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+							}}
+							onDrop={(e) => {
+								e.preventDefault();
+								const f = e.dataTransfer.files[0];
+								if (f) handleFileDrop(f);
+							}}
+							onClick={() => fileInputRef.current?.click()}
+							className="w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex flex-col items-center gap-1.5"
+							style={{ borderColor: "var(--color-border)" }}
+							onMouseEnter={(e) =>
+								(e.currentTarget.style.borderColor = "var(--color-accent)")
+							}
+							onMouseLeave={(e) =>
+								(e.currentTarget.style.borderColor = "var(--color-border)")
+							}
+						>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept=".stl,.obj,.3mf,.gcode"
+								onChange={(e) => {
+									const f = e.target.files?.[0];
+									if (f) handleFileDrop(f);
+								}}
+								className="hidden"
+							/>
+							<Upload className="w-4 h-4 text-[var(--color-text-muted)]" />
+							<p className="text-xs text-[var(--color-text-secondary)]">
+								{t("product.uploadStl")}
+							</p>
+							{stlLoading && (
+								<p className="text-[10px] text-[var(--color-accent)]">
+									{t("stl.loading")}
+								</p>
+							)}
+						</button>
+						{stlGeometry && (
+							<div className="mt-2 h-40">
+								<Suspense
+									fallback={
+										<div className="text-xs text-[var(--color-text-secondary)]">
+											{t("common.loading")}
+										</div>
+									}
+								>
+									<StlPreview geometry={stlGeometry} />
+								</Suspense>
+							</div>
+						)}
+						{stlInfo && (
+							<div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+								<div className="surface rounded-lg p-2 text-center">
+									<p className="text-[var(--color-text-muted)]">{t("stl.volume")}</p>
+									<p className="font-semibold text-purple-400">
+										{stlInfo.volume.toFixed(1)} cm³
+									</p>
+								</div>
+								<div className="surface rounded-lg p-2 text-center">
+									<p className="text-[var(--color-text-muted)]">{t("stl.faces")}</p>
+									<p className="font-semibold text-[var(--color-text-primary)]">
+										{stlInfo.faces}
+									</p>
+								</div>
+								<div className="surface rounded-lg p-2 text-center">
+									<p className="text-[var(--color-text-muted)]">{t("stl.vertices")}</p>
+									<p className="font-semibold text-[var(--color-text-primary)]">
+										{stlInfo.vertices}
+									</p>
+								</div>
+							</div>
+						)}
+					</div>
+				</>
+			) : (
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+					<Select
+						label={t("calc.resinType")}
+						value={store.resinMaterial.type}
+						onChange={(v) =>
+							store.setResinMaterial({ ...store.resinMaterial, type: v })
+						}
+						options={catalogMaterials
+							.filter((m) => m.type === "resin")
+							.map((m) => ({ label: m.name, value: m.name }))}
+					/>
+					<InputGroup
+						label={t("calc.costPerLiter")}
+						value={store.resinMaterial.costPerLiter}
+						onChange={(v) =>
+							handleInput(v, (val) =>
+								store.setResinMaterial({
+									...store.resinMaterial,
+									costPerLiter: val,
+								}),
+							)
+						}
+						type="number"
+						prefix={currencySymbol}
+					/>
+					<InputGroup
+						label={t("calc.volumeMl")}
+						value={store.resinMaterial.volumeUsedMl}
+						onChange={(v) =>
+							handleInput(v, (val) =>
+								store.setResinMaterial({
+									...store.resinMaterial,
+									volumeUsedMl: val,
+								}),
+							)
+						}
+						type="number"
+						unit="ml"
+					/>
+					{isFieldVisible("material", "wasteMargin") && (
+						<InputGroup
+							label={t("calc.wasteMargin")}
+							value={store.resinMaterial.wasteMarginPercent}
+							onChange={(v) =>
+								handleInput(v, (val) =>
+									store.setResinMaterial({
+										...store.resinMaterial,
+										wasteMarginPercent: val,
+									}),
+								)
+							}
+							type="number"
+							unit="%"
+						/>
+					)}
+				</div>
+			)}
+		</div>
+	);
+}

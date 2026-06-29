@@ -1,0 +1,365 @@
+import { useState, useMemo, useRef, useEffect, Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useShallow } from 'zustand/react/shallow'
+import { useCalculatorStore } from '@/stores/calculatorStore'
+import { useHistoryStore } from '@/stores/historyStore'
+import { useFilamentInventory } from '@/stores/filamentInventory'
+import type { FilamentSpool } from '@/stores/filamentInventory'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useCurrency } from '@/hooks/useCurrency'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from '@/components/Dashboard/RechartsLazy'
+import {
+  FolderOpen, Save, FileText, BarChart2, CheckCircle2, ScrollText, Database,
+} from 'lucide-react'
+import { exportQuoteJson, downloadQuoteJson } from '@/lib/quoteApi'
+
+interface ResultsPanelProps {
+  variant: 'sidebar' | 'mobile'
+}
+
+export function ResultsPanel({ variant }: ResultsPanelProps) {
+  const { t, i18n } = useTranslation()
+  const { results, productName, addToHistory, saveSettings, activeTab, fdmType, resinType } =
+    useCalculatorStore(useShallow((s) => ({
+      results: s.results,
+      productName: s.productName,
+      addToHistory: s.addToHistory,
+      saveSettings: s.saveSettings,
+      activeTab: s.activeTab,
+      fdmType: s.fdmMaterial.type,
+      resinType: s.resinMaterial.type,
+    })))
+  const { clearHistory, entries: historyEntries, historyCount } =
+    useHistoryStore(useShallow((s) => ({
+      clearHistory: s.clearHistory,
+      entries: s.entries,
+      historyCount: s.entries.length,
+    })))
+  const recentEntries = useMemo(() => historyEntries.slice(0, 3), [historyEntries])
+
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle')
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+
+  // Inventory deduction state
+  const [showInventoryDropdown, setShowInventoryDropdown] = useState(false)
+  const [selectedSpool, setSelectedSpool] = useState<FilamentSpool | null>(null)
+  const [showDeductConfirm, setShowDeductConfirm] = useState(false)
+  const [deductSuccess, setDeductSuccess] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const inventoryBtnRef = useRef<HTMLButtonElement>(null)
+
+  const { spools, deductWeight: deductWeightFromSpool } = useFilamentInventory(
+    useShallow((s) => ({ spools: s.spools, deductWeight: s.deductWeight })),
+  )
+  const currentMaterial = activeTab === 'fdm' ? fdmType : resinType
+  const unitWeight = results?.unitWeight ?? 0
+
+  const availableSpools = useMemo(() =>
+    spools.filter(s => s.status === 'in_stock' && s.material.toLowerCase() === currentMaterial.toLowerCase() && s.weightGrams >= unitWeight),
+    [spools, currentMaterial, unitWeight],
+  )
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!showInventoryDropdown) return
+    const handleClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        inventoryBtnRef.current && !inventoryBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowInventoryDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showInventoryDropdown])
+
+  // Auto-hide success message
+  useEffect(() => {
+    if (!deductSuccess) return
+    const timer = setTimeout(() => setDeductSuccess(false), 3000)
+    return () => clearTimeout(timer)
+  }, [deductSuccess])
+
+  const handleDeductClick = (spool: FilamentSpool) => {
+    setSelectedSpool(spool)
+    setShowInventoryDropdown(false)
+    setShowDeductConfirm(true)
+  }
+
+  const handleConfirmDeduct = () => {
+    if (!selectedSpool) return
+    deductWeightFromSpool(selectedSpool.id, unitWeight)
+    setShowDeductConfirm(false)
+    setSelectedSpool(null)
+    setDeductSuccess(true)
+  }
+
+  const isFDM = activeTab === 'fdm'
+  const { format: fmtCurrency } = useCurrency()
+  const isSidebar = variant === 'sidebar'
+
+  const chartData = useMemo((): { name: string; value: number; color: string }[] => {
+    if (!results) return []
+    const items = [
+      { name: 'Material',                        value: results.materialCost,       color: isFDM ? '#38bdf8' : '#a855f7' },
+      { name: t('calc.chartLabels.energy'),       value: results.energyCost,         color: '#facc15' },
+      { name: t('calc.chartLabels.machine'),      value: results.machineCost,        color: '#94a3b8' },
+      { name: 'Hardware',                         value: results.hardwareCost,       color: '#f97316' },
+      { name: t('calc.chartLabels.finishing'),    value: results.postProcessingCost, color: '#22d3ee' },
+      { name: t('calc.chartLabels.consumables'),  value: results.consumablesCost,    color: '#06b6d4' },
+      { name: t('calc.chartLabels.software'),     value: results.softwareCost,       color: '#818cf8' },
+      { name: t('calc.chartLabels.labor'),        value: results.laborCost,          color: '#f472b6' },
+      { name: t('calc.chartLabels.failure'),      value: results.failureCost,        color: '#f87171' },
+      { name: t('calc.chartLabels.extras'),       value: results.extrasCost,         color: '#cbd5e1' },
+    ].filter(d => d.value > 0.01)
+    return items
+  }, [results, isFDM, t])
+
+  if (!results) return null
+
+  const handleExportQuote = () => {
+    if (!results) return
+    const state = useCalculatorStore.getState()
+    const name = state.productName || 'Cotação Open3DCalc'
+    const qty = state.quantity || 1
+    const isFdm = state.activeTab === 'fdm'
+    const pkg = isFdm ? state.fdmSales.packagingCost : state.resinSales.packagingCost
+    const ship = isFdm ? state.fdmSales.shippingCost : state.resinSales.shippingCost
+    const json = exportQuoteJson(results, name, qty, pkg || 0, ship || 0)
+    downloadQuoteJson(json, `quote_${Date.now()}.json`)
+  }
+
+  const content = (
+    <>
+      <div className="result-hero rounded-2xl p-4 sm:p-5 text-center">
+        <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-success)]/70 mb-2">{t('calc.sellPrice')}</div>
+        <div className="text-4xl sm:text-5xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
+        {results.taxAmount > 0 && (
+          <div className="text-xs sm:text-sm text-[var(--color-success)]/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('calc.costPerGram')}</div>
+          <div className="text-base sm:text-lg font-black text-[var(--color-info)] font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
+        </div>
+        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('breakdown.failure')}</div>
+          <div className="text-base sm:text-lg font-black text-[var(--color-danger)] font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('calc.totalCost')}</div>
+          <div className="text-lg sm:text-xl font-black text-[var(--color-success)] font-mono">{fmtCurrency(results.totalCost)}</div>
+        </div>
+        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-warning-muted)] border border-[var(--color-warning)]/30 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-warning)]/70 mb-1">{t('calc.profit')}</div>
+          <div className="text-lg sm:text-xl font-black text-[var(--color-warning)] font-mono">{fmtCurrency(results.profit)}</div>
+        </div>
+      </div>
+
+      {chartData.length > 0 && (
+        <Suspense fallback={
+          <div className="surface-elevated rounded-2xl p-4 sm:p-5">
+            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">{t('calc.costDistribution')}</div>
+            <p className="text-sm text-[var(--color-text-muted)] text-center py-8">{t('dashboard.loadingCharts')}</p>
+          </div>
+        }>
+          <div className="surface-elevated rounded-2xl p-4 sm:p-5">
+            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">{t('calc.costDistribution')}</div>
+            <div className="space-y-3">
+              {chartData.map(item => (
+                <div key={item.name}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs sm:text-sm text-[var(--color-text-secondary)]">{item.name}</span>
+                    <span className="text-xs sm:text-sm font-mono font-bold text-[var(--color-text-primary)]">{fmtCurrency(item.value)}</span>
+                  </div>
+                  <div className="h-1.5 bg-[var(--color-bg-secondary)] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${results.totalCost > 0 ? (item.value / results.totalCost) * 100 : 0}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={`mt-4 w-full ${isSidebar ? 'h-44 sm:h-48' : 'h-48 sm:h-56'}`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={isSidebar ? 48 : 52} outerRadius={isSidebar ? 68 : 72} paddingAngle={3} dataKey="value">
+                    {chartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: unknown) => fmtCurrency(Number(value))}
+                    contentStyle={{ backgroundColor: 'var(--color-chart-tooltip-bg)', borderColor: 'var(--color-chart-tooltip-border)', color: 'var(--color-chart-tooltip-text)', borderRadius: '12px', fontSize: '12px' }}
+                    itemStyle={{ color: 'var(--color-chart-tooltip-text)' }} />
+                  <Legend layout="vertical" verticalAlign="middle" align="right"
+                    iconType="circle" wrapperStyle={{ fontSize: '11px', maxWidth: '42%' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </Suspense>
+      )}
+
+      <button onClick={() => addToHistory()}
+        className="w-full py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
+      >
+        <FolderOpen className="w-4 h-4" />
+        {t('calc.addHistory')}
+      </button>
+
+      {recentEntries.length > 0 && (
+        <div className="glass-elevated rounded-2xl p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">{t('calc.history')} ({historyCount})</span>
+            <button onClick={() => setShowClearConfirm(true)}
+              className="text-[10px] sm:text-xs text-red-400/70 hover:text-red-400 transition-colors">
+              {t('calc.clearHistory')}
+            </button>
+          </div>
+          <div className="space-y-2.5 max-h-52 overflow-y-auto pr-1">
+            {recentEntries.map(item => (
+              <div key={item.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex justify-between text-[10px] text-[var(--color-text-muted)] mb-1">
+                  <span>{new Date(item.timestamp).toLocaleDateString(i18n.resolvedLanguage || i18n.language, { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="uppercase font-bold tracking-wider">{item.type}</span>
+                </div>
+                <div className="font-medium text-[var(--color-text-primary)] text-xs truncate mb-1">{item.summary}</div>
+                <div className="flex justify-between">
+                  <span className="text-orange-400 font-mono text-xs">{fmtCurrency(item.profit)}</span>
+                  <span className="text-emerald-400 font-mono font-bold text-xs">{fmtCurrency(item.sellPrice)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div data-tutorial="export" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
+          className={`py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+            saveStatus === 'saved'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-indigo-600 text-white hover:bg-indigo-500'
+          }`}>
+          {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+          {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
+        </button>
+        <button onClick={async () => { const { exportPdf } = await import('@/lib/pdfExport'); exportPdf(results) }}
+          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
+        </button>
+        <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/lib/csvExport'); const csv = exportResultToCsv(results, productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
+          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          <BarChart2 className="w-3.5 h-3.5" /> CSV
+        </button>
+        <button onClick={handleExportQuote}
+          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          <ScrollText className="w-3.5 h-3.5" /> {t('results.exportQuote')}
+        </button>
+      </div>
+
+      {/* Deduct from Inventory — FDM only */}
+      {isFDM && <div className="relative">
+        <button
+          ref={inventoryBtnRef}
+          onClick={() => setShowInventoryDropdown(prev => !prev)}
+          className="w-full py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-800/40 text-emerald-300 hover:bg-emerald-700/50 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none flex items-center justify-center gap-1.5 relative"
+          aria-label={t('results.deductFromInventory')}
+          aria-expanded={showInventoryDropdown}
+        >
+          <Database className="w-3.5 h-3.5" />
+          {deductSuccess ? (
+            <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" /> {t('results.deductSuccess')}</>
+          ) : (
+            t('results.deductFromInventory')
+          )}
+        </button>
+
+        {showInventoryDropdown && (
+          <div
+            ref={dropdownRef}
+            className="absolute z-50 mt-2 w-full glass rounded-2xl p-3 border border-white/10 shadow-2xl animate-fade-in"
+            role="listbox"
+            aria-label={t('results.deductSelect')}
+          >
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">
+              {t('results.deductSelect')}
+            </div>
+            {availableSpools.length === 0 ? (
+              <p className="text-xs text-[var(--color-text-muted)] text-center py-4">{t('common.noData')}</p>
+            ) : (
+              <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
+                {availableSpools.map(spool => (
+                  <button
+                    key={spool.id}
+                    onClick={() => handleDeductClick(spool)}
+                    className="w-full text-left p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                    role="option"
+                    aria-selected={selectedSpool?.id === spool.id}
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20"
+                      style={{ backgroundColor: spool.colorHex }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-white font-medium truncate">
+                        {spool.brand} — {spool.material}
+                      </div>
+                      <div className="text-[10px] text-[var(--color-text-muted)]">
+                        {spool.color} &middot; {t('results.deductAvailable', { weight: spool.weightGrams.toFixed(0) })}
+                      </div>
+                    </div>
+                    <div className="text-[10px] font-mono text-emerald-400/70 whitespace-nowrap">
+                      -{unitWeight.toFixed(1)}g
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>}
+    </>
+  )
+
+  const withDialogs = (
+    <>
+      {content}
+      <ConfirmDialog
+        open={showClearConfirm}
+        title={t('calc.clearHistory')}
+        message={t('calc.clearConfirm')}
+        variant="danger"
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => { clearHistory(); setShowClearConfirm(false) }}
+        onCancel={() => setShowClearConfirm(false)}
+      />
+      <ConfirmDialog
+        open={showDeductConfirm}
+        title={t('results.deductFromInventory')}
+        message={selectedSpool
+          ? t('results.deductConfirm', { weight: unitWeight.toFixed(1), spool: `${selectedSpool.brand} - ${selectedSpool.material}` })
+          : ''}
+        variant="info"
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={handleConfirmDeduct}
+        onCancel={() => { setShowDeductConfirm(false); setSelectedSpool(null) }}
+      />
+    </>
+  )
+
+  if (isSidebar) {
+    return withDialogs
+  }
+
+  return <div className="space-y-4 lg:hidden">{withDialogs}</div>
+}
