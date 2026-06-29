@@ -53,7 +53,7 @@ jobs:
       - run: npm ci
       - run: npm run build:web
       - name: SPA routing fix
-        run: cp dist-web/index.web.html dist-web/404.html
+        run: cp dist-web/index.web.html dist-web/404.html && cp dist-web/index.web.html dist-web/index.html
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist-web
