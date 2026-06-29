@@ -13,6 +13,7 @@ import { QuoteSection } from '@/shared/components/Calculator/QuoteSection'
 import { restoreAutoSnapshot } from '@/shared/stores/storeBridge'
 import { useHistoryStore } from '@/shared/stores/historyStore'
 import { useCalculatorStore } from '@/shared/stores/calculatorStore'
+import { motion, AnimatePresence } from "framer-motion"
 import { Tutorial } from '@/shared/components/ui/Tutorial'
 import { PrivacyBanner } from '@/shared/components/ui/PrivacyBanner'
 import { useTutorialStore } from '@/shared/stores/tutorialStore'
@@ -279,31 +280,35 @@ function App() {
           </div>
         </main>
       </div>
-
       {/* ── Mobile Bottom Navigation ── */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 lg:hidden"
         style={{ background: 'var(--color-bg-primary)', borderTop: '1px solid var(--color-border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label={t('nav.mainNavigation')}
       >
-        <div className="flex items-center h-[68px] px-1.5">
+        <div className="flex items-center h-[72px] px-2">
           {PRIMARY_MOBILE_TABS.map(tabId => {
             const tab = TABS.find(t => t.id === tabId)!
+            const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-0 py-1.5 px-1 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
-                  activeTab === tab.id
-                    ? 'text-[var(--color-accent)]'
-                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1.5 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+                  isActive ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'
                 }`}
-                aria-selected={activeTab === tab.id}
+                aria-selected={isActive}
               >
-                <span className={`transition-transform ${activeTab === tab.id ? 'scale-110' : ''}`}>
+                {isActive && (
+                  <span
+                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+                    style={{ background: 'var(--color-accent)' }}
+                  />
+                )}
+                <span className={`transition-transform ${isActive ? 'scale-110' : ''}`}>
                   {tab.icon}
                 </span>
-                <span className="text-[10px] font-semibold leading-none tracking-wide truncate max-w-full">
+                <span className="text-[10px] font-semibold leading-tight tracking-wide truncate max-w-full">
                   {t(tab.labelKey)}
                 </span>
               </button>
@@ -312,52 +317,71 @@ function App() {
           {/* More button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-0 py-1.5 px-1 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
-              mobileMenuOpen ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+            className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1.5 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+              mobileMenuOpen ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'
             }`}
             aria-label={t('nav.more') || 'Mais'}
           >
             <span><MoreHorizontal className="w-[18px] h-[18px]" /></span>
-            <span className="text-[10px] font-semibold leading-none tracking-wide">{t('nav.more') || 'Mais'}</span>
+            <span className="text-[10px] font-semibold leading-tight tracking-wide">{t('nav.more') || 'Mais'}</span>
           </button>
         </div>
       </nav>
 
-      {/* ── Mobile More Menu Drawer ── */}
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
-          <div
-            className="fixed bottom-[68px] left-0 right-0 z-50 lg:hidden animate-fade-up"
-            style={{ background: 'var(--color-bg-primary)', borderTop: '1px solid var(--color-border)' }}
-          >
-            <div className="px-4 py-3 space-y-1">
-              {MORE_TABS.map(tabId => {
-                const tab = TABS.find(t => t.id === tabId)!
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false) }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
-                      activeTab === tab.id
-                        ? 'bg-[var(--color-accent-muted)] text-[var(--color-accent)]'
-                        : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]'
-                    }`}
-                  >
-                    {tab.icon}
-                    <span className="text-sm font-medium">{t(tab.labelKey)}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </>
-      )}
-
+      {/* ── Mobile More Menu Bottom Sheet ── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 lg:hidden rounded-t-2xl"
+              style={{
+                background: 'var(--color-bg-primary)',
+                borderTop: '1px solid var(--color-border)',
+                boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+                maxHeight: '50vh',
+                paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))'
+              }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-2 pb-1">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
+              </div>
+              <div className="px-3 pb-3 overflow-y-auto space-y-0.5">
+                {MORE_TABS.map(tabId => {
+                  const tab = TABS.find(t => t.id === tabId)!
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false) }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[48px] ${
+                        activeTab === tab.id
+                          ? 'bg-[var(--color-accent-muted)] text-[var(--color-accent)] font-semibold'
+                          : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]'
+                      }`}
+                    >
+                      <span className="shrink-0">{tab.icon}</span>
+                      <span className="text-sm">{t(tab.labelKey)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       <footer className="hidden lg:block text-center text-xs text-[var(--color-text-muted)] py-3 border-t border-[var(--color-border)]">
         <div className="flex items-center justify-center gap-3">
           <a
