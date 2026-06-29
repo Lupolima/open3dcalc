@@ -27,6 +27,7 @@ import {
   Sparkles,
   FileText,
   Users,
+  MoreHorizontal,
 } from 'lucide-react'
 
 type Tab = 'calculator' | 'dashboard' | 'catalog' | 'history' | 'infill' | 'inventory' | 'changelog' | 'quotes' | 'customers'
@@ -46,6 +47,11 @@ type LegacyHistoryItem = {
   snapshot?: CalculationSnapshot | null
 }
 
+// PRIMARY_MOBILE_TABS and MORE_TABS
+// On mobile, show first 5 tabs + More button
+const PRIMARY_MOBILE_TABS: Tab[] = ['calculator', 'dashboard', 'infill', 'catalog', 'history']
+const MORE_TABS: Tab[] = ['inventory', 'changelog', 'quotes', 'customers']
+
 const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[] = [
   { id: 'calculator', icon: <CalculatorIcon className="w-[18px] h-[18px]" />, labelKey: 'nav.calculator', label: 'Calculadora' },
   { id: 'dashboard',  icon: <BarChart3 className="w-[18px] h-[18px]" />,      labelKey: 'nav.dashboard',  label: 'Dashboard' },
@@ -61,6 +67,7 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
 function App() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('calculator')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     restoreAutoSnapshot()
@@ -279,28 +286,77 @@ function App() {
         style={{ background: 'var(--color-bg-primary)', borderTop: '1px solid var(--color-border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label={t('nav.mainNavigation')}
       >
-        <div className="flex overflow-x-auto h-[68px] px-1.5">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-[56px] min-h-[48px] px-1.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
-                activeTab === tab.id
-                  ? 'text-[var(--color-accent)]'
-                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-              }`}
-              aria-selected={activeTab === tab.id}
-            >
-              <span className={`transition-transform ${activeTab === tab.id ? 'scale-110' : ''}`}>
-                {tab.icon}
-              </span>
-              <span className="text-[10px] font-semibold leading-none tracking-wide">
-                {t(tab.labelKey)}
-              </span>
-            </button>
-          ))}
+        <div className="flex items-center h-[68px] px-1.5">
+          {PRIMARY_MOBILE_TABS.map(tabId => {
+            const tab = TABS.find(t => t.id === tabId)!
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-0 py-1.5 px-1 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+                  activeTab === tab.id
+                    ? 'text-[var(--color-accent)]'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                }`}
+                aria-selected={activeTab === tab.id}
+              >
+                <span className={`transition-transform ${activeTab === tab.id ? 'scale-110' : ''}`}>
+                  {tab.icon}
+                </span>
+                <span className="text-[10px] font-semibold leading-none tracking-wide truncate max-w-full">
+                  {t(tab.labelKey)}
+                </span>
+              </button>
+            )
+          })}
+          {/* More button */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className={`flex flex-col items-center justify-center gap-1 flex-1 min-w-0 py-1.5 px-1 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+              mobileMenuOpen ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+            }`}
+            aria-label={t('nav.more') || 'Mais'}
+          >
+            <span><MoreHorizontal className="w-[18px] h-[18px]" /></span>
+            <span className="text-[10px] font-semibold leading-none tracking-wide">{t('nav.more') || 'Mais'}</span>
+          </button>
         </div>
       </nav>
+
+      {/* ── Mobile More Menu Drawer ── */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="fixed bottom-[68px] left-0 right-0 z-50 lg:hidden animate-fade-up"
+            style={{ background: 'var(--color-bg-primary)', borderTop: '1px solid var(--color-border)' }}
+          >
+            <div className="px-4 py-3 space-y-1">
+              {MORE_TABS.map(tabId => {
+                const tab = TABS.find(t => t.id === tabId)!
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false) }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+                      activeTab === tab.id
+                        ? 'bg-[var(--color-accent-muted)] text-[var(--color-accent)]'
+                        : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]'
+                    }`}
+                  >
+                    {tab.icon}
+                    <span className="text-sm font-medium">{t(tab.labelKey)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       <footer className="hidden lg:block text-center text-xs text-[var(--color-text-muted)] py-3 border-t border-[var(--color-border)]">
         <div className="flex items-center justify-center gap-3">
