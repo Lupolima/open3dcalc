@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.8.2
+
+[compare changes](https://github.com/ils15/open3dcalc/compare/v1.8.0...v1.8.2)
+
+### 🩹 Fixes
+
+- **release:** Use bash array for artifact upload ([a719447](https://github.com/ils15/open3dcalc/commit/a719447))
+
+### 🏡 Chore
+
+- **release:** V1.8.1 [skip ci] ([079945e](https://github.com/ils15/open3dcalc/commit/079945e))
+
+### ❤️ Contributors
+
+- Ils15 ([@ils15](https://github.com/ils15))
+
 ## v1.8.1
 
 [compare changes](https://github.com/ils15/open3dcalc/compare/v1.8.0...v1.8.1)
