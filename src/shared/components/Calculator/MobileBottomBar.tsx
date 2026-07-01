@@ -55,7 +55,7 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 							const { exportPdf } = await import("@/shared/lib/pdfExport");
 							exportPdf(results);
 						}}
-					className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+					className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[44px] min-w-[44px]"
 					title={t("calc.exportPdf")}
 					aria-label={t("calc.exportPdf")}
 				>
@@ -72,7 +72,7 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 							);
 							downloadCsv(csv, "open3dcalc_resultado.csv");
 						}}
-					className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+					className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[44px] min-w-[44px]"
 					title={t("calc.exportCsv")}
 					aria-label={t("calc.exportCsv")}
 				>
