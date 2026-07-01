@@ -11,6 +11,8 @@ interface PersistedTutorialData {
 interface TutorialState extends PersistedTutorialData {
   isActive: boolean
   currentStep: number
+  /** Dismissed for the current session (non-persistent) */
+  sessionDismissed: boolean
 
   startTutorial: () => void
   nextStep: () => void
@@ -19,6 +21,7 @@ interface TutorialState extends PersistedTutorialData {
   completeStep: (step: number) => void
   finishTutorial: () => void
   skipTutorial: () => void
+  dismissTutorial: () => void
   resetTutorial: () => void
 }
 
@@ -70,6 +73,7 @@ export const useTutorialStore = create<TutorialState>((set, get) => ({
   // transient state (not persisted)
   isActive: false,
   currentStep: 1,
+  sessionDismissed: false,
 
   // --- actions ---
 
@@ -117,9 +121,13 @@ export const useTutorialStore = create<TutorialState>((set, get) => ({
     set({ isActive: false, currentStep: 1 })
   },
 
+  dismissTutorial: () => {
+    set({ isActive: false, sessionDismissed: true })
+  },
+
   resetTutorial: () => {
     const fresh: PersistedTutorialData = { isCompleted: false, completedSteps: [] }
-    set({ ...fresh, isActive: false, currentStep: 1 })
+    set({ ...fresh, isActive: false, currentStep: 1, sessionDismissed: false })
     localStorage.removeItem(STORAGE_KEY)
   },
 }))

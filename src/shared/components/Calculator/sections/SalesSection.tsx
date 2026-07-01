@@ -69,6 +69,7 @@ export function SalesSection() {
 						}
 						type="number"
 						unit="un"
+						tooltip="Quantas unidades iguais serão produzidas."
 					/>
 					{isFieldVisible("sales", "infillPercent") && (
 						<InputGroup
@@ -79,6 +80,7 @@ export function SalesSection() {
 							}
 							type="number"
 							unit="%"
+							tooltip="Quanto do interior será preenchido. 15% para decorativos, 50%+ para peças funcionais."
 						/>
 					)}
 				</div>
@@ -99,6 +101,7 @@ export function SalesSection() {
 						}
 						type="number"
 						prefix={currencySymbol}
+						tooltip={t("tooltip.extras")}
 					/>
 				)}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -124,6 +127,7 @@ export function SalesSection() {
 						}
 						type="number"
 						prefix={currencySymbol}
+						tooltip="Custo da embalagem (caixa, plástico bolha, fita)."
 					/>
 					{isFieldVisible("sales", "shippingCost") && (
 						<InputGroup
@@ -148,6 +152,7 @@ export function SalesSection() {
 							}
 							type="number"
 							prefix={currencySymbol}
+							tooltip="Custo do frete para entrega ao cliente."
 						/>
 					)}
 				</div>
@@ -186,6 +191,7 @@ export function SalesSection() {
 								}
 								type="number"
 								unit="%"
+								tooltip="Impostos sobre o valor de venda."
 							/>
 						</div>
 						<div className="surface rounded-xl p-4 sm:p-5">
@@ -249,6 +255,7 @@ export function SalesSection() {
 						}
 						type="number"
 						unit="%"
+						tooltip="Margem de lucro desejada sobre o custo total."
 					/>
 				</div>
 			</div>

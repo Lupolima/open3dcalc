@@ -62,6 +62,7 @@ export function OpsSection() {
 							}
 							type="number"
 							prefix={currencySymbol}
+							tooltip={t('tooltip.ppe')}
 						/>
 					)}
 				</div>
@@ -105,6 +106,7 @@ export function OpsSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
+								tooltip="Custo mensal do software de fatiamento, se aplicável."
 							/>
 							<InputGroup
 								label={t("calc.modelCost")}
@@ -128,6 +130,7 @@ export function OpsSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
+								tooltip="Custo do arquivo 3D se você comprou o modelo de terceiros."
 							/>
 						</div>
 					)}

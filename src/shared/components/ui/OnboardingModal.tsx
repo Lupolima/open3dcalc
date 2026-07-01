@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, ChevronRight, ArrowLeft } from 'lucide-react'
+import { X, ChevronRight, ArrowLeft, Play } from 'lucide-react'
 import { useReducedMotion } from '@/shared/hooks/useReducedMotion'
+import { useTutorialStore } from '@/shared/stores/tutorialStore'
 
 const ONBOARDING_KEY = 'open3dcalc_onboarded'
 
@@ -50,6 +51,15 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
       goToSlide(slideIndex - 1)
     }
   }, [slideIndex, goToSlide])
+
+  const startTutorial = useTutorialStore(s => s.startTutorial)
+
+  const handleStartTutorial = useCallback(() => {
+    startTutorial()
+    localStorage.setItem(ONBOARDING_KEY, 'true')
+    setVisible(false)
+    onComplete?.()
+  }, [startTutorial, onComplete])
 
   const dismiss = useCallback(() => {
     localStorage.setItem(ONBOARDING_KEY, 'true')
@@ -124,6 +134,17 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-sm">
                 {slides[slideIndex].description}
               </p>
+
+              {/* Start tutorial CTA on last slide */}
+              {isLastSlide && (
+                <button
+                  onClick={handleStartTutorial}
+                  className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                >
+                  <Play className="w-4 h-4" />
+                  {t('onboarding.startTutorial')}
+                </button>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

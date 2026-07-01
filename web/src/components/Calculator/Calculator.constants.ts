@@ -130,8 +130,14 @@ export const FIELD_LABELS: Record<string, string> = {
 	markupPresets: 'calc.markupPresets',
 };
 
-export const LEVEL_LABELS: Record<CalcLevel, 'calc.basic' | 'calc.intermediate' | 'calc.advanced'> = {
-	basic: 'calc.basic',
-	intermediate: 'calc.intermediate',
-	advanced: 'calc.advanced',
+export const LEVEL_LABELS: Record<CalcLevel, 'calc.quick' | 'calc.detailed' | 'calc.complete'> = {
+	basic: 'calc.quick',
+	intermediate: 'calc.detailed',
+	advanced: 'calc.complete',
+};
+
+export const LEVEL_DESCRIPTIONS: Record<CalcLevel, 'calc.quickDesc' | 'calc.detailedDesc' | 'calc.completeDesc'> = {
+	basic: 'calc.quickDesc',
+	intermediate: 'calc.detailedDesc',
+	advanced: 'calc.completeDesc',
 };

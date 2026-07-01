@@ -1,5 +1,6 @@
 import { Info, AlertCircle } from 'lucide-react'
 import { useId } from 'react'
+import { Tooltip } from '@/shared/components/ui/Tooltip'
 
 interface InputGroupProps {
   label: string
@@ -28,12 +29,9 @@ export function InputGroup({
           {label}
         </label>
         {tooltip && (
-          <div className="group relative">
+          <Tooltip content={tooltip}>
             <Info className="w-3.5 h-3.5 text-[var(--color-text-muted)] cursor-help" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2.5 bg-[var(--color-bg-elevated)] text-[11px] text-[var(--color-text-secondary)] rounded-xl border border-[var(--color-border)] shadow-2xl z-10 leading-relaxed">
-              {tooltip}
-            </div>
-          </div>
+          </Tooltip>
         )}
       </div>
       <div className="flex items-center gap-1.5">

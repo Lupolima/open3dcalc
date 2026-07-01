@@ -55,6 +55,7 @@ export function LaborSection({
 					}
 					type="number"
 					unit="min"
+					tooltip="Tempo gasto preparando o arquivo, fatiando e configurando a impressora."
 				/>
 				<InputGroup
 					label={t('calc.postTime')}
@@ -78,6 +79,7 @@ export function LaborSection({
 					}
 					type="number"
 					unit="min"
+					tooltip="Tempo retirando a peça da mesa, removendo suportes, lixando."
 				/>
 				<InputGroup
 					label={t('calc.hourlyRate')}
@@ -96,6 +98,7 @@ export function LaborSection({
 					}
 					type="number"
 					prefix={currencySymbol}
+					tooltip="Quanto você quer ganhar por hora de trabalho. Seu tempo vale dinheiro."
 				/>
 			</div>
 		</div>

@@ -61,6 +61,7 @@ export function HardwareSection() {
 										}
 										type="number"
 										prefix={currencySymbol}
+										tooltip={t('tooltip.nozzleCost')}
 									/>
 									<InputGroup
 										label={t("calc.nozzleLife")}
@@ -75,6 +76,7 @@ export function HardwareSection() {
 										}
 										type="number"
 										unit="kg"
+										tooltip={t('tooltip.nozzleLife')}
 									/>
 								</>
 							)}
@@ -108,6 +110,7 @@ export function HardwareSection() {
 									}
 									type="number"
 									prefix={currencySymbol}
+									tooltip={t('tooltip.bedCost')}
 								/>
 							)}
 						</div>
@@ -132,6 +135,7 @@ export function HardwareSection() {
 							}
 							type="number"
 							prefix={currencySymbol}
+							tooltip={t('tooltip.finishing')}
 						/>
 					</div>
 				</>
@@ -174,6 +178,7 @@ export function HardwareSection() {
 									}
 									type="number"
 									prefix="R$/L"
+									tooltip="Preço do litro de álcool isopropílico para lavagem. ~R$30-60/L. Reutilize filtrado para economizar."
 								/>
 								<InputGroup
 									label={t("calc.alcoholVol")}
@@ -188,6 +193,7 @@ export function HardwareSection() {
 									}
 									type="number"
 									unit="L"
+									tooltip="Quantos litros de álcool são consumidos por ciclo de lavagem. ~0.1-0.3L por batch de peças."
 								/>
 							</div>
 						)}
@@ -220,6 +226,7 @@ export function HardwareSection() {
 									}
 									type="number"
 									unit="min"
+									tooltip="Tempo de cura UV após a lavagem da peça."
 								/>
 								<InputGroup
 									label={t("calc.curePower")}
@@ -234,6 +241,7 @@ export function HardwareSection() {
 									}
 									type="number"
 									unit="W"
+									tooltip="Potência da lâmpada UV da câmara de cura."
 								/>
 							</div>
 						)}
@@ -259,6 +267,7 @@ export function HardwareSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
+								tooltip="Custo da tela LCD do seu printer de resina para substituição."
 							/>
 							<InputGroup
 								label={t("calc.lcdLife")}
@@ -273,6 +282,7 @@ export function HardwareSection() {
 								}
 								type="number"
 								unit="h"
+								tooltip="Horas estimadas de vida útil da tela LCD antes de precisar trocar."
 							/>
 							<InputGroup
 								label={t("calc.fepCost")}
@@ -287,6 +297,7 @@ export function HardwareSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
+								tooltip="Custo do filme FEP para substituição no tanque de resina."
 							/>
 							<InputGroup
 								label={t("calc.fepLife")}
@@ -301,6 +312,7 @@ export function HardwareSection() {
 								}
 								type="number"
 								unit="prints"
+								tooltip="Número de impressões que o filme FEP suporta antes de precisar trocar."
 							/>
 						</div>
 					</div>

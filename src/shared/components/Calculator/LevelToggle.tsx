@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useCalculatorStore } from "@/shared/stores/calculatorStore";
 import { useShallow } from "zustand/react/shallow";
-import { LEVEL_LABELS } from "./Calculator.constants";
+import { LEVEL_LABELS, LEVEL_DESCRIPTIONS } from "./Calculator.constants";
 
 export function LevelToggle() {
 	const { t } = useTranslation();
@@ -21,7 +21,12 @@ export function LevelToggle() {
 							: "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
 					}`}
 				>
-					{t(LEVEL_LABELS[level])}
+					<div className="flex flex-col items-center gap-0.5">
+						<span>{t(LEVEL_LABELS[level])}</span>
+						<span className="text-[10px] opacity-70 leading-tight whitespace-nowrap">
+							{t(LEVEL_DESCRIPTIONS[level])}
+						</span>
+					</div>
 				</button>
 			))}
 		</div>

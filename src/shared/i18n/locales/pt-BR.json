@@ -105,7 +105,7 @@
     "slicerCost": "Mensalidade Slicer",
     "modelCost": "Custo do Arquivo STL",
     "sales": "Custos Adicionais & Vendas",
-    "extras": "Peças e Extras",
+    	"extras": "Peças e Extras",
     "packaging": "Embalagem",
     "shipping": "Frete",
     "marketplace": "Marketplace",
@@ -128,10 +128,16 @@
     "history": "Últimos Cálculos",
     "clearHistory": "Limpar",
     "clearConfirm": "Tem certeza? Isso apagará todo o histórico.",
-    "quickMode": "Modo Rápido",
-    "basic": "Básico",
-    "advanced": "Avançado",
-    "intermediate": "Intermediário",
+	"quickMode": "Modo Rápido",
+	"basic": "Básico",
+	"advanced": "Avançado",
+	"intermediate": "Intermediário",
+	"quick": "Rápido",
+	"detailed": "Detalhado",
+	"complete": "Completo",
+	"quickDesc": "Apenas o essencial para um orçamento rápido",
+	"detailedDesc": "Mais opções de custo para precisão",
+	"completeDesc": "Controle total sobre todos os parâmetros",
     "customizeFields": "Personalizar campos",
     "productName": "Nome do Produto",
     "productNamePlaceholder": "Ex: Vaso Decorativo",
@@ -416,40 +422,58 @@
   },
   "tutorial": {
     "start": "Iniciar Tutorial",
-    "skip": "Pular",
+    "skip": "Pular tutorial",
     "next": "Próximo",
     "previous": "Anterior",
     "finish": "Concluir",
     "stepOf": "Passo {{current}} de {{total}}",
     "steps": {
       "welcome": {
-        "title": "Bem-vindo ao Open3DCalc",
-        "description": "Calculadora 3D completa para estimar custos de impressão."
+        "title": "Bem-vindo ao Open3DCalc! 🎉",
+        "description": "Vamos calcular juntos o custo das suas impressões 3D. Comece preenchendo os dados do material — já colocamos valores de exemplo para você testar."
       },
       "material": {
-        "title": "Escolha o Material",
-        "description": "Selecione o tipo de filamento ou resina e defina o custo por kg/L."
+        "title": "Materiais",
+        "description": "Aqui você define o tipo de filamento, o peso da peça e o custo. Já deixamos PLA a R$90/kg como exemplo — ajuste conforme seus valores reais."
       },
       "print": {
         "title": "Parâmetros de Impressão",
-        "description": "Defina o tempo de impressão e potência da impressora."
+        "description": "Informe o tempo de impressão, potência da sua impressora e o custo da energia. Esses valores são essenciais para um cálculo preciso."
       },
       "sales": {
         "title": "Precificação",
-        "description": "Configure embalagem, frete, marketplace e margem de lucro."
+        "description": "Agora vamos definir sua margem de lucro. Aqui você também pode adicionar custos de embalagem e frete."
       },
       "results": {
-        "title": "Veja os Resultados",
-        "description": "O preço de venda, custo total e lucro são calculados automaticamente."
+        "title": "Resultados",
+        "description": "Pronto! Aqui está o custo total, o preço sugerido e o lucro estimado. Use os sliders para simular diferentes cenários."
       },
       "export": {
-        "title": "Exporte e Salve",
-        "description": "Exporte PDF, CSV, ou salve no histórico para comparar depois."
+        "title": "Exportar",
+        "description": "Salve seu cálculo no histórico ou exporte como PDF para enviar ao cliente."
       },
       "complete": {
-        "title": "Tutorial Concluído!",
-        "description": "Pronto! Você já sabe usar a calculadora. Acesse o Dashboard para gráficos."
+        "title": "Tudo pronto! 🚀",
+        "description": "Agora você já sabe calcular o custo de qualquer impressão. Use os tooltips (ícone ℹ️) em cada campo se tiver dúvidas. Bons prints!"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Bem-vindo ao Open3DCalc",
+    "start": "Começar",
+    "startTutorial": "Começar Tutorial Interativo",
+    "skip": "Pular",
+    "slide1": {
+      "title": "O que é o Open3DCalc?",
+      "description": "Uma calculadora gratuita e open-source para estimar custos de impressão 3D com precisão."
+    },
+    "slide2": {
+      "title": "Como calcular",
+      "description": "Preencha os dados do material, parâmetros de impressão e custos adicionais. O resultado é calculado automaticamente."
+    },
+    "slide3": {
+      "title": "Salve e acompanhe",
+      "description": "Salve seus cálculos no histórico, compare resultados e exporte orçamentos em PDF."
     }
   },
   "privacy": {
@@ -484,7 +508,43 @@
     "bedCost": "Custo estimado de spray, cola ou desgaste da folha PEI por impressão.",
     "finishing": "Valor estimado de lixas, primer, tintas, massa plástica ou acetona gastos nesta peça.",
     "ppe": "Luvas, máscaras, papel toalha, filtros, etc. Custo fixo por impressão.",
-    "extras": "Parafusos, colas, verniz, tintas, etc."
+	"extras": "Parafusos, colas, verniz, tintas, etc.",
+	"printTimeHours": "Tempo total que a impressão leva para ser concluída. Use o valor do seu fatiador (slicer).",
+	"printerPowerWatts": "Consumo médio de energia da impressora. A maioria das FDM consome entre 100W e 350W.",
+	"energyCostPerKwh": "Valor do kWh na sua conta de luz.",
+	"machineCost": "Quanto você pagou pela impressora. Inclua frete e impostos se possível.",
+	"depreciationMonths": "Em quantos meses a impressora será paga. 36 meses é o padrão para equipamentos.",
+	"hoursPerMonth": "Quantas horas por mês a impressora fica ligada imprimindo.",
+	"maintenanceCost": "Custo mensal estimado com manutenção (bicos, correias, lubrificação).",
+	"setupTime": "Tempo gasto preparando o arquivo, fatiando e configurando a impressora.",
+	"postProcessingTime": "Tempo retirando a peça da mesa, removendo suportes, lixando.",
+	"hourlyRate": "Quanto você quer ganhar por hora de trabalho. Seu tempo vale dinheiro.",
+	"quantity": "Quantas unidades iguais serão produzidas. O custo de setup é diluído entre as unidades.",
+	"infillPercent": "Quanto do interior será preenchido. 15% para decorativos, 50%+ para peças funcionais.",
+	"packaging": "Custo da embalagem (caixa, plástico bolha, fita).",
+	"shipping": "Custo do frete para entrega ao cliente.",
+	"taxPercent": "Impostos sobre o valor de venda (ICMS, ISS, Simples Nacional).",
+	"profitMargin": "Margem de lucro desejada sobre o custo total. 50% é comum para iniciar.",
+	"infillDimension": "Dimensão da peça em centímetros para estimar o volume.",
+	"wallThickness": "Espessura das paredes externas da peça.",
+	"layerHeight": "Altura de cada camada. 0.08mm = qualidade alta, 0.28mm = econômico.",
+	"infillDensity": "Percentual de preenchimento interno. 15% para decorativos, 50%+ para funcionais.",
+	"topBottomLayers": "Número de camadas sólidas no topo e na base da peça.",
+	"alcoholCostPerLiter": "Custo do litro do álcool isopropílico para lavagem da peça.",
+	"alcoholVolume": "Volume de álcool gasto por peça na lavagem.",
+	"cureTime": "Tempo de cura UV após a lavagem da peça.",
+	"curePower": "Potência da lâmpada UV da câmara de cura.",
+	"lcdCost": "Custo da tela LCD do seu printer de resina para substituição.",
+	"lcdLife": "Horas estimadas de vida útil da tela LCD antes de precisar trocar.",
+	"fepCost": "Custo do filme FEP para substituição no tanque de resina.",
+	"fepLife": "Número de impressões que o filme FEP suporta antes de precisar trocar.",
+	"slicerCost": "Custo mensal do software de fatiamento, se aplicável.",
+	"modelCost": "Custo do arquivo 3D se você comprou o modelo de terceiros.",
+	"failureValue": "Percentual de falha esperado. 10% é um bom padrão para começar.",
+	"costPerLiter": "Preço médio do litro da resina. Padrão ~R$180-250/L.",
+	"volumeMl": "Volume de resina usado na peça em mililitros.",
+	"weightUsed": "Peso da peça em gramas. Use o valor do seu fatiador (slicer).",
+	"filamentType": "Tipo de filamento. PLA para iniciantes, PETG para resistência, ABS para alta temperatura."
   },
   "settings": {
     "currency": "Moeda",

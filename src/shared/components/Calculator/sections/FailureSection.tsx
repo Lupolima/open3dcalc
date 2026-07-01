@@ -96,6 +96,7 @@ export function FailureSection({
 							type="number"
 							unit={failureMode === "fixed" ? undefined : "%"}
 							prefix={failureMode === "fixed" ? "R$" : undefined}
+							tooltip={t('tooltip.risk')}
 						/>
 					</div>
 					<InputGroup

@@ -239,6 +239,7 @@ export function MaterialSection({
 									}
 									type="number"
 									prefix={currencySymbol}
+									tooltip={t('tooltip.costPerKg')}
 								/>
 								{inventorySpools.length > 0 && (
 									<button
@@ -302,6 +303,7 @@ export function MaterialSection({
 								}
 								type="number"
 								unit="g"
+								tooltip="Peso estimado do filamento que será usado. Você pode obter esse valor no seu slicer (Cura, PrusaSlicer, Orca) após fatiar o modelo."
 							/>
 							{isFieldVisible("material", "purgeWeight") && (
 								<InputGroup
@@ -317,6 +319,7 @@ export function MaterialSection({
 									}
 									type="number"
 									unit="g"
+									tooltip={t('tooltip.purge')}
 								/>
 							)}
 							{isFieldVisible("material", "spoolEfficiency") && (
@@ -333,6 +336,7 @@ export function MaterialSection({
 									}
 									type="number"
 									unit="%"
+									tooltip={t('tooltip.spoolEfficiency')}
 								/>
 							)}
 							{isFieldVisible("material", "density") && (
@@ -349,6 +353,7 @@ export function MaterialSection({
 									}
 									type="number"
 									unit="g/cm³"
+									tooltip={t('tooltip.density')}
 								/>
 							)}
 						</div>
@@ -457,6 +462,7 @@ export function MaterialSection({
 						}
 						type="number"
 						prefix={currencySymbol}
+						tooltip="Preço médio do litro de resina. Resina padrão ~R$150-250/L, Tough ~R$300-450/L. Consulte seu fornecedor."
 					/>
 					<InputGroup
 						label={t("calc.volumeMl")}
@@ -471,6 +477,7 @@ export function MaterialSection({
 						}
 						type="number"
 						unit="ml"
+						tooltip="Quantidade de resina líquida consumida. Inclui a peça + suportes. Obtenha no slicer após fatiar."
 					/>
 					{isFieldVisible("material", "wasteMargin") && (
 						<InputGroup
@@ -486,6 +493,7 @@ export function MaterialSection({
 							}
 							type="number"
 							unit="%"
+							tooltip={t('tooltip.wasteMargin')}
 						/>
 					)}
 				</div>

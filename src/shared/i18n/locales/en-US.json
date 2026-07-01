@@ -128,10 +128,16 @@
     "history": "Recent Calculations",
     "clearHistory": "Clear",
     "clearConfirm": "Are you sure? This will delete all history.",
-    "quickMode": "Quick Mode",
-    "basic": "Basic",
-    "advanced": "Advanced",
-    "intermediate": "Intermediate",
+	"quickMode": "Quick Mode",
+	"basic": "Basic",
+	"advanced": "Advanced",
+	"intermediate": "Intermediate",
+	"quick": "Quick",
+	"detailed": "Detailed",
+	"complete": "Complete",
+	"quickDesc": "Just the essentials for a quick quote",
+	"detailedDesc": "More cost options for accuracy",
+	"completeDesc": "Full control over all parameters",
     "customizeFields": "Customize fields",
     "productName": "Product Name",
     "productNamePlaceholder": "E.g.: Decorative Vase",
@@ -416,40 +422,58 @@
   },
   "tutorial": {
     "start": "Start Tutorial",
-    "skip": "Skip",
+    "skip": "Skip tutorial",
     "next": "Next",
     "previous": "Previous",
     "finish": "Finish",
     "stepOf": "Step {{current}} of {{total}}",
     "steps": {
       "welcome": {
-        "title": "Welcome to Open3DCalc",
-        "description": "Complete 3D calculator to estimate printing costs."
+        "title": "Welcome to Open3DCalc! 🎉",
+        "description": "Let's calculate the cost of your 3D prints together. Start by filling in the material data — we've already added example values for you to test."
       },
       "material": {
-        "title": "Choose Material",
-        "description": "Select the filament or resin type and set the cost per kg/L."
+        "title": "Materials",
+        "description": "Here you define the filament type, part weight, and cost. We've set PLA at $90/kg as an example — adjust according to your actual values."
       },
       "print": {
         "title": "Print Parameters",
-        "description": "Set the print time and printer power."
+        "description": "Enter the print time, your printer's power, and the energy cost. These values are essential for an accurate calculation."
       },
       "sales": {
         "title": "Pricing",
-        "description": "Configure packaging, shipping, marketplace and profit margin."
+        "description": "Now let's set your profit margin. Here you can also add packaging and shipping costs."
       },
       "results": {
-        "title": "See Results",
-        "description": "Sell price, total cost and profit are calculated automatically."
+        "title": "Results",
+        "description": "Done! Here's the total cost, suggested price, and estimated profit. Use the sliders to simulate different scenarios."
       },
       "export": {
-        "title": "Export & Save",
-        "description": "Export PDF, CSV, or save to history to compare later."
+        "title": "Export",
+        "description": "Save your calculation to history or export as PDF to send to your client."
       },
       "complete": {
-        "title": "Tutorial Complete!",
-        "description": "You're ready! You know how to use the calculator. Check the Dashboard for charts."
+        "title": "All set! 🚀",
+        "description": "Now you know how to calculate the cost of any print. Use the tooltips (ℹ️ icon) on each field if you have questions. Happy printing!"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Welcome to Open3DCalc",
+    "start": "Start",
+    "startTutorial": "Start Interactive Tutorial",
+    "skip": "Skip",
+    "slide1": {
+      "title": "What is Open3DCalc?",
+      "description": "A free and open-source calculator to accurately estimate 3D printing costs."
+    },
+    "slide2": {
+      "title": "How to calculate",
+      "description": "Fill in material data, print parameters, and additional costs. Results are calculated automatically."
+    },
+    "slide3": {
+      "title": "Save and track",
+      "description": "Save your calculations to history, compare results, and export quotes as PDF."
     }
   },
   "privacy": {
@@ -484,7 +508,43 @@
     "bedCost": "Estimated cost of spray, glue or PEI sheet wear per print.",
     "finishing": "Estimated cost of sandpaper, primer, paints, putty or acetone used on this part.",
     "ppe": "Gloves, masks, paper towels, filters, etc. Fixed cost per print.",
-    "extras": "Screws, adhesives, varnishes, paints, etc."
+	"extras": "Screws, adhesives, varnishes, paints, etc.",
+	"printTimeHours": "Total time the print takes to complete. Use the value from your slicer software.",
+	"printerPowerWatts": "Average power consumption of your printer. Most FDM printers use between 100W and 350W.",
+	"energyCostPerKwh": "Your electricity rate per kWh. Check your utility bill for the exact value.",
+	"machineCost": "How much you paid for the printer. Include shipping and taxes if possible.",
+	"depreciationMonths": "Over how many months the printer will be paid off. 36 months is standard for equipment.",
+	"hoursPerMonth": "How many hours per month the printer is running.",
+	"maintenanceCost": "Estimated monthly maintenance cost (nozzles, belts, lubrication).",
+	"setupTime": "Time spent preparing the file, slicing, and setting up the printer.",
+	"postProcessingTime": "Time removing the part from the bed, removing supports, sanding.",
+	"hourlyRate": "How much you want to earn per hour of work. Your time is valuable.",
+	"quantity": "How many identical units will be produced. Setup cost is diluted across units.",
+	"infillPercent": "How much of the interior will be filled. 15% for decorative, 50%+ for functional parts.",
+	"packaging": "Packaging cost (box, bubble wrap, tape).",
+	"shipping": "Shipping cost for delivery to the customer.",
+	"taxPercent": "Taxes on the sale value (varies by country and region).",
+	"profitMargin": "Desired profit margin over total cost. 50% is common to start.",
+	"infillDimension": "Part dimension in centimeters to estimate volume.",
+	"wallThickness": "Thickness of the outer walls of the part.",
+	"layerHeight": "Height of each layer. 0.08mm = high quality, 0.28mm = economical.",
+	"infillDensity": "Internal fill percentage. 15% for decorative, 50%+ for functional.",
+	"topBottomLayers": "Number of solid layers on top and bottom of the part.",
+	"alcoholCostPerLiter": "Cost per liter of isopropyl alcohol for washing parts.",
+	"alcoholVolume": "Volume of alcohol used per part during washing.",
+	"cureTime": "UV curing time after washing the part.",
+	"curePower": "Power of the UV lamp in the curing station.",
+	"lcdCost": "Cost of the LCD screen replacement for your resin printer.",
+	"lcdLife": "Estimated lifespan of the LCD screen in hours before replacement.",
+	"fepCost": "Cost of FEP film replacement for the resin vat.",
+	"fepLife": "Number of prints the FEP film lasts before needing replacement.",
+	"slicerCost": "Monthly cost of slicing software, if applicable.",
+	"modelCost": "Cost of the 3D file if you purchased the model from a third party.",
+	"failureValue": "Expected failure rate. 10% is a good starting default.",
+	"costPerLiter": "Average price per liter of resin. Standard ~$30-50/L.",
+	"volumeMl": "Volume of resin used in the part in milliliters.",
+	"weightUsed": "Weight of the part in grams. Use the value from your slicer.",
+	"filamentType": "Type of filament. PLA for beginners, PETG for strength, ABS for high temperature."
   },
   "settings": {
     "currency": "Currency",

@@ -53,7 +53,7 @@ function padRect(rect: DOMRect, padding: number): DOMRect {
 
 // ── Overlay with spotlight hole ──────────────────────────────────────────────
 
-function SpotlightOverlay({ targetRect }: { targetRect: DOMRect | null }) {
+function SpotlightOverlay({ targetRect, onClick }: { targetRect: DOMRect | null; onClick: () => void }) {
   const clipPath = useMemo(() => {
     if (!targetRect) return undefined
     const r = padRect(targetRect, 10)
@@ -68,7 +68,9 @@ function SpotlightOverlay({ targetRect }: { targetRect: DOMRect | null }) {
         background: 'rgba(0, 0, 0, 0.6)',
         clipPath,
       }}
+      onClick={onClick}
       aria-hidden="true"
+      data-testid="tutorial-overlay"
     />
   )
 }
@@ -206,6 +208,18 @@ function TooltipCard({
             </p>
           </div>
 
+          {/* Prominent skip button on the first (welcome) card */}
+          {isFirst && (
+            <div className="px-5 pb-3">
+              <button
+                onClick={onSkip}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+              >
+                {t('tutorial.skip')}
+              </button>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="px-5 pb-4 flex items-center justify-between">
             {/* Step counter */}
@@ -225,7 +239,7 @@ function TooltipCard({
                 </button>
               )}
 
-              {!isLast && (
+              {!isFirst && !isLast && (
                 <button
                   onClick={onSkip}
                   className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
@@ -271,19 +285,22 @@ export function Tutorial() {
     finishTutorial,
     skipTutorial,
     completeStep,
+    dismissTutorial,
+    sessionDismissed,
   } = useTutorialStore()
 
+  // Move hooks BEFORE early return to avoid "fewer hooks" errors
   // Compute target rect synchronously instead of setState in effect
   const targetRect = useMemo(() => {
-    if (!isActive) return null
+    if (!isActive || sessionDismissed) return null
     const step = STEPS[currentStep - 1]
     if (!step?.target) return null
     return getElementRect(step.target)
-  }, [isActive, currentStep])
+  }, [isActive, sessionDismissed, currentStep])
 
   // Scroll target into view when step changes
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive || sessionDismissed) return
     const step = STEPS[currentStep - 1]
     if (!step?.target) return
 
@@ -291,11 +308,11 @@ export function Tutorial() {
     if (targetEl) {
       targetEl.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
     }
-  }, [isActive, currentStep, prefersReduced])
+  }, [isActive, sessionDismissed, currentStep, prefersReduced])
 
   // Keyboard navigation
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive || sessionDismissed) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -317,11 +334,11 @@ export function Tutorial() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isActive, currentStep, nextStep, previousStep, finishTutorial, completeStep])
+  }, [isActive, sessionDismissed, currentStep, nextStep, previousStep, finishTutorial, completeStep])
 
   // Pause tutorial when a modal/dialog is open
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive || sessionDismissed) return
     const checkModal = () => {
       const modal = document.querySelector('[role="dialog"][aria-modal="true"]')
       if (modal) {
@@ -333,20 +350,23 @@ export function Tutorial() {
     const observer = new MutationObserver(checkModal)
     observer.observe(document.body, { childList: true, subtree: true })
     return () => observer.disconnect()
-  }, [isActive, skipTutorial])
+  }, [isActive, sessionDismissed, skipTutorial])
 
   // Mark step as completed when navigating forward
   const handleNext = useCallback(() => {
+    if (!isActive || sessionDismissed) return
     completeStep(currentStep)
     nextStep()
-  }, [currentStep, nextStep, completeStep])
+  }, [currentStep, nextStep, completeStep, isActive, sessionDismissed])
 
   const handleFinish = useCallback(() => {
+    if (!isActive || sessionDismissed) return
     completeStep(currentStep)
     finishTutorial()
-  }, [currentStep, finishTutorial, completeStep])
+  }, [currentStep, finishTutorial, completeStep, isActive, sessionDismissed])
 
-  if (!isActive) return null
+  // If the user dismissed the tutorial this session, don't show it
+  if (!isActive || sessionDismissed) return null
 
   const step = STEPS[currentStep - 1]
   const duration = prefersReduced ? 0 : 0.2
@@ -363,7 +383,7 @@ export function Tutorial() {
           transition={{ duration }}
           className="fixed inset-0 z-[55]"
         >
-          <SpotlightOverlay targetRect={targetRect} />
+          <SpotlightOverlay targetRect={targetRect} onClick={dismissTutorial} />
         </motion.div>
       </AnimatePresence>
 
