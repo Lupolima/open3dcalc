@@ -1,6 +1,6 @@
 # 🗺️ Open3DCalc — Roadmap
 
-> **Data:** Julho 2026
+> **Data:** 01/07/2026
 > **Propósito:** Guia de prioridades para evolução do Open3DCalc.
 > **Fluxo:** Toda funcionalidade segue → branch → PR → review → merge (`BRANCH-POLICY.md`)
 
@@ -44,34 +44,34 @@
 **Próximo ciclo — refinamentos de UX:**
 
 #### 5. Quick Start com valores pré-preenchidos
-- [ ] Botão "Quick Start" que preenche a calculadora com valores realistas
+- [x] Botão "Quick Start" que preenche a calculadora com valores realistas
   - PLA R$90/kg, 150g, 2h impressão, 10% taxa de falha
   - Margem de 50%, embalagem R$5, frete R$15
-- [ ] Modo "Exemplo" vs "Começar do zero"
-- [ ] Tooltip no botão explicando que valores são editáveis
+- [x] Modo "Exemplo" vs "Começar do zero"
+- [x] Tooltip no botão explicando que valores são editáveis
 - **Arquivos:** CalculatorStore (reset/quickStart action), UI button
 - **Testes:** Verificar se quickStart preenche corretamente
 
 #### 6. Empty states para seções sem dados
-- [ ] Histórico vazio: "Nenhum cálculo salvo ainda. Seu primeiro resultado aparecerá aqui."
-- [ ] Inventário vazio: "Adicione filamentos ao seu inventário para agilizar os cálculos."
-- [ ] Orçamentos vazios: "Crie seu primeiro orçamento para enviar ao cliente."
-- [ ] Cotações vazias: mesma abordagem
+- [x] Histórico vazio: "Nenhum cálculo salvo ainda. Seu primeiro resultado aparecerá aqui."
+- [x] Inventário vazio: "Adicione filamentos ao seu inventário para agilizar os cálculos."
+- [x] Orçamentos vazios: "Crie seu primeiro orçamento para enviar ao cliente."
+- [x] Cotações vazias: mesma abordagem
 - **Arquivos:** HistoryTab, InventorySection, QuoteSection
 - **Testes:** Renderização com lista vazia
 
 #### 7. Scroll suave entre seções
-- [ ] `scroll-behavior: smooth` no CSS global
-- [ ] Seção ativa destacada na navegação
-- [ ] Scroll suave ao clicar no SectionNav
+- [x] `scroll-behavior: smooth` no CSS global
+- [x] Seção ativa destacada na navegação
+- [x] Scroll suave ao clicar no SectionNav
 - **Arquivos:** index.css, SectionNav.tsx
 
 #### 8. Atalhos de teclado
-- [ ] `Ctrl+Z` — Desfazer última alteração (undo na calculatorStore)
-- [ ] `Ctrl+Shift+Z` — Refazer
-- [ ] `Ctrl+E` — Exportar resultado
-- [ ] `Ctrl+P` — Imprimir/PDF
-- [ ] `?` — Mostrar help de atalhos
+- [x] `Ctrl+Z` — Desfazer última alteração (undo na calculatorStore)
+- [x] `Ctrl+Shift+Z` — Refazer
+- [x] `Ctrl+E` — Exportar resultado
+- [x] `Ctrl+P` — Imprimir/PDF
+- [x] `?` — Mostrar help de atalhos
 - **Arquivos:** Novo hook `useKeyboardShortcuts.ts`, calculatorStore (undo stack)
 - **Testes:** Simular keydown events
 
