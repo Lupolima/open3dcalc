@@ -21,13 +21,12 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 	return (
 		<>
 			{/* Tablet section nav — icons only */}
-			<nav className="hidden md:flex lg:hidden flex-col gap-0.5 w-14 shrink-0 sticky top-[92px] h-fit">
+			<nav className="hidden md:flex lg:hidden flex-col gap-1 w-14 shrink-0 sticky top-[92px] h-[calc(100vh-92px)] overflow-y-auto px-1 py-2">
 				{visibleSections.map((s) => {
 					const keys = SECTION_ENABLES[s.id] || [];
 					const anyEnabled =
 						keys.length === 0 || keys.some((k) => enabledSections[k]);
 					return (
-						<div key={s.id} className="px-1">
 							<button
 								onClick={() => {
 									onSectionClick(s.id);
@@ -35,10 +34,10 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 										.getElementById(`section-${s.id}`)
 										?.scrollIntoView({ behavior: "smooth", block: "start" });
 								}}
-							className={`w-full py-2 px-1 rounded-xl flex items-center justify-center min-h-[44px] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+							className={`w-full py-2 rounded-xl flex items-center justify-center min-h-[44px] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
 								activeSection === s.id
-									? "bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/30"
-									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
+									? "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/20"
+									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
 											keys.length > 0 && !anyEnabled ? "opacity-50" : ""
 										}`
 							}`}
@@ -48,19 +47,19 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 									className={`w-4 h-4 ${activeSection === s.id ? "text-[var(--color-accent)]" : ""}`}
 								/>
 							</button>
-						</div>
 					);
 				})}
 			</nav>
 
 			{/* Desktop sidebar — icon + label + cost toggle dot */}
-			<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-[92px] h-fit">
-				{visibleSections.map((s) => {
+			<nav className="hidden lg:flex flex-col gap-0.5 w-[134px] xl:w-[142px] shrink-0 sticky top-[92px] h-[calc(100vh-92px)] overflow-y-auto px-2">
+				<div className="text-[9px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1 ml-2">Seções</div>
+				{visibleSections.map((s, idx) => {
 					const keys = SECTION_ENABLES[s.id] || [];
 					const anyEnabled =
 						keys.length === 0 || keys.some((k) => enabledSections[k]);
 					return (
-						<div key={s.id} className="px-1">
+						<div key={s.id}>
 							<button
 								onClick={() => {
 									onSectionClick(s.id);
@@ -68,10 +67,10 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 										.getElementById(`section-${s.id}`)
 										?.scrollIntoView({ behavior: "smooth", block: "start" });
 								}}
-							className={`w-full py-2.5 px-2 rounded-xl flex items-center gap-2 min-h-[44px] transition-all text-left focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+							className={`w-full py-2.5 px-3 rounded-xl flex items-center gap-2.5 min-h-[44px] transition-all text-left focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
 								activeSection === s.id
-									? "bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/30"
-									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
+									? "bg-[var(--color-accent)]/15 text-[var(--color-accent)] font-semibold border border-[var(--color-accent)]/20"
+									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
 											keys.length > 0 && !anyEnabled ? "opacity-50" : ""
 										}`
 							}`}

@@ -29,23 +29,23 @@ describe('QuickStartBanner', () => {
 
   it('renders the "Preencher com Exemplo" button', () => {
     render(<QuickStartBanner />)
-    expect(screen.getByText('Preencher com Exemplo')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Preencher/i })).toBeInTheDocument()
   })
 
   it('renders the "Limpar" button', () => {
     render(<QuickStartBanner />)
-    expect(screen.getByText('Limpar')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Limpar/i })).toBeInTheDocument()
   })
 
   it('calls setQuickStart when "Preencher com Exemplo" is clicked', () => {
     render(<QuickStartBanner />)
-    fireEvent.click(screen.getByText('Preencher com Exemplo'))
+    fireEvent.click(screen.getByRole('button', { name: /Preencher/i }))
     expect(mockSetQuickStart).toHaveBeenCalledTimes(1)
   })
 
   it('calls resetCalculator when "Limpar" is clicked', () => {
     render(<QuickStartBanner />)
-    fireEvent.click(screen.getByText('Limpar'))
+    fireEvent.click(screen.getByRole('button', { name: /Limpar/i }))
     expect(mockResetCalculator).toHaveBeenCalledTimes(1)
   })
 })
