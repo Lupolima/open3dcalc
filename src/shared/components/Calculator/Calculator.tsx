@@ -24,7 +24,7 @@ export function Calculator() {
 
   useKeyboardShortcuts([
     { key: 'z', ctrl: true, handler: () => undo(), description: 'Desfazer' },
-    { key: 'e', ctrl: true, handler: () => document.querySelector('[data-shortcut="export"]')?.click(), description: 'Exportar' },
+    { key: 'e', ctrl: true, handler: () => (document.querySelector('[data-shortcut="export"]') as HTMLElement)?.click(), description: 'Exportar' },
     { key: 'p', ctrl: true, handler: () => window.print(), description: 'Imprimir' },
   ]);
 	const store = useCalculatorStore();
