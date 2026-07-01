@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { customers, quotes, quoteItems } from './index'
+import { customers, quotes, quoteItems } from './index.js'
 
 export const customersRelations = relations(customers, ({ many }) => ({
   quotes: many(quotes),

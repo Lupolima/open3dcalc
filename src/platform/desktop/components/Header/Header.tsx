@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Code2, Globe, ChevronDown, BookOpen } from 'lucide-react'
+import { Box, Code2, Globe, ChevronDown, BookOpen, RefreshCw } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCalculatorStore } from '@/shared/stores/calculatorStore'
 import { useTutorialStore } from '@/shared/stores/tutorialStore'
 import { CURRENCIES, type CurrencyCode } from '@/shared/lib/currency'
 import { useCurrency } from '@/shared/hooks/useCurrency'
 import { ThemeToggle } from '@/shared/components/Header/ThemeToggle'
+import { useUpdaterStore } from '../UpdateNotification/UpdaterStore'
 
 export function Header() {
   const { t, i18n } = useTranslation()
@@ -16,6 +17,12 @@ export function Header() {
   const { symbol } = useCurrency()
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // Updater state — only renders button when electronAPI is available
+  const hasUpdater = !!window.electronAPI?.updater
+  const isChecking = useUpdaterStore(
+    useShallow((s) => s.status === 'checking'),
+  )
 
   const toggleLanguage = () => {
     const next = i18n.language === 'pt-BR' ? 'en-US' : 'pt-BR'
@@ -145,6 +152,23 @@ export function Header() {
 
           {/* Theme toggle */}
           <ThemeToggle />
+
+          {/* Check for Updates (desktop only) */}
+          {hasUpdater && (
+            <button
+              onClick={() => useUpdaterStore.getState().checkForUpdates()}
+              disabled={isChecking}
+              className={`min-w-[44px] min-h-[44px] flex items-center justify-center p-2.5 lg:p-3 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+                isChecking
+                  ? 'text-[var(--color-text-muted)] cursor-not-allowed'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-muted)]'
+              }`}
+              title={isChecking ? 'Checking…' : 'Check for Updates'}
+              aria-label={isChecking ? 'Checking for updates' : 'Check for updates'}
+            >
+              <RefreshCw className={`w-5 h-5 ${isChecking ? 'animate-spin' : ''}`} />
+            </button>
+          )}
 
           <button
             onClick={toggleLanguage}

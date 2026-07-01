@@ -1,5 +1,5 @@
 import { type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { catalogPrinters, catalogMaterials, catalogMarketplaces } from './schema'
+import { catalogPrinters, catalogMaterials, catalogMarketplaces } from './schema/index.js'
 
 import fs from 'node:fs'
 import path from 'node:path'

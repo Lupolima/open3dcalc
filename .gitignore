@@ -6,8 +6,16 @@ dist/
 dist-web/
 dist-ssr/
 dist-electron/
+electron/dist/
 storybook-static/
 coverage/
+
+# Electron Builder release output
+release/
+*.blockmap
+
+# Dev symlink (index.web.html → index.html for Vite dev server)
+index.html
 
 # Stale codebases — keep dirs but ignore their build artifacts
 web/node_modules/

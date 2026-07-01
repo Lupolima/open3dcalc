@@ -16,6 +16,8 @@ import { useCalculatorStore } from '@/shared/stores/calculatorStore'
 import { Tutorial } from '@/shared/components/ui/Tutorial'
 import { PrivacyBanner } from '@/shared/components/ui/PrivacyBanner'
 import { useTutorialStore } from '@/shared/stores/tutorialStore'
+import { UpdateNotification } from '@/platform/desktop/components/UpdateNotification/UpdateNotification'
+import { useUpdaterAutoCheck } from '@/platform/desktop/hooks/useUpdaterAutoCheck'
 import type { CalculationResult, CalculationSnapshot } from '@/shared/types'
 import {
   Calculator as CalculatorIcon,
@@ -61,6 +63,9 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
 function App() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('calculator')
+
+  // Auto-check for updates on desktop
+  useUpdaterAutoCheck()
 
   useEffect(() => {
     restoreAutoSnapshot()
@@ -190,6 +195,7 @@ function App() {
   return (
     <div className="min-h-dvh flex flex-col">
       <Header />
+      <UpdateNotification className="max-w-[1440px] mx-auto w-full px-6 sm:px-8 lg:px-12 pt-4" />
       <PrivacyBanner />
 
       <div className="flex flex-1 w-full max-w-[1600px] mx-auto overflow-hidden">

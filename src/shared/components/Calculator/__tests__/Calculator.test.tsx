@@ -281,7 +281,7 @@ import { useCalculatorStore } from "@/shared/stores/calculatorStore";
 describe("Mobile export buttons in bottom bar", () => {
 	it("mobile: botão export PDF aparece na bottom bar quando há resultados", () => {
 		const { container } = render(<Calculator />);
-		const bottomBar = container.querySelector(".fixed.bottom-0");
+		const bottomBar = container.querySelector("[class*='fixed'][class*='bottom-']");
 		expect(bottomBar).not.toBeNull();
 
 		const pdfBtn = bottomBar!.querySelector(
@@ -293,7 +293,7 @@ describe("Mobile export buttons in bottom bar", () => {
 
 	it("mobile: botão export CSV aparece na bottom bar quando há resultados", () => {
 		const { container } = render(<Calculator />);
-		const bottomBar = container.querySelector(".fixed.bottom-0");
+		const bottomBar = container.querySelector("[class*='fixed'][class*='bottom-']");
 		expect(bottomBar).not.toBeNull();
 
 		const csvBtn = bottomBar!.querySelector(

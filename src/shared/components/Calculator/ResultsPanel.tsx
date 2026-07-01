@@ -241,27 +241,27 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
         </div>
       )}
 
-      <div data-tutorial="export" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div data-tutorial="export" className="grid grid-cols-2 gap-2">
         <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-          className={`min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+          className={`min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1 truncate ${
             saveStatus === 'saved'
               ? 'bg-emerald-600 text-white'
               : 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
           }`}>
-          {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-          {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
+          {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <Save className="w-3.5 h-3.5 shrink-0" />}
+          <span className="truncate">{saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}</span>
         </button>
         <button data-shortcut="export" onClick={async () => { const { exportPdf } = await import('@/shared/lib/pdfExport'); exportPdf(results) }}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <FileText className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{t('calc.exportPdf')}</span>
         </button>
         <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/shared/lib/csvExport'); const csv = exportResultToCsv(results, productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <BarChart2 className="w-3.5 h-3.5" /> CSV
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <BarChart2 className="w-3.5 h-3.5 shrink-0" /> CSV
         </button>
         <button onClick={handleExportQuote}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <ScrollText className="w-3.5 h-3.5" /> {t('results.exportQuote')}
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <ScrollText className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{t('results.exportQuote')}</span>
         </button>
       </div>
 

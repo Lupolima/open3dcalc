@@ -40,7 +40,7 @@ export function Header() {
         borderColor: 'var(--color-border)',
       }}
     >
-      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12 h-[68px] flex items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 h-[68px] flex items-center justify-between gap-2 sm:gap-4 overflow-hidden">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -73,7 +73,7 @@ export function Header() {
             href="https://t.me/Impressao3DBR"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2.5 lg:p-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none rounded-xl"
+            className="hidden sm:flex p-2.5 lg:p-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none rounded-xl"
             title={t('nav.telegram')}
             aria-label={t('nav.telegram')}
           >
@@ -85,7 +85,7 @@ export function Header() {
             href="https://github.com/ils15/open3dcalc"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2.5 lg:p-3 text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-hover)] rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+            className="hidden sm:flex p-2.5 lg:p-3 text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-hover)] rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
             title="GitHub"
           >
             <Code2 className="w-5 h-5 lg:w-5 lg:h-5" />
@@ -111,7 +111,7 @@ export function Header() {
             >
               <span className="font-mono">{symbol}</span>
               {currencySetting === 'auto' && (
-                <span className="text-[10px] text-[var(--color-text-muted)] font-normal">auto</span>
+                <span className="hidden sm:inline text-[10px] text-[var(--color-text-muted)] font-normal">auto</span>
               )}
               <ChevronDown className="w-3 h-3 opacity-40" />
             </button>

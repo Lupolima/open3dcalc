@@ -1,8 +1,21 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import type { BrowserWindowConstructorOptions } from 'electron';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
-import { initDatabase, getDbPath } from '../db/database';
+import { initDatabase, getDbPath } from '../db/database.js';
+import {
+  initUpdateService,
+  checkForUpdates,
+  downloadUpdate,
+  installUpdate,
+  skipVersion,
+  getUpdateStatus,
+} from './update.js';
+
+// ESM compatibility: __dirname is not available in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -97,7 +110,7 @@ async function createWindow(): Promise<void> {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     // In production, load from the built files
-    await mainWindow.loadFile(path.join(__dirname, '..', '..', '..', 'dist', 'index.html'));
+    await mainWindow.loadFile(path.join(__dirname, '..', '..', '..', 'dist', 'index.desktop.html'));
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -109,8 +122,9 @@ async function createWindow(): Promise<void> {
 /*  IPC Handlers                                                       */
 /* ------------------------------------------------------------------ */
 
+let db: ReturnType<typeof initDatabase>
+
 function setupIpcHandlers(): void {
-  let db: ReturnType<typeof initDatabase>
   try {
     db = initDatabase()
     console.log('[main] Database initialized')
@@ -239,6 +253,39 @@ function setupIpcHandlers(): void {
     }
   });
 
+  // ── update:check ────────────────────────────────────────────────────
+  ipcMain.handle('update:check', async (): Promise<{ available: boolean; version?: string; releaseNotes?: string }> => {
+    try {
+      return await checkForUpdates();
+    } catch (error) {
+      console.error('[update:check] Error:', error);
+      throw error;
+    }
+  });
+
+  // ── update:download ──────────────────────────────────────────────────
+  ipcMain.handle('update:download', async (): Promise<void> => {
+    await downloadUpdate();
+  });
+
+  // ── update:install ───────────────────────────────────────────────────
+  ipcMain.handle('update:install', async (): Promise<void> => {
+    installUpdate();
+  });
+
+  // ── update:get-status ────────────────────────────────────────────────
+  ipcMain.handle('update:get-status', async (): Promise<{ status: string; progress?: number; version?: string }> => {
+    return getUpdateStatus();
+  });
+
+  // ── update:skip ─────────────────────────────────────────────────────
+  ipcMain.handle('update:skip', async (_event, version: string): Promise<void> => {
+    if (typeof version !== 'string' || version.trim().length === 0) {
+      throw new Error('Version must be a non-empty string');
+    }
+    skipVersion(version);
+  });
+
   // ── db:import ────────────────────────────────────────────────────
   ipcMain.handle('db:import', async (_event, filePath: string): Promise<void> => {
     try {
@@ -295,6 +342,9 @@ app.whenReady().then(async () => {
   try {
     setupIpcHandlers()
     await createWindow()
+    if (mainWindow) {
+      initUpdateService(mainWindow, db)
+    }
   } catch (error: unknown) {
     console.error('[main] Startup error:', error)
     dialog.showErrorBox('Startup Error', `Failed to start Open3DCalc:\n\n${(error as Error)?.message ?? String(error)}`)
