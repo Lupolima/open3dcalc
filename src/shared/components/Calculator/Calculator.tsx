@@ -200,6 +200,7 @@ export function Calculator() {
 	return (
 		<>
 			<ToastContainer items={toastItems} onDismiss={dismissToast} />
+			<h1 className="sr-only">{t('nav.calculator')}</h1>
 			<div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
 				<SectionNav activeSection={activeSection} onSectionClick={setActiveSection} />
 				<div className="flex-1 min-w-0 space-y-4">

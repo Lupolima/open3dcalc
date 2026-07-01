@@ -56,7 +56,7 @@ export function MachineSection({
 					}
 					type="number"
 					prefix={currencySymbol}
-					tooltip="Quanto você pagou pela impressora. Inclui frete e impostos se possível."
+					tooltip={t('tooltip.machineCost')}
 				/>
 				<InputGroup
 					label={t('calc.depreciationMonths')}
@@ -80,7 +80,7 @@ export function MachineSection({
 					}
 					type="number"
 					unit="meses"
-					tooltip="Em quantos meses a impressora será paga. 36 meses é o padrão para equipamentos."
+					tooltip={t('tooltip.depreciationMonths')}
 				/>
 				<InputGroup
 					label={t('calc.hoursPerMonth')}
@@ -104,7 +104,7 @@ export function MachineSection({
 					}
 					type="number"
 					unit="h/mês"
-					tooltip="Quantas horas por mês a impressora fica ligada imprimindo."
+					tooltip={t('tooltip.hoursPerMonth')}
 				/>
 				<div className="sm:col-span-2 flex items-center justify-between surface rounded-xl p-4 sm:p-5">
 				<span className="text-xs text-[var(--color-text-secondary)]">
@@ -155,7 +155,7 @@ export function MachineSection({
 							}
 							type="number"
 							prefix="R$/mês"
-							tooltip="Custo mensal estimado com manutenção (bicos, correias, lubrificação)."
+							tooltip={t('tooltip.maintenanceCost')}
 						/>
 					</div>
 				)}

@@ -265,8 +265,13 @@ function App() {
           </div>
         </aside>
 
+        {/* ── Skip Link ── */}
+        <a href="#main" className="skip-link" aria-label="Pular para o conteúdo principal">
+          Pular para o conteúdo
+        </a>
+
         {/* ── Main Content ── */}
-        <main className="flex-1 min-w-0 px-8 sm:px-10 lg:px-12 xl:px-16 py-10 pb-32 lg:pb-12">
+        <main id="main" className="flex-1 min-w-0 px-8 sm:px-10 lg:px-12 xl:px-16 py-10 pb-32 lg:pb-12">
           <div className="animate-fade-up">
             {activeTab === 'calculator' && <Calculator />}
             {activeTab === 'dashboard'  && <Dashboard />}

@@ -13,10 +13,13 @@
 **Problema:** Tutoriais e onboarding atuais não são bons. Precisamos de uma experiência mais fluida que ensine o usuário a usar a calculadora sem atrapalhar.
 
 **O que investigar primeiro (USO real):**
-- [ ] O que os usuários realmente clicam?
-- [ ] Onde eles travam/abandonam?
-- [ ] Quais seções da calculadora são mais usadas?
-- [ ] O que causa mais dúvidas?
+- [x] Tooltips em 52+ campos da calculadora
+- [x] LevelToggle renomeado (Rápido/Detalhado/Completo)
+- [x] Tutorial interativo não-bloqueante
+- [x] Onboarding com CTA para tutorial
+- [x] Skip link + heading hierarchy + acessibilidade
+- [x] Tooltips migrados para i18n (pt-BR + en-US)
+- [x] Touch targets mínimos (44px) em botões
 
 **Entregáveis:**
 - [ ] Telemetria opcional anônima (opt-in) para entender uso real
@@ -33,6 +36,51 @@
 - Telemetria é opt-in com consentimento explícito
 
 ---
+
+### 🔶 Fase 1.5: Usabilidade Avançada (PR #7)
+
+**Features entregues no PR #6:** Tooltips, LevelToggle, Tutorial, Skip link, i18n tooltips, acessibilidade.
+
+**Próximo ciclo — refinamentos de UX:**
+
+#### 5. Quick Start com valores pré-preenchidos
+- [ ] Botão "Quick Start" que preenche a calculadora com valores realistas
+  - PLA R$90/kg, 150g, 2h impressão, 10% taxa de falha
+  - Margem de 50%, embalagem R$5, frete R$15
+- [ ] Modo "Exemplo" vs "Começar do zero"
+- [ ] Tooltip no botão explicando que valores são editáveis
+- **Arquivos:** CalculatorStore (reset/quickStart action), UI button
+- **Testes:** Verificar se quickStart preenche corretamente
+
+#### 6. Empty states para seções sem dados
+- [ ] Histórico vazio: "Nenhum cálculo salvo ainda. Seu primeiro resultado aparecerá aqui."
+- [ ] Inventário vazio: "Adicione filamentos ao seu inventário para agilizar os cálculos."
+- [ ] Orçamentos vazios: "Crie seu primeiro orçamento para enviar ao cliente."
+- [ ] Cotações vazias: mesma abordagem
+- **Arquivos:** HistoryTab, InventorySection, QuoteSection
+- **Testes:** Renderização com lista vazia
+
+#### 7. Scroll suave entre seções
+- [ ] `scroll-behavior: smooth` no CSS global
+- [ ] Seção ativa destacada na navegação
+- [ ] Scroll suave ao clicar no SectionNav
+- **Arquivos:** index.css, SectionNav.tsx
+
+#### 8. Atalhos de teclado
+- [ ] `Ctrl+Z` — Desfazer última alteração (undo na calculatorStore)
+- [ ] `Ctrl+Shift+Z` — Refazer
+- [ ] `Ctrl+E` — Exportar resultado
+- [ ] `Ctrl+P` — Imprimir/PDF
+- [ ] `?` — Mostrar help de atalhos
+- **Arquivos:** Novo hook `useKeyboardShortcuts.ts`, calculatorStore (undo stack)
+- **Testes:** Simular keydown events
+
+**Critérios de aceite:**
+- Quick Start preenche todos os campos essenciais
+- Empty states têm ilustração/ícone + texto + CTA
+- Scroll suave não quebra navegação por âncoras
+- Atalhos não conflitam com atalhos do navegador
+- Todos os 448+ testes passam
 
 ### 🟡 Fase 2: STL Upload + Preview 3D Interativo
 

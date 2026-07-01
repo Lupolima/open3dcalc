@@ -106,7 +106,7 @@ export function OpsSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
-								tooltip="Custo mensal do software de fatiamento, se aplicável."
+								tooltip={t('tooltip.slicerCost')}
 							/>
 							<InputGroup
 								label={t("calc.modelCost")}
@@ -130,7 +130,7 @@ export function OpsSection() {
 								}
 								type="number"
 								prefix={currencySymbol}
-								tooltip="Custo do arquivo 3D se você comprou o modelo de terceiros."
+								tooltip={t('tooltip.modelCost')}
 							/>
 						</div>
 					)}

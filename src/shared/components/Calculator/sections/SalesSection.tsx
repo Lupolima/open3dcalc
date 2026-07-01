@@ -69,7 +69,7 @@ export function SalesSection() {
 						}
 						type="number"
 						unit="un"
-						tooltip="Quantas unidades iguais serão produzidas."
+						tooltip={t('tooltip.quantity')}
 					/>
 					{isFieldVisible("sales", "infillPercent") && (
 						<InputGroup
@@ -80,7 +80,7 @@ export function SalesSection() {
 							}
 							type="number"
 							unit="%"
-							tooltip="Quanto do interior será preenchido. 15% para decorativos, 50%+ para peças funcionais."
+							tooltip={t('tooltip.infillPercent')}
 						/>
 					)}
 				</div>
@@ -127,7 +127,7 @@ export function SalesSection() {
 						}
 						type="number"
 						prefix={currencySymbol}
-						tooltip="Custo da embalagem (caixa, plástico bolha, fita)."
+						tooltip={t('tooltip.packaging')}
 					/>
 					{isFieldVisible("sales", "shippingCost") && (
 						<InputGroup
@@ -152,7 +152,7 @@ export function SalesSection() {
 							}
 							type="number"
 							prefix={currencySymbol}
-							tooltip="Custo do frete para entrega ao cliente."
+							tooltip={t('tooltip.shipping')}
 						/>
 					)}
 				</div>
@@ -191,7 +191,7 @@ export function SalesSection() {
 								}
 								type="number"
 								unit="%"
-								tooltip="Impostos sobre o valor de venda."
+								tooltip={t('tooltip.taxPercent')}
 							/>
 						</div>
 						<div className="surface rounded-xl p-4 sm:p-5">
@@ -255,7 +255,7 @@ export function SalesSection() {
 						}
 						type="number"
 						unit="%"
-						tooltip="Margem de lucro desejada sobre o custo total."
+						tooltip={t('tooltip.profitMargin')}
 					/>
 				</div>
 			</div>

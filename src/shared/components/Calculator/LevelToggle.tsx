@@ -15,7 +15,7 @@ export function LevelToggle() {
 				<button
 					key={level}
 					onClick={() => setCalcLevel(level)}
-					className={`px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+					className={`min-h-[44px] min-w-[44px] px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
 						calcLevel === level
 							? "bg-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent-muted)]"
 							: "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"

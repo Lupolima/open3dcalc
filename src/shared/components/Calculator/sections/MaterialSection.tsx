@@ -138,7 +138,7 @@ export function MaterialSection({
 													const s = { ...slot, enabled: !slot.enabled };
 													store.setFdmAmsSlot(i, s);
 												}}
-												className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${slot.enabled ? "bg-[var(--color-info)]/30 text-[var(--color-info)]" : "bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]"}`}
+												className={`min-h-[44px] min-w-[44px] text-[10px] px-2 py-0.5 rounded-full transition-colors ${slot.enabled ? "bg-[var(--color-info)]/30 text-[var(--color-info)]" : "bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]"}`}
 											>
 												{slot.enabled ? "Ativo" : "Inativo"}
 											</button>
@@ -303,7 +303,7 @@ export function MaterialSection({
 								}
 								type="number"
 								unit="g"
-								tooltip="Peso estimado do filamento que será usado. Você pode obter esse valor no seu slicer (Cura, PrusaSlicer, Orca) após fatiar o modelo."
+								tooltip={t('tooltip.weightUsed')}
 							/>
 							{isFieldVisible("material", "purgeWeight") && (
 								<InputGroup
@@ -462,7 +462,7 @@ export function MaterialSection({
 						}
 						type="number"
 						prefix={currencySymbol}
-						tooltip="Preço médio do litro de resina. Resina padrão ~R$150-250/L, Tough ~R$300-450/L. Consulte seu fornecedor."
+						tooltip={t('tooltip.costPerLiter')}
 					/>
 					<InputGroup
 						label={t("calc.volumeMl")}
@@ -477,7 +477,7 @@ export function MaterialSection({
 						}
 						type="number"
 						unit="ml"
-						tooltip="Quantidade de resina líquida consumida. Inclui a peça + suportes. Obtenha no slicer após fatiar."
+						tooltip={t('tooltip.volumeMl')}
 					/>
 					{isFieldVisible("material", "wasteMargin") && (
 						<InputGroup

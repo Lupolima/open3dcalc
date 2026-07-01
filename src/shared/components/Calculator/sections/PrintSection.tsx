@@ -68,7 +68,7 @@ export function PrintSection({
 					}
 					type="number"
 					unit="h"
-					tooltip="Tempo total que a impressão leva para ser concluída. Use o valor do seu fatiador (slicer)."
+					tooltip={t('tooltip.printTimeHours')}
 				/>
 				<InputGroup
 					label={t("calc.printerPower")}
@@ -92,7 +92,7 @@ export function PrintSection({
 					}
 					type="number"
 					unit="W"
-					tooltip="Consumo médio de energia da sua impressora. A maioria das FDM consome entre 100W e 350W."
+					tooltip={t('tooltip.printerPowerWatts')}
 				/>
 				<InputGroup
 					label={t("calc.energyCost")}
@@ -117,7 +117,7 @@ export function PrintSection({
 					type="number"
 					unit="R$/kWh"
 					step="0.01"
-					tooltip="Valor do kWh na sua conta de luz. No Brasil a média é ~R$0,80-1,00 com impostos."
+					tooltip={t('tooltip.energyCostPerKwh')}
 				/>
 				{isFDM && isFieldVisible("print", "selectedPrinter") && (
 					<div className="sm:col-span-2">

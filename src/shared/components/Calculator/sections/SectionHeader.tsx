@@ -45,7 +45,7 @@ export function SectionHeader({ Icon, title, subtitle, sectionId }: SectionHeade
 		<div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-[var(--color-border)]">
 			<Icon className="w-3.5 h-3.5 text-[var(--color-accent)] shrink-0" />
 			<div className="flex-1 min-w-0">
-				<h3 className="text-xs font-bold text-[var(--color-text-primary)] truncate">{title}</h3>
+				<h2 className="text-xs font-bold text-[var(--color-text-primary)] truncate">{title}</h2>
 				{subtitle && (
 					<p className="text-[10px] text-[var(--color-text-muted)] truncate">{subtitle}</p>
 				)}
@@ -55,7 +55,7 @@ export function SectionHeader({ Icon, title, subtitle, sectionId }: SectionHeade
 					<button
 						type="button"
 						onClick={handleToggle}
-						className="p-1 rounded-md hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
+						className="min-h-[44px] min-w-[44px] p-1 rounded-md hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
 						title={t("calc.customizeFields")}
 					>
 						<Settings className="w-3.5 h-3.5" />
