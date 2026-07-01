@@ -93,6 +93,14 @@ export interface CalculatorState {
 
   currency: CurrencySetting
   setCurrency: (c: CurrencySetting) => void
+
+  setQuickStart: () => void
+  resetCalculator: () => void
+
+  /** JSON snapshots for undo (max UNDO_LIMIT entries). */
+  history: string[]
+  /** Restores the last snapshot from history. */
+  undo: () => void
 }
 
 export type ComputeStoreInput = {

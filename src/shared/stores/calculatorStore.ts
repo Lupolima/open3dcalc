@@ -24,13 +24,62 @@ type PrinterProfile = (typeof printers)[number]
 // Re-exports — used by section components, Calculator.tsx, tests, etc.
 export type { CalculatorState, CalcLevel, ComputeStoreInput } from './calculatorStore.types'
 
+const UNDO_LIMIT = 20
+
+/** Extracts data-only fields from CalculatorState into a JSON-safe snapshot. */
+function captureSnapshot(s: CalculatorState): string {
+  return JSON.stringify({
+    activeTab: s.activeTab,
+    fdmMaterial: s.fdmMaterial,
+    fdmPrintParams: s.fdmPrintParams,
+    fdmMachine: s.fdmMachine,
+    fdmHardware: s.fdmHardware,
+    fdmFinishing: s.fdmFinishing,
+    fdmLabor: s.fdmLabor,
+    fdmExtras: s.fdmExtras,
+    fdmSales: s.fdmSales,
+    fdmOps: s.fdmOps,
+    fdmSoft: s.fdmSoft,
+    resinMaterial: s.resinMaterial,
+    resinPrintParams: s.resinPrintParams,
+    resinPostProcess: s.resinPostProcess,
+    resinMachine: s.resinMachine,
+    resinHardware: s.resinHardware,
+    resinLabor: s.resinLabor,
+    resinExtras: s.resinExtras,
+    resinSales: s.resinSales,
+    resinOps: s.resinOps,
+    resinSoft: s.resinSoft,
+    selectedPrinter: s.selectedPrinter,
+    selectedMarketplace: s.selectedMarketplace,
+    fdmAmsEnabled: s.fdmAmsEnabled,
+    fdmAmsSlots: s.fdmAmsSlots,
+    fixedCosts: s.fixedCosts,
+    productName: s.productName,
+    calcLevel: s.calcLevel,
+    hiddenFields: s.hiddenFields,
+    quantity: s.quantity,
+    infillPercent: s.infillPercent,
+    targetMarginMode: s.targetMarginMode,
+    enabledSections: s.enabledSections,
+    currency: s.currency,
+  })
+}
+
 export const useCalculatorStore = create<CalculatorState>((set, get) => {
-  const setWithCompute = (update: Partial<CalculatorState> | ((state: CalculatorState) => Partial<CalculatorState>)) => {
+  const setWithCompute = (
+    update: Partial<CalculatorState> | ((state: CalculatorState) => Partial<CalculatorState>),
+    options?: { undoable?: boolean },
+  ) => {
+    const undoable = options?.undoable ?? true
     set((state) => {
+      const history = undoable
+        ? [...(state.history || []), captureSnapshot(state)].slice(-UNDO_LIMIT)
+        : state.history || []
       const nextState = typeof update === 'function' ? update(state) : update
       const merged = { ...state, ...nextState }
       const results = computeStoreResults(merged)
-      return { ...nextState, results }
+      return { ...nextState, results, history }
     })
     debouncedAutoSave(get)
   }
@@ -78,6 +127,7 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
       consumables: true, labor: true, software: true, failure: true,
       extras: true, postProcessing: true, packaging: true, shipping: true,
     }),
+    history: [],
   }
 
   const initialResults = computeStoreResults(initialValues as ComputeStoreInput)
@@ -130,6 +180,24 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
 
     setCurrency: (currency) => set({ currency }),
 
+    undo: () => {
+      const s = get()
+      const hist = s.history || []
+      if (hist.length === 0) return
+      const snapshot = hist[hist.length - 1]
+      try {
+        const data = JSON.parse(snapshot) as Record<string, unknown>
+        set((state) => {
+          const merged = { ...state, ...data }
+          const results = computeStoreResults(merged)
+          return { ...merged, results, history: state.history.slice(0, -1) }
+        })
+      } catch {
+        // Corrupted snapshot — just remove it
+        set((state) => ({ history: state.history.slice(0, -1) }))
+      }
+    },
+
     setProductName: (productName) => setWithCompute({ productName }),
     setCalcLevel: (calcLevel) => setWithCompute({ calcLevel }),
     toggleField: (fieldId) => setWithCompute((state) => {
@@ -146,6 +214,60 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
         const next = { ...state.enabledSections, [section]: !state.enabledSections[section] }
         localStorage.setItem('open3dcalc_sections', JSON.stringify(next))
         return { enabledSections: next }
+      })
+    },
+
+    setQuickStart: () => {
+      setWithCompute({
+        activeTab: 'fdm',
+        fdmMaterial: { type: 'PLA', weightUsed: 150, purgeWeight: 0, costPerKg: 90, density: 1.24, spoolEfficiency: 98 },
+        fdmPrintParams: { printTimeHours: 2, printerPowerWatts: 250, energyCostPerKwh: 0.95, failureMode: 'percent', failureValue: 10, riskMultiplier: 1 },
+        fdmMachine: { enabled: true, machineCost: 2000, depreciationMonths: 36, hoursPerMonth: 100, maintenanceEnabled: false, maintenanceCost: 0 },
+        fdmHardware: { enabled: true, nozzleEnabled: true, nozzleCost: 25, nozzleLifespanKg: 5, bedEnabled: true, bedAdhesionCost: 0.20 },
+        fdmFinishing: { enabled: false, suppliesCost: 5 },
+        fdmLabor: { enabled: true, setupTimeMinutes: 15, postProcessingTimeMinutes: 15, hourlyRate: 25 },
+        fdmExtras: { extrasCost: 0 },
+        fdmSales: { packagingCost: 5, shippingCost: 15, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 50 },
+        fdmOps: { enabled: false, ppeCostPerPrint: 0 },
+        fdmSoft: { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 },
+        quantity: 1,
+        productName: 'Exemplo de peça 3D',
+        infillPercent: 20,
+        targetMarginMode: false,
+      })
+    },
+
+    resetCalculator: () => {
+      setWithCompute({
+        fdmMaterial: { ...DEFAULT_FDM_MATERIAL },
+        fdmPrintParams: { ...DEFAULT_FDM_PARAMS },
+        fdmMachine: { ...DEFAULT_FDM_MACHINE },
+        fdmHardware: { ...DEFAULT_FDM_HARDWARE },
+        fdmFinishing: { ...DEFAULT_FDM_FINISHING },
+        fdmLabor: { ...DEFAULT_LABOR },
+        fdmExtras: { ...DEFAULT_EXTRAS },
+        fdmSales: { ...DEFAULT_SALES },
+        fdmOps: { ...DEFAULT_OPS },
+        fdmSoft: { ...DEFAULT_SOFT },
+        resinMaterial: { ...DEFAULT_RESIN_MATERIAL },
+        resinPrintParams: { ...DEFAULT_RESIN_PARAMS },
+        resinPostProcess: { ...DEFAULT_RESIN_PP },
+        resinMachine: { ...DEFAULT_RESIN_MACHINE },
+        resinHardware: { ...DEFAULT_RESIN_HARDWARE },
+        resinLabor: { ...DEFAULT_RESIN_LABOR },
+        resinExtras: { ...DEFAULT_RESIN_EXTRAS },
+        resinSales: { ...DEFAULT_RESIN_SALES },
+        resinOps: { ...DEFAULT_RESIN_OPS },
+        resinSoft: { ...DEFAULT_RESIN_SOFT },
+        fixedCosts: { ...DEFAULT_FIXED_COSTS },
+        productName: '',
+        quantity: 1,
+        infillPercent: 20,
+        targetMarginMode: false,
+        fdmAmsEnabled: false,
+        fdmAmsSlots: DEFAULT_AMS_SLOTS.map(s => ({ ...s })),
+        selectedPrinter: printers[0],
+        selectedMarketplace: marketplaces[0],
       })
     },
 

@@ -10,8 +10,9 @@ import { Select } from '@/shared/components/ui/Select'
 import {
   X, Layers, Zap, Printer, Wrench, HardHat, Monitor,
   Paintbrush, DollarSign, Store, Tags, TrendingUp, Search, FileJson,
-  Upload, CheckSquare, RotateCcw,
+  Upload, CheckSquare, RotateCcw, Clock,
 } from 'lucide-react'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 
 interface DetailModalProps {
   entry: HistoryEntry | null
@@ -260,7 +261,11 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-[var(--color-text-muted)] text-center py-8">{t('history.empty')}</p>
+        <EmptyState
+          icon={Clock}
+          title="Nenhum cálculo salvo ainda"
+          description="Seus cálculos aparecerão aqui após você salvá-los clicando em 'Salvar no Histórico' no painel de resultados."
+        />
       ) : (
         <div className="space-y-2 max-h-[60vh] sm:max-h-80 overflow-y-auto">
           {filtered.map(entry => (

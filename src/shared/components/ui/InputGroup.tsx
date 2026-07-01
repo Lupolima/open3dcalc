@@ -45,7 +45,7 @@ export function InputGroup({
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           step={step}
-          className={`flex-1 min-w-0 bg-[var(--color-bg-elevated)] border rounded-lg text-sm text-[var(--color-text-primary)] h-9 px-2.5 transition-all placeholder:text-[var(--color-text-muted)]/70 focus:outline-none focus:ring-2 ${
+          className={`flex-1 min-w-0 bg-[var(--color-bg-elevated)] border rounded-lg text-sm text-[var(--color-text-primary)] min-h-[44px] px-2.5 transition-all placeholder:text-[var(--color-text-muted)]/70 focus:outline-none focus:ring-2 ${
             error
               ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/50'
               : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-accent)]/60 focus:ring-[var(--color-accent)]'

@@ -11,6 +11,7 @@ import {
   X, Search, Plus, FileText, Eye, Edit, Trash2, Download,
   AlertCircle,
 } from 'lucide-react'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 
 // ── Status helpers ──────────────────────────────────────────────
 const STATUS_CONFIG: Record<Quote['status'], { label: string; color: string; bg: string }> = {
@@ -784,18 +785,12 @@ export function QuoteSection() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-3" />
-          <p className="text-sm text-[var(--color-text-muted)]">
-            {t('quotes.noQuotes', 'Nenhum orçamento criado ainda')}
-          </p>
-          <button
-            onClick={handleNewQuote}
-            className="mt-3 px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--color-accent)]/50 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/70 transition-colors"
-          >
-            {t('quotes.newQuote', 'Criar primeiro orçamento')}
-          </button>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="Nenhum orçamento criado ainda"
+          description="Crie orçamentos profissionais a partir dos seus cálculos salvos no histórico."
+          action={{ label: 'Criar primeiro orçamento', onClick: handleNewQuote }}
+        />
       ) : (
         <div className="space-y-2 max-h-[60vh] sm:max-h-80 overflow-y-auto">
           {filtered.map((quote) => {

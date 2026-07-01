@@ -8,6 +8,8 @@ import { useCalculatorStore } from "@/shared/stores/calculatorStore";
 import { useCatalogStore } from "@/shared/stores/catalogStore";
 import { useFilamentInventory } from "@/shared/stores/filamentInventory";
 import { useShallow } from "zustand/react/shallow";
+import { useKeyboardShortcuts } from "@/shared/hooks/useKeyboardShortcuts";
+import { QuickStartBanner } from "@/shared/components/ui/QuickStartBanner";
 import { ResultsPanel } from "./ResultsPanel";
 import { TechToggle } from "./TechToggle";
 import { LevelToggle } from "./LevelToggle";
@@ -17,7 +19,14 @@ import { SectionRenderer } from "./SectionRenderer";
 import { MobileBottomBar } from "./MobileBottomBar";
 
 export function Calculator() {
-	const { t } = useTranslation();
+	const { t } = useTranslation()
+  const undo = useCalculatorStore((s) => s.undo)
+
+  useKeyboardShortcuts([
+    { key: 'z', ctrl: true, handler: () => undo(), description: 'Desfazer' },
+    { key: 'e', ctrl: true, handler: () => document.querySelector('[data-shortcut="export"]')?.click(), description: 'Exportar' },
+    { key: 'p', ctrl: true, handler: () => window.print(), description: 'Imprimir' },
+  ]);
 	const store = useCalculatorStore();
 
 	const { printers: catalogPrinters, materials: catalogMaterials } = useCatalogStore(
@@ -204,6 +213,7 @@ export function Calculator() {
 			<div className="flex gap-4 xl:gap-6 pb-20 lg:pb-0">
 				<SectionNav activeSection={activeSection} onSectionClick={setActiveSection} />
 				<div className="flex-1 min-w-0 space-y-4">
+					<QuickStartBanner />
 						<div className="flex flex-wrap items-center gap-2 sm:gap-3 py-1">
 						<TechToggle />
 						<LevelToggle />

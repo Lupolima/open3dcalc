@@ -251,7 +251,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
           {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
           {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
         </button>
-        <button onClick={async () => { const { exportPdf } = await import('@/shared/lib/pdfExport'); exportPdf(results) }}
+        <button data-shortcut="export" onClick={async () => { const { exportPdf } = await import('@/shared/lib/pdfExport'); exportPdf(results) }}
           className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
           <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
         </button>

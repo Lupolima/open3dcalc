@@ -149,6 +149,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
     transition: color 0.2s ease, background-color 0.2s ease;
   }
 }

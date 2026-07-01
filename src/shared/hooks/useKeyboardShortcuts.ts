@@ -1,0 +1,58 @@
+import { useEffect, useRef } from 'react'
+
+export interface Shortcut {
+  key: string
+  ctrl?: boolean
+  shift?: boolean
+  alt?: boolean
+  handler: () => void
+  description: string
+}
+
+/**
+ * Registers global keyboard shortcuts.
+ *
+ * Shortcuts are suppressed when the user is typing in `<input>`, `<textarea>`,
+ * or `contentEditable` elements to avoid accidental triggers.
+ *
+ * Uses a ref internally so the event listener is registered only once and
+ * always has access to the latest handlers — no need to memoize `shortcuts`.
+ */
+export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
+  const shortcutsRef = useRef(shortcuts)
+  shortcutsRef.current = shortcuts
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      for (const s of shortcutsRef.current) {
+        const ctrl = s.ctrl ?? false
+        const shift = s.shift ?? false
+        const alt = s.alt ?? false
+
+        if (
+          e.key.toLowerCase() === s.key.toLowerCase() &&
+          e.ctrlKey === ctrl &&
+          e.shiftKey === shift &&
+          e.altKey === alt
+        ) {
+          // Don't trigger when typing in inputs
+          const target = e.target as HTMLElement | null
+          if (
+            target?.tagName === 'INPUT' ||
+            target?.tagName === 'TEXTAREA' ||
+            target?.isContentEditable
+          ) {
+            continue
+          }
+
+          e.preventDefault()
+          s.handler()
+          return
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+}

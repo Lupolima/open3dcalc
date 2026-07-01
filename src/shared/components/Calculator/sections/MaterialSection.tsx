@@ -1,4 +1,5 @@
-import { FlaskConical, Layers, Upload } from 'lucide-react'
+import { FlaskConical, Layers, Upload, Package } from 'lucide-react'
+import { EmptyState } from '@/shared/components/ui/EmptyState'
 import { Suspense } from 'react'
 import { InputGroup } from '@/shared/components/ui/InputGroup'
 import { Select } from '@/shared/components/ui/Select'
@@ -283,9 +284,11 @@ export function MaterialSection({
 												</button>
 											))}
 										{inventorySpools.length === 0 && (
-											<p className="text-xs text-[var(--color-text-muted)] text-center py-2">
-												Nenhum carretel no inventário
-											</p>
+											<EmptyState
+												icon={Package}
+												title="Inventário vazio"
+												description="Adicione filamentos ao seu inventário para selecionar rapidamente."
+											/>
 										)}
 									</div>
 								)}

@@ -148,7 +148,7 @@ export function Header() {
 
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2.5 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-w-[44px]"
+            className="flex items-center gap-1.5 text-[13px] font-semibold px-3.5 py-2.5 min-h-[44px] rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-w-[44px]"
             title={t('nav.language')}
           >
             <Globe className="w-4 h-4" />
