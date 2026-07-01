@@ -94,7 +94,7 @@ export function Header() {
           {/* Tutorial trigger */}
           <button
             onClick={() => useTutorialStore.getState().startTutorial()}
-            className="flex items-center gap-2 p-2.5 lg:px-3.5 lg:py-2.5 text-[var(--color-accent-light)] hover:text-[var(--color-accent-light)] hover:bg-[var(--color-accent-muted)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none rounded-xl border border-transparent hover:border-[var(--color-accent-muted)]"
+            className="flex items-center gap-2 p-2.5 lg:px-3.5 lg:py-2.5 min-h-[44px] min-w-[44px] text-[var(--color-accent-light)] hover:text-[var(--color-accent-light)] hover:bg-[var(--color-accent-muted)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none rounded-xl border border-transparent hover:border-[var(--color-accent-muted)]"
             title={t('nav.tutorial')}
             aria-label={t('nav.tutorial')}
           >
@@ -106,7 +106,7 @@ export function Header() {
           <div ref={menuRef} className="relative">
             <button
               onClick={() => setShowCurrencyMenu(v => !v)}
-              className="flex items-center gap-1 text-[13px] font-semibold px-3 py-2.5 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+              className="flex items-center gap-1 text-[13px] font-semibold px-3 py-2.5 rounded-lg min-h-[44px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
               title={t('settings.currency')}
             >
               <span className="font-mono">{symbol}</span>

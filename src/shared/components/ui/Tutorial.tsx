@@ -107,8 +107,8 @@ function TooltipCard({
     placement: preferredPlacement,
     middleware: [
       offset(14),
-      flip({ fallbackPlacements: ['left-start', 'bottom', 'top'] }),
-      shift({ padding: 16 }),
+      flip({ fallbackPlacements: ['left-start', 'bottom', 'top', 'right-end'] }),
+      shift({ padding: 16, crossAxis: true }),
     ],
     open: hasSpotlight,
     whileElementsMounted: autoUpdate,
@@ -309,11 +309,10 @@ export function Tutorial() {
 
     const targetEl = document.querySelector(step.target)
     if (targetEl) {
-      targetEl.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
-      // Extra delay to re-evaluate target rect after scroll settles
-      setTimeout(() => {
-        // Force re-render by no-op — tutorial renders reactively
-      }, 350)
+      targetEl.scrollIntoView({ behavior: 'auto', block: 'center' })
+      // Force FloatingUI to re-evaluate after scroll completes
+      // by dispatching a resize event
+      window.dispatchEvent(new Event('resize'))
     }
   }, [isActive, sessionDismissed, currentStep, prefersReduced])
 
