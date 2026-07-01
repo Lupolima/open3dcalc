@@ -35,7 +35,7 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 										.getElementById(`section-${s.id}`)
 										?.scrollIntoView({ behavior: "smooth", block: "start" });
 								}}
-							className={`w-full py-2 px-1 rounded-xl flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+							className={`w-full py-2 px-1 rounded-xl flex items-center justify-center min-h-[44px] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
 								activeSection === s.id
 									? "bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/30"
 									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
@@ -68,7 +68,7 @@ export function SectionNav({ activeSection, onSectionClick }: SectionNavProps) {
 										.getElementById(`section-${s.id}`)
 										?.scrollIntoView({ behavior: "smooth", block: "start" });
 								}}
-							className={`w-full py-2.5 px-2 rounded-xl flex items-center gap-2 transition-all text-left focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+							className={`w-full py-2.5 px-2 rounded-xl flex items-center gap-2 min-h-[44px] transition-all text-left focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
 								activeSection === s.id
 									? "bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/30"
 									: `text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] border border-transparent ${
