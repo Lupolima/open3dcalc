@@ -20,7 +20,11 @@ export interface Shortcut {
  */
 export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
   const shortcutsRef = useRef(shortcuts)
-  shortcutsRef.current = shortcuts
+
+  // Sync ref after render, not during render — avoids react-hooks/refs lint error
+  useEffect(() => {
+    shortcutsRef.current = shortcuts
+  })
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
