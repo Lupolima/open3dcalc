@@ -56,9 +56,9 @@ export function Header() {
 
           <div className="leading-none">
             <div className="flex items-center gap-2">
-              <h1 className="text-[17px] sm:text-[19px] font-black tracking-tight gradient-text">
+              <span className="text-[17px] sm:text-[19px] font-black tracking-tight gradient-text">
                 {t('app.title')}
-              </h1>
+              </span>
               <span className="badge badge-indigo hidden sm:inline-flex">Beta</span>
             </div>
             <p className="text-[11px] sm:text-[12px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5 hidden sm:block">

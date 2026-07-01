@@ -306,12 +306,12 @@ export function HistoryTab({ onLoadToCalculator }: HistoryTabProps) {
 
       <div className="flex gap-2 mt-4">
         <button onClick={handleExport}
-          className="flex-1 py-2.5 rounded-xl text-sm surface text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-2"
+          className="flex-1 min-h-[44px] py-2.5 rounded-xl text-sm surface text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-2"
         >
           <FileJson className="w-4 h-4" /> {t('history.exportJson')}
         </button>
         <button onClick={() => fileInputRef.current?.click()}
-          className="flex-1 py-2.5 rounded-xl text-sm surface text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-2"
+          className="flex-1 min-h-[44px] py-2.5 rounded-xl text-sm surface text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-2"
         >
           <Upload className="w-4 h-4" /> {t('history.importJson')}
         </button>

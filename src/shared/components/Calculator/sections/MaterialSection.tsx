@@ -245,7 +245,7 @@ export function MaterialSection({
 									<button
 										type="button"
 										onClick={() => setShowSpoolSelector(!showSpoolSelector)}
-										className={`absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md transition-colors ${
+										className={`min-h-[44px] absolute right-2 top-7 text-[10px] px-2 py-1 rounded-md transition-colors ${
 											showSpoolSelector
 												? "bg-[var(--color-accent)]/30 text-[var(--color-accent)] border border-[var(--color-accent)]/40"
 												: "bg-[var(--color-accent)]/30 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/50"
@@ -371,7 +371,7 @@ export function MaterialSection({
 								if (f) handleFileDrop(f);
 							}}
 							onClick={() => fileInputRef.current?.click()}
-							className="w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex flex-col items-center gap-1.5"
+							className="w-full min-h-[44px] border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex flex-col items-center gap-1.5"
 							style={{ borderColor: "var(--color-border)" }}
 							onMouseEnter={(e) =>
 								(e.currentTarget.style.borderColor = "var(--color-accent)")

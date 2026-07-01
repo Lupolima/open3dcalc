@@ -208,7 +208,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       )}
 
       <button onClick={() => addToHistory()}
-        className="w-full py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
+        className="w-full min-h-[44px] py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
       >
         <FolderOpen className="w-4 h-4" />
         {t('calc.addHistory')}
@@ -243,7 +243,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
 
       <div data-tutorial="export" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-          className={`py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+          className={`min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1.5 ${
             saveStatus === 'saved'
               ? 'bg-emerald-600 text-white'
               : 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
@@ -252,15 +252,15 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
           {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
         </button>
         <button onClick={async () => { const { exportPdf } = await import('@/shared/lib/pdfExport'); exportPdf(results) }}
-          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
           <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
         </button>
         <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/shared/lib/csvExport'); const csv = exportResultToCsv(results, productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1.5">
           <BarChart2 className="w-3.5 h-3.5" /> CSV
         </button>
         <button onClick={handleExportQuote}
-          className="py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1.5">
+          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1.5">
           <ScrollText className="w-3.5 h-3.5" /> {t('results.exportQuote')}
         </button>
       </div>
@@ -270,7 +270,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
         <button
           ref={inventoryBtnRef}
           onClick={() => setShowInventoryDropdown(prev => !prev)}
-          className="w-full py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-800/40 text-emerald-300 hover:bg-emerald-700/50 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none flex items-center justify-center gap-1.5 relative"
+          className="w-full min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-800/40 text-emerald-300 hover:bg-emerald-700/50 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none flex items-center justify-center gap-1.5 relative"
           aria-label={t('results.deductFromInventory')}
           aria-expanded={showInventoryDropdown}
         >

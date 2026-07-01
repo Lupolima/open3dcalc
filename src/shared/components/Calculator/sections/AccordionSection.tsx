@@ -16,7 +16,7 @@ export function AccordionSection({ id, title, icon, children, defaultOpen = fals
     <div id={id} className="scroll-mt-20">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-4 py-3 surface rounded-xl mb-2 text-left transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+        className="w-full min-h-[44px] flex items-center gap-3 px-4 py-3 surface rounded-xl mb-2 text-left transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
         aria-expanded={open}
       >
         <span className="text-[var(--color-accent)]">{icon}</span>

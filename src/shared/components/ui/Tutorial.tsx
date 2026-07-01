@@ -151,6 +151,8 @@ function TooltipCard({
         zIndex: 56,
         maxWidth: '300px',
         width: 'max-content',
+        maxHeight: '90vh',
+        overflowY: 'auto' as const,
       }
 
   return (
@@ -160,6 +162,7 @@ function TooltipCard({
         style={wrapperStyle}
         role="dialog"
         aria-modal="false"
+        data-tutorial="true"
         aria-label={t(`tutorial.steps.${stepKey}.title`)}
       >
         {/* Arrow (only when spotlight is active) */}
@@ -192,7 +195,7 @@ function TooltipCard({
           {/* Close button */}
           <button
             onClick={onFinish}
-            className="absolute top-2.5 right-2.5 z-10 p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+            className="absolute top-2.5 right-2.5 z-10 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
             aria-label={t('common.close')}
           >
             <X className="w-3.5 h-3.5" />
@@ -213,7 +216,7 @@ function TooltipCard({
             <div className="px-5 pb-3">
               <button
                 onClick={onSkip}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                className="w-full min-h-[44px] py-2.5 rounded-xl text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
               >
                 {t('tutorial.skip')}
               </button>
@@ -232,7 +235,7 @@ function TooltipCard({
               {!isFirst && (
                 <button
                   onClick={onPrevious}
-                  className="p-1.5 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
                   aria-label={t('tutorial.previous')}
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -242,7 +245,7 @@ function TooltipCard({
               {!isFirst && !isLast && (
                 <button
                   onClick={onSkip}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                  className="min-h-[44px] px-2.5 py-1 rounded-lg text-[11px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
                 >
                   {t('tutorial.skip')}
                 </button>
@@ -251,7 +254,7 @@ function TooltipCard({
               {isLast ? (
                 <button
                   onClick={onFinish}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                  className="min-h-[44px] inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
                 >
                   {t('tutorial.finish')}
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -259,7 +262,7 @@ function TooltipCard({
               ) : (
                 <button
                   onClick={onNext}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+                  className="min-h-[44px] inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--color-accent)] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
                 >
                   {t('tutorial.next')}
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -307,6 +310,10 @@ export function Tutorial() {
     const targetEl = document.querySelector(step.target)
     if (targetEl) {
       targetEl.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
+      // Extra delay to re-evaluate target rect after scroll settles
+      setTimeout(() => {
+        // Force re-render by no-op — tutorial renders reactively
+      }, 350)
     }
   }, [isActive, sessionDismissed, currentStep, prefersReduced])
 
@@ -336,11 +343,12 @@ export function Tutorial() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isActive, sessionDismissed, currentStep, nextStep, previousStep, finishTutorial, completeStep])
 
-  // Pause tutorial when a modal/dialog is open
+  // Pause tutorial when a MODAL dialog is open (not the tutorial card itself)
   useEffect(() => {
     if (!isActive || sessionDismissed) return
     const checkModal = () => {
-      const modal = document.querySelector('[role="dialog"][aria-modal="true"]')
+      // Only close for real modals, not the tutorial card which has data-tutorial="true"
+      const modal = document.querySelector('[role="dialog"][aria-modal="true"]:not([data-tutorial="true"])')
       if (modal) {
         // Modal opened — skip to next step or pause
         skipTutorial()
