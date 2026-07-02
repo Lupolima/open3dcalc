@@ -555,6 +555,48 @@
     "header": "{{versions}} versões · {{changes}} mudanças",
     "viewAllOnGitHub": "Ver todas as releases no GitHub",
     "versions": [
+
+    {
+        "version": "1.9.1",
+        "date": "2026-07-02",
+        "sections": [
+          {
+            "title": "🎨 Visual Polish & Mobile",
+            "items": [
+              "**Tutorial repositioned**: removed Floating UI, fixed card positioning (no drift)",
+              "**MobileBottomBar**: no horizontal scroll, flex-1 layout, z-50 above section nav",
+              "**SectionNav**: full page height, 'Seções' title, subtle borders",
+              "**QuickStartBanner**: dismissable (X button), compacted",
+              "**ResultsPanel**: compressed mobile padding",
+              "**Dual bottom bars**: main tabs + section nav, overflow-x-hidden"
+            ]
+          },
+          {
+            "title": "🐛 Bug Fixes",
+            "items": [
+              "**Electron CJS preload**: preload compilado em CommonJS para sandbox",
+              "**createRequire**: database.ts usa createRequire(import.meta.url) em vez de globalThis.require",
+              "**Lint errors**: SectionNav idx não usado, QuickStartBanner useEffect não usado, Tutorial setState em effect",
+              "**TypeScript scoping**: ElectronDBApi/ElectronUpdaterApi envoltos em declare global"
+            ]
+          },
+          {
+            "title": "🚪 Quality Gates",
+            "items": [
+              "**Husky pre-commit**: ESLint roda nos arquivos staged antes de cada commit",
+              "**Husky pre-push**: typecheck + lint + test rodam antes de cada push",
+              "**CI/CD**: lint, typecheck e test rodam em todo push/PR"
+            ]
+          },
+          {
+            "title": "📦 Auto-Update",
+            "items": [
+              "**latest.yml** now included in GitHub releases — auto-updater finds updates",
+              "**Blockmap** for delta updates"
+            ]
+          }
+        ]
+      },
       {
         "version": "1.7.0",
         "date": "2026-06-28",
