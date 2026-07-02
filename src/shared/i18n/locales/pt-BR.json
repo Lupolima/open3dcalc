@@ -1036,5 +1036,38 @@
         ]
       }
     ]
+  },
+  "quotes": {
+    "title": "Orçamentos",
+    "newQuote": "Novo Orçamento",
+    "editQuote": "Editar Orçamento",
+    "number": "Orçamento #{{number}}",
+    "customer": "Cliente",
+    "selectCustomer": "Selecionar cliente",
+    "items": "Itens",
+    "addItem": "Adicionar item do Histórico",
+    "quantity": "Qtd",
+    "unitPrice": "Preço Unitário",
+    "discount": "Desconto %",
+    "globalDiscount": "Desconto Global %",
+    "subtotal": "Subtotal",
+    "discountAmount": "Desconto",
+    "total": "TOTAL",
+    "validUntil": "Válido até",
+    "paymentTerms": "Condições de Pagamento",
+    "deliveryEstimate": "Previsão de Entrega",
+    "footerNote": "Observações",
+    "status": "Status",
+    "statusDraft": "Rascunho",
+    "statusSent": "Enviado",
+    "statusApproved": "Aprovado",
+    "statusRejected": "Recusado",
+    "exportPdf": "Exportar PDF",
+    "exportJson": "Exportar JSON",
+    "noQuotes": "Nenhum orçamento criado ainda",
+    "searchPlaceholder": "Buscar por título ou cliente...",
+    "emptyItems": "Adicione itens do histórico de cálculos",
+    "saveSuccess": "Orçamento salvo com sucesso!",
+    "deleteConfirm": "Tem certeza que deseja excluir o orçamento #{{number}}?"
   }
 }
