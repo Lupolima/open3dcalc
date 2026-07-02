@@ -1,0 +1,137 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > /tmp/diff.patch
+          echo "Diff size: $(wc -c < /tmp/diff.patch) bytes"
+
+      - name: Run AI Review via Bifrost
+        id: review
+        env:
+          BF_KEY: ${{ secrets.BF_VIRTUAL_KEY }}
+        run: |
+          python3 -c "
+import json, os, subprocess
+
+# Read diff
+with open('/tmp/diff.patch') as f:
+    diff = f.read()
+
+# Truncate if too large
+if len(diff) > 80000:
+    diff = diff[:80000] + '\n... [diff truncated to 80KB]'
+
+# Build system prompt
+system_prompt = '''You are a senior code reviewer. Review the following code changes (diff) and provide feedback in this exact format:
+
+## Summary
+1-2 sentence overview of what the PR does
+
+## Potential Issues
+- Bugs, security problems, performance issues
+
+## Code Quality
+- Style, maintainability, naming, duplication
+
+## Suggestions
+- Concrete improvements (with code examples if applicable)
+
+## Veredict
+✅ Looks good / ⚠️ Minor issues / ❌ Changes required
+
+Be concise but thorough. Focus on what matters.'''
+
+# Build user prompt
+user_prompt = f'Review this code diff:\n\n```diff\n{diff}\n```'
+
+# Build request body
+body = json.dumps({
+    'model': 'opencode-zen/deepseek-v4-flash-free',
+    'messages': [
+        {'role': 'system', 'content': system_prompt},
+        {'role': 'user', 'content': user_prompt}
+    ],
+    'max_tokens': 4096,
+    'temperature': 0.3
+})
+
+# Call API
+result = subprocess.run([
+    'curl', '-s',
+    'https://llm.ofertachina.cloud/v1/chat/completions',
+    '-H', f'Authorization: Bearer {os.environ[\"BF_KEY\"]}',
+    '-H', 'Content-Type: application/json',
+    '-d', body
+], capture_output=True, text=True)
+
+response = json.loads(result.stdout)
+review = response['choices'][0]['message']['content']
+
+with open('/tmp/review.md', 'w') as f:
+    f.write(review)
+
+print('Review generated successfully')
+print(f'Length: {len(review)} chars')
+"
+
+      - name: Post review comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('/tmp/review.md', 'utf8');
+            const body = `## 🤖 AI Code Review\n\n${review}`;
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(c => 
+              c.user.type === 'Bot' && c.body.startsWith('## 🤖 AI Code Review')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Add review status check
+        if: always()
+        run: |
+          if grep -q '❌ Changes required' /tmp/review.md 2>/dev/null; then
+            echo "REVIEW_STATUS=failure" >> $GITHUB_ENV
+          elif grep -q '⚠️ Minor issues' /tmp/review.md 2>/dev/null; then
+            echo "REVIEW_STATUS=neutral" >> $GITHUB_ENV
+          else
+            echo "REVIEW_STATUS=success" >> $GITHUB_ENV
+          fi
