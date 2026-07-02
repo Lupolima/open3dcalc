@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: 'Tipo de bump (auto = detecta dos commits)'
+        description: 'Bump type (auto = detect from commits)'
         required: true
         type: choice
         default: auto
@@ -82,7 +82,7 @@ jobs:
         run: |
           set -e
           VERSION=v$(node -p "require('./package.json').version")
-          echo "Criando release $VERSION..."
+          echo "Creating release $VERSION..."
           
           # Collect artifacts as an array
           ARTIFACTS=()
@@ -107,4 +107,4 @@ jobs:
               --generate-notes \
               --target ${{ github.sha }}
           fi
-          echo "✅ Release criada: https://github.com/ils15/open3dcalc/releases/tag/$VERSION"
+          echo "✅ Release created: https://github.com/ils15/open3dcalc/releases/tag/$VERSION"

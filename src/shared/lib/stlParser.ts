@@ -72,15 +72,15 @@ function calculateSurfaceArea(geometry: THREE.BufferGeometry): number {
 function validateMesh(geometry: THREE.BufferGeometry) {
   const issues: string[] = []
   const pos = geometry.attributes.position
-  if (!pos || pos.count === 0) issues.push('Modelo não contém vértices')
-  if (pos.count % 3 !== 0) issues.push('Número de vértices não forma triângulos completos')
+  if (!pos || pos.count === 0) issues.push('Model does not contain vertices')
+  if (pos.count % 3 !== 0) issues.push('Vertex count does not form complete triangles')
   if (!geometry.attributes.normal) {
-    issues.push('Modelo não contém normais')
+    issues.push('Model does not contain normals')
     geometry.computeVertexNormals()
   }
   if (!geometry.boundingBox) geometry.computeBoundingBox()
   const box = geometry.boundingBox
-  if (box && (box.isEmpty() || !isFinite(box.min.x))) issues.push('Bounding box inválida')
+  if (box && (box.isEmpty() || !isFinite(box.min.x))) issues.push('Invalid bounding box')
   return { valid: issues.length === 0, issues }
 }
 
@@ -125,10 +125,10 @@ export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.Buf
           const analysis = analyzeGeometry(geometry)
           resolve({ geometry, analysis })
         } catch (err) {
-          reject(new Error(`Erro ao processar STL: ${err}`))
+          reject(new Error(`Error processing STL: ${err}`))
         }
       }
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
+      reader.onerror = () => reject(new Error('Error reading file'))
       reader.readAsArrayBuffer(file)
     })
   }
@@ -145,22 +145,22 @@ export async function analyzeMeshFile(file: File): Promise<{ geometry: THREE.Buf
           object.traverse(child => {
             if ((child as THREE.Mesh).isMesh) geometries.push((child as THREE.Mesh).geometry as THREE.BufferGeometry)
           })
-          if (geometries.length === 0) throw new Error('Nenhuma geometria encontrada no OBJ')
+          if (geometries.length === 0) throw new Error('No geometry found in OBJ')
           const geometry = geometries.length === 1 ? geometries[0] : mergeGeometries(geometries)
           geometry.computeVertexNormals()
           geometry.computeBoundingBox()
           const analysis = analyzeGeometry(geometry)
           resolve({ geometry, analysis })
         } catch (err) {
-          reject(new Error(`Erro ao processar OBJ: ${err}`))
+          reject(new Error(`Error processing OBJ: ${err}`))
         }
       }
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
+      reader.onerror = () => reject(new Error('Error reading file'))
       reader.readAsText(file)
     })
   }
 
-  throw new Error(`Formato não suportado: ${ext}. Use STL, OBJ ou 3MF.`)
+  throw new Error(`Unsupported format: ${ext}. Use STL, OBJ or 3MF.`)
 }
 
 async function parse3mf(file: File): Promise<{ geometry: THREE.BufferGeometry; analysis: MeshAnalysis }> {
@@ -177,7 +177,7 @@ async function parse3mf(file: File): Promise<{ geometry: THREE.BufferGeometry; a
       break
     }
   }
-  if (eocdOffset === -1) throw new Error('Arquivo 3MF inválido: não é um ZIP válido')
+  if (eocdOffset === -1) throw new Error('Invalid 3MF file: not a valid ZIP archive')
 
   // Read central directory offset
   const cdOffset = uint8[eocdOffset + 16] | (uint8[eocdOffset + 17] << 8) | (uint8[eocdOffset + 18] << 16) | (uint8[eocdOffset + 19] << 24)
@@ -233,14 +233,14 @@ async function parse3mf(file: File): Promise<{ geometry: THREE.BufferGeometry; a
         const xmlData = new TextDecoder().decode(decompressed)
         return parse3mfXml(xmlData, THREE)
       } else {
-        throw new Error(`Método de compressão não suportado: ${compressionMethod}`)
+        throw new Error(`Unsupported compression method: ${compressionMethod}`)
       }
     }
 
     offset += 46 + fileNameLen + extraLen + commentLen
   }
 
-  throw new Error('Arquivo 3MF não contém modelo 3D válido')
+  throw new Error('3MF file does not contain a valid 3D model')
 }
 
 function parse3mfXml(xmlData: string, THREE: typeof import('three')): { geometry: THREE.BufferGeometry; analysis: MeshAnalysis } {
@@ -248,7 +248,7 @@ function parse3mfXml(xmlData: string, THREE: typeof import('three')): { geometry
   const doc = parser.parseFromString(xmlData, 'text/xml')
 
   const error = doc.querySelector('parsererror')
-  if (error) throw new Error('Erro ao parsear XML do 3MF')
+  if (error) throw new Error('Error parsing 3MF XML')
 
   const objects = doc.querySelectorAll('object')
   const allPositions: number[] = []
@@ -298,7 +298,7 @@ function parse3mfXml(xmlData: string, THREE: typeof import('three')): { geometry
     }
   }
 
-  if (allPositions.length === 0) throw new Error('Nenhum triângulo encontrado no arquivo 3MF')
+  if (allPositions.length === 0) throw new Error('No triangles found in 3MF file')
 
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(allPositions, 3))

@@ -14,7 +14,14 @@ export function ChangelogPage() {
   const [expanded, setExpanded] = useState<string>('')
 
   const raw = t('changelog.versions', { returnObjects: true })
-  const changelogData: VersionEntry[] = Array.isArray(raw) ? (raw as VersionEntry[]) : []
+  const changelogData: VersionEntry[] = (Array.isArray(raw) ? (raw as VersionEntry[]) : []).sort((a, b) => {
+    const va = a.version.split('.').map(Number)
+    const vb = b.version.split('.').map(Number)
+    for (let i = 0; i < 3; i++) {
+      if (va[i] !== vb[i]) return vb[i] - va[i]
+    }
+    return 0
+  })
 
   const toggleVersion = (version: string) => {
     setExpanded(prev => prev === version ? '' : version)

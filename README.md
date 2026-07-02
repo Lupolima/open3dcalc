@@ -31,7 +31,7 @@ Baixe a versão desktop para Windows ou Linux na [página de releases](https://g
 | Windows (x64 / arm64) | NSIS Installer | `Open3DCalc-{version}-setup.exe` |
 | Linux (x64 / arm64) | AppImage | `Open3DCalc-{version}.AppImage` |
 
-> ⚠️ O build para macOS está configurado mas não publicado ativamente.
+> ⚠️ macOS build is configured but not actively published.
 
 ---
 
@@ -109,13 +109,13 @@ open3dcalc/
 
 ## 🚀 Quick Start
 
-### Pré-requisitos / Prerequisites
+### Prerequisites
 
-- **Node.js 22+** (recomendado: 22 LTS)
+- **Node.js 22+** (recommended: 22 LTS)
 - **npm 10+**
 - **Git**
 
-### Instalação / Installation
+### Installation
 
 ```bash
 git clone https://github.com/ils15/open3dcalc.git
@@ -123,9 +123,9 @@ cd open3dcalc
 npm install
 ```
 
-> **Nota:** O `postinstall` executa `electron-rebuild` para compilar o `better-sqlite3` nativo. Pode levar alguns segundos.
+> **Note:** `postinstall` runs `electron-rebuild` to compile native `better-sqlite3`. It may take a few seconds.
 
-### Desenvolvimento / Development
+### Development
 
 ```bash
 # Web — servidor com hot-reload (http://localhost:5173)
@@ -164,7 +164,7 @@ npm run test:run
 npm run test:run -- --coverage
 ```
 
-Usamos **Vitest** + **Testing Library** para testes unitários e de componentes. Cobertura mínima para lógica de cálculo: **80%**.
+We use **Vitest** + **Testing Library** for unit and component tests. Minimum coverage for calculation logic: **80%**.
 
 ---
 
@@ -208,7 +208,7 @@ npm run db:generate
 npm run db:migrate
 ```
 
-> **Web:** Não usa SQLite. Toda persistência é via `localStorage` (navegador).
+> **Web:** No SQLite. All persistence is via `localStorage` (browser).
 
 ---
 
@@ -238,16 +238,16 @@ npm run db:migrate
 
 ## 🌍 Environment / Config
 
-**Nenhum arquivo `.env` é necessário.** Toda configuração do app é persisted via:
+**No `.env` file is required.** All app config is persisted via:
 
-- **Web:** `localStorage` (navegador)
-- **Desktop:** SQLite via `better-sqlite3` + adaptador de persistência
+- **Web:** `localStorage` (browser)
+- **Desktop:** SQLite via `better-sqlite3` + persistence adapter
 
-Variáveis de ambiente opcionais:
+Optional environment variables:
 
 | Variable | Purpose |
 |----------|---------|
-| `OPEN3DCALC_DB_PATH` | Caminho customizado para o arquivo SQLite (testes/CLI) |
+| `OPEN3DCALC_DB_PATH` | Custom path to SQLite file (tests/CLI) |
 
 ---
 
@@ -274,27 +274,27 @@ O release é **manual** via GitHub Actions (`release.yml`):
 
 ## 🤝 Contributing
 
-Contribuições são bem-vindas! Veja o guia completo em [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome! See the full guide at [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Resumo do fluxo:**
+**Workflow summary:**
 
-1. Fork o repositório
-2. Crie uma branch (`feature/`, `fix/`, `docs/`, etc.)
-3. Commit seguindo [Conventional Commits](https://www.conventionalcommits.org/)
-4. Rode `npm run lint`, `npm run typecheck`, `npm run test:run`, `npm run build:all`
-5. Abra um Pull Request (mínimo 1 approval)
+1. Fork the repository
+2. Create a branch (`feature/`, `fix/`, `docs/`, etc.)
+3. Commit following [Conventional Commits](https://www.conventionalcommits.org/)
+4. Run `npm run lint`, `npm run typecheck`, `npm run test:run`, `npm run build:all`
+5. Open a Pull Request (minimum 1 approval)
 
 ---
 
 ## 📜 Changelog
 
-Veja [CHANGELOG.md](CHANGELOG.md) para o histórico completo de versões.
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
 ## 📄 License
 
-MIT License — veja [LICENSE](LICENSE) para detalhes.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 

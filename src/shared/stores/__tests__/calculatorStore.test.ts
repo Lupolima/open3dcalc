@@ -49,7 +49,7 @@ describe('CalculatorStore core', () => {
   })
 
   // ── 2. setFdmMaterial ────────────────────────────────────────
-  it('setFdmMaterial() → recalcula com material mais caro', () => {
+  it('setFdmMaterial() → recalculates with more expensive material', () => {
     const store = useCalculatorStore.getState()
     const originalCost = store.results!.materialCost
 
@@ -65,7 +65,7 @@ describe('CalculatorStore core', () => {
   })
 
   // ── 3. setQuantity ───────────────────────────────────────────
-  it('setQuantity(3) → results.costPerUnit é populado', () => {
+  it('setQuantity(3) → results.costPerUnit is populated', () => {
     const store = useCalculatorStore.getState()
     expect(store.quantity).toBe(1)
 
@@ -73,13 +73,13 @@ describe('CalculatorStore core', () => {
     const after = useCalculatorStore.getState()
 
     expect(after.quantity).toBe(3)
-    // Com labor desabilitado, setupCost = 0, então perUnitCost == totalCost
+    // With labor disabled, setupCost = 0, so perUnitCost == totalCost
     expect(after.results!.costPerUnit).toBeGreaterThan(0)
     expect(after.results!.costPerUnit).toBe(after.results!.totalCost)
   })
 
   // ── 4. loadHistoryItem ────────────────────────────────────────
-  it('loadHistoryItem() restaura valores do snapshot', () => {
+  it('loadHistoryItem() restores values from snapshot', () => {
     const store = useCalculatorStore.getState()
 
     const snap = buildSnapshot({
@@ -109,7 +109,7 @@ describe('CalculatorStore core', () => {
   })
 
   // ── 5. setActiveTab ───────────────────────────────────────────
-  it('setActiveTab("resin") → activeTab muda para resin', () => {
+  it('setActiveTab("resin") → activeTab changes to resin', () => {
     const store = useCalculatorStore.getState()
     expect(store.activeTab).toBe('fdm')
 
@@ -120,12 +120,12 @@ describe('CalculatorStore core', () => {
     expect(after.results).not.toBeNull()
   })
 
-  // ── 6. toggleSection múltiplas ────────────────────────────────
-  it('desabilitar múltiplas seções → custos individuais zeram (subtotal preservado)', () => {
+  // ── 6. toggleSection multiple ────────────────────────────────
+  it('disabling multiple sections → individual costs zero out (subtotal preserved)', () => {
     const store = useCalculatorStore.getState()
     expect(store.results!.materialCost).toBeGreaterThan(0)
     expect(store.results!.energyCost).toBeGreaterThan(0)
-    // subtotal do calculator não é filtrado → permanece o mesmo
+    // calculator subtotal is not filtered → remains the same
     const subtotalBefore = store.results!.subtotal
 
     store.toggleSection('material')
@@ -138,12 +138,12 @@ describe('CalculatorStore core', () => {
     expect(after.results!.energyCost).toBe(0)
     expect(after.results!.machineCost).toBe(0)
     expect(after.results!.hardwareCost).toBe(0)
-    // subtotal (do calculator) não é afetado pelo toggle
+    // subtotal (from calculator) is not affected by toggle
     expect(after.results!.subtotal).toBe(subtotalBefore)
   })
 
   // ── 7. setFdmPrintParams ─────────────────────────────────────
-  it('setFdmPrintParams() dobra horas → energyCost dobra', () => {
+  it('setFdmPrintParams() doubles hours → energyCost doubles', () => {
     const store = useCalculatorStore.getState()
     const originalEnergy = store.results!.energyCost
 
@@ -155,12 +155,12 @@ describe('CalculatorStore core', () => {
 
     const after = useCalculatorStore.getState()
     expect(after.fdmPrintParams.printTimeHours).toBe(store.fdmPrintParams.printTimeHours * 2)
-    // Com energia habilitada, energyCost escala linearmente com as horas
+    // With energy enabled, energyCost scales linearly with hours
     expect(after.results!.energyCost).toBeCloseTo(originalEnergy * 2, 1)
   })
 
   // ── 8. addToHistory ───────────────────────────────────────────
-  it('addToHistory() delega para historyStore.addEntry com snapshot', () => {
+  it('addToHistory() delegates to historyStore.addEntry with snapshot', () => {
     const store = useCalculatorStore.getState()
     store.setProductName('My Awesome Part')
 
