@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3'
 import * as schema from './schema/index.js'
 import fs from 'node:fs'
 import path from 'node:path'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 // ESM compatibility: __dirname is not available in ES modules
@@ -28,7 +29,8 @@ const __dirname = path.dirname(__filename)
 function getElectronUserData(): string | null {
   try {
     // Dynamic require for ESM compatibility
-    const electron = (globalThis as any).require?.('electron')
+    const require = createRequire(import.meta.url)
+    const electron = require('electron')
     return electron?.app?.getPath('userData') ?? null
   } catch {
     return null

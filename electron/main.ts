@@ -77,7 +77,7 @@ async function createWindow(): Promise<void> {
     title: 'Open3DCalc',
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
