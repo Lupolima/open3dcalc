@@ -36,7 +36,7 @@ export function InputGroup({
       </div>
       <div className="flex items-center gap-1.5">
         {prefix && (
-          <span className="text-[var(--color-text-muted)] text-[11px] font-mono shrink-0">{prefix}</span>
+          <span className="text-[var(--color-text-muted)] text-[11px] font-mono shrink-0 w-8 text-center">{prefix}</span>
         )}
         <input
           id={id}

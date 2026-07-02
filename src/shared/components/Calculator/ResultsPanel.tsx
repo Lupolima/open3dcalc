@@ -132,33 +132,33 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
 
   const content = (
     <>
-      <div className="result-hero rounded-xl p-4 sm:p-5 text-center">
-        <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-success)]/70 mb-2">{t('calc.sellPrice')}</div>
-        <div className="text-4xl sm:text-5xl font-black text-[var(--color-text-primary)] tracking-tight leading-none">{fmtCurrency(results.sellPrice)}</div>
+      <div className="result-hero rounded-xl p-3 sm:p-5 text-center">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-success)]/70 mb-1 sm:mb-2">{t('calc.sellPrice')}</div>
+        <div className="text-3xl sm:text-5xl font-black font-mono tracking-tight leading-none text-[var(--color-text-primary)]">{fmtCurrency(results.sellPrice)}</div>
         {results.taxAmount > 0 && (
           <div className="text-xs sm:text-sm text-[var(--color-success)]/80 mt-2">incl. {fmtCurrency(results.taxAmount)} em taxas/marketplace</div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('calc.costPerGram')}</div>
-          <div className="text-base sm:text-lg font-black text-[var(--color-info)] font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <div className="rounded-xl p-3 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-0.5 sm:mb-1">{t('calc.costPerGram')}</div>
+          <div className="text-sm sm:text-lg font-black text-[var(--color-info)] font-mono">{results.costPerGram > 0 ? fmtCurrency(results.costPerGram) + '/g' : '---'}</div>
         </div>
-        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('breakdown.failure')}</div>
-          <div className="text-base sm:text-lg font-black text-[var(--color-danger)] font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
+        <div className="rounded-xl p-3 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-0.5 sm:mb-1">{t('breakdown.failure')}</div>
+          <div className="text-sm sm:text-lg font-black text-[var(--color-danger)] font-mono">{results.failureCost > 0 ? fmtCurrency(results.failureCost) : '---'}</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{t('calc.totalCost')}</div>
-          <div className="text-lg sm:text-xl font-black text-[var(--color-success)] font-mono">{fmtCurrency(results.totalCost)}</div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <div className="rounded-xl p-3 sm:p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-center">
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-0.5 sm:mb-1">{t('calc.totalCost')}</div>
+          <div className="text-base sm:text-xl font-black text-[var(--color-success)] font-mono">{fmtCurrency(results.totalCost)}</div>
         </div>
-        <div className="rounded-xl p-4 sm:p-5 bg-[var(--color-warning-muted)] border border-[var(--color-warning)]/30 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-warning)]/70 mb-1">{t('calc.profit')}</div>
-          <div className="text-lg sm:text-xl font-black text-[var(--color-warning)] font-mono">{fmtCurrency(results.profit)}</div>
+        <div className="rounded-xl p-3 sm:p-5 bg-[var(--color-warning-muted)] border border-[var(--color-warning)]/30 text-center">
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[var(--color-warning)]/70 mb-0.5 sm:mb-1">{t('calc.profit')}</div>
+          <div className="text-base sm:text-xl font-black text-[var(--color-warning)] font-mono">{fmtCurrency(results.profit)}</div>
         </div>
       </div>
 
@@ -169,9 +169,9 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
             <p className="text-sm text-[var(--color-text-muted)] text-center py-8">{t('dashboard.loadingCharts')}</p>
           </div>
         }>
-          <div className="surface-elevated rounded-xl p-4 sm:p-5">
-            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">{t('calc.costDistribution')}</div>
-            <div className="space-y-3">
+          <div className="surface-elevated rounded-xl p-3 sm:p-5">
+            <div className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2 sm:mb-4">{t('calc.costDistribution')}</div>
+            <div className="space-y-1.5 sm:space-y-3">
               {chartData.map(item => (
                 <div key={item.name}>
                   <div className="flex justify-between items-center mb-1">
@@ -187,10 +187,10 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
                 </div>
               ))}
             </div>
-            <div className={`mt-4 w-full ${isSidebar ? 'h-44 sm:h-48' : 'h-48 sm:h-56'}`}>
+            <div className={`mt-4 w-full ${isSidebar ? 'hidden' : 'h-48 sm:h-56'}`}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={isSidebar ? 48 : 52} outerRadius={isSidebar ? 68 : 72} paddingAngle={3} dataKey="value">
+                  <Pie data={chartData} cx="40%" cy="50%" innerRadius={52} outerRadius={72} paddingAngle={3} dataKey="value">
                     {chartData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.3)" />
                     ))}
@@ -208,7 +208,7 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
       )}
 
       <button onClick={() => addToHistory()}
-        className="w-full min-h-[44px] py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
+        className="w-full min-h-[44px] py-2 sm:py-3 rounded-xl text-sm sm:text-[15px] font-semibold transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)]"
       >
         <FolderOpen className="w-4 h-4" />
         {t('calc.addHistory')}
@@ -241,27 +241,27 @@ export function ResultsPanel({ variant }: ResultsPanelProps) {
         </div>
       )}
 
-      <div data-tutorial="export" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div data-tutorial="export" className="grid grid-cols-2 gap-2">
         <button onClick={() => { saveSettings(); setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000) }}
-          className={`min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1.5 ${
+          className={`min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none flex items-center justify-center gap-1 truncate ${
             saveStatus === 'saved'
               ? 'bg-emerald-600 text-white'
               : 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
           }`}>
-          {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-          {saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}
+          {saveStatus === 'saved' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <Save className="w-3.5 h-3.5 shrink-0" />}
+          <span className="truncate">{saveStatus === 'saved' ? t('calc.saved') : t('calc.saveSettings')}</span>
         </button>
         <button data-shortcut="export" onClick={async () => { const { exportPdf } = await import('@/shared/lib/pdfExport'); exportPdf(results) }}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <FileText className="w-3.5 h-3.5" /> {t('calc.exportPdf')}
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-bg-surface)] text-white hover:bg-[var(--color-bg-hover)] transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-bg-surface)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <FileText className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{t('calc.exportPdf')}</span>
         </button>
         <button onClick={async () => { const { exportResultToCsv, downloadCsv } = await import('@/shared/lib/csvExport'); const csv = exportResultToCsv(results, productName || 'open3dcalc'); downloadCsv(csv, 'open3dcalc_resultado.csv') }}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <BarChart2 className="w-3.5 h-3.5" /> CSV
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-info)] text-white hover:bg-[var(--color-info)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-info)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <BarChart2 className="w-3.5 h-3.5 shrink-0" /> CSV
         </button>
         <button onClick={handleExportQuote}
-          className="min-h-[44px] py-3 rounded-xl text-[11px] sm:text-xs font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1.5">
-          <ScrollText className="w-3.5 h-3.5" /> {t('results.exportQuote')}
+          className="min-h-[44px] py-2.5 rounded-xl text-[11px] font-bold bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning)]/80 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-warning)] focus-visible:outline-none flex items-center justify-center gap-1 truncate">
+          <ScrollText className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{t('results.exportQuote')}</span>
         </button>
       </div>
 

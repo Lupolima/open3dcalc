@@ -23,7 +23,7 @@ export function LevelToggle() {
 				>
 					<div className="flex flex-col items-center gap-0.5">
 						<span>{t(LEVEL_LABELS[level])}</span>
-						<span className="text-[10px] opacity-70 leading-tight whitespace-nowrap">
+						<span className="hidden sm:block text-[10px] opacity-70 leading-tight whitespace-nowrap">
 							{t(LEVEL_DESCRIPTIONS[level])}
 						</span>
 					</div>

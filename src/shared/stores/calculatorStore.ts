@@ -218,21 +218,50 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => {
     },
 
     setQuickStart: () => {
+      const rand = (min: number, max: number) => Math.round(Math.random() * (max - min) + min)
+      const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+
+      const names = ['Vaso Decorativo', 'Suporte de Celular', 'Porta Canetas', 'Chaveiro Personalizado', 'Mascote Impressão 3D', 'Suporte para Fones', 'Organizador de Mesa', 'Mini Vaso', 'Porta Cartão', 'Ícone Decorativo', 'Suporte de Caneca', 'Caixa Organizadora']
+      const types = ['PLA', 'PETG', 'ABS', 'PLA+']
+      const type = pick(types)
+      const costPerKg = type === 'PLA' ? rand(65, 110) : type === 'PETG' ? rand(85, 140) : type === 'ABS' ? rand(80, 130) : rand(70, 120)
+      const weightUsed = rand(80, 350)
+      const purgeWeight = Math.random() > 0.5 ? rand(10, 30) : 0
+      const printTime = rand(2, 8)
+      const power = pick([150, 180, 200, 250, 300, 350])
+      const energyCost = parseFloat((rand(50, 110) / 100).toFixed(2))
+      const margin = pick([30, 40, 50, 60, 80])
+      const machineCost = pick([800, 1200, 1800, 2000, 2500, 3500, 5000])
+      const hourlyRate = pick([20, 25, 30, 35, 50])
+      const packaging = rand(2, 10)
+      const shipping = Math.random() > 0.4 ? rand(10, 30) : 0
+      const setupTime = rand(10, 30)
+      const postTime = rand(10, 25)
+      const failureValue = pick([5, 8, 10, 12, 15, 20])
+      const nozzleCost = pick([15, 20, 25, 35, 50])
+      const nozzleLife = pick([3, 5, 8, 10])
+      const bedCost = parseFloat((rand(10, 50) / 100).toFixed(2))
+      const hoursMonth = pick([50, 80, 100, 120, 150])
+      const depMonths = pick([24, 36, 48])
+      const infill = pick([10, 15, 20, 25, 30, 50])
+      const density = type === 'PLA' ? 1.24 : type === 'PETG' ? 1.27 : type === 'ABS' ? 1.04 : 1.24
+      const spoolEff = pick([95, 96, 97, 98, 99])
+
       setWithCompute({
         activeTab: 'fdm',
-        fdmMaterial: { type: 'PLA', weightUsed: 150, purgeWeight: 0, costPerKg: 90, density: 1.24, spoolEfficiency: 98 },
-        fdmPrintParams: { printTimeHours: 2, printerPowerWatts: 250, energyCostPerKwh: 0.95, failureMode: 'percent', failureValue: 10, riskMultiplier: 1 },
-        fdmMachine: { enabled: true, machineCost: 2000, depreciationMonths: 36, hoursPerMonth: 100, maintenanceEnabled: false, maintenanceCost: 0 },
-        fdmHardware: { enabled: true, nozzleEnabled: true, nozzleCost: 25, nozzleLifespanKg: 5, bedEnabled: true, bedAdhesionCost: 0.20 },
+        fdmMaterial: { type, weightUsed, purgeWeight, costPerKg, density, spoolEfficiency: spoolEff },
+        fdmPrintParams: { printTimeHours: printTime, printerPowerWatts: power, energyCostPerKwh: energyCost, failureMode: 'percent', failureValue, riskMultiplier: 1 },
+        fdmMachine: { enabled: true, machineCost, depreciationMonths: depMonths, hoursPerMonth: hoursMonth, maintenanceEnabled: false, maintenanceCost: 0 },
+        fdmHardware: { enabled: true, nozzleEnabled: true, nozzleCost, nozzleLifespanKg: nozzleLife, bedEnabled: true, bedAdhesionCost: bedCost },
         fdmFinishing: { enabled: false, suppliesCost: 5 },
-        fdmLabor: { enabled: true, setupTimeMinutes: 15, postProcessingTimeMinutes: 15, hourlyRate: 25 },
+        fdmLabor: { enabled: true, setupTimeMinutes: setupTime, postProcessingTimeMinutes: postTime, hourlyRate },
         fdmExtras: { extrasCost: 0 },
-        fdmSales: { packagingCost: 5, shippingCost: 15, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: 50 },
+        fdmSales: { packagingCost: packaging, shippingCost: shipping, taxPercent: 0, marketplaceFeePercent: 0, profitMarginPercent: margin },
         fdmOps: { enabled: false, ppeCostPerPrint: 0 },
         fdmSoft: { enabled: false, slicerMonthlyCost: 0, modelFileCost: 0 },
         quantity: 1,
-        productName: 'Exemplo de peça 3D',
-        infillPercent: 20,
+        productName: pick(names),
+        infillPercent: infill,
         targetMarginMode: false,
       })
     },

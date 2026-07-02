@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2023",
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "node16",
+    "moduleResolution": "node16",
     "lib": ["ES2023"],
     "outDir": "dist",
     "rootDir": "..",
@@ -19,7 +19,7 @@
   },
   "include": [
     "main.ts",
-    "preload.ts",
+    "preload.cts",
     "../db/**/*.ts"
   ],
   "exclude": [

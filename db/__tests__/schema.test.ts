@@ -9,7 +9,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { eq, sql } from 'drizzle-orm'
-import * as schema from '../schema'
+import * as schema from '../schema/index.js'
 import fs from 'node:fs'
 import path from 'node:path'
 

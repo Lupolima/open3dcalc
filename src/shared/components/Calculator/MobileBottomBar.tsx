@@ -25,7 +25,7 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 
 	return (
 		<div
-			className="fixed bottom-0 left-0 right-0 z-[41] lg:hidden"
+			className="fixed bottom-[56px] left-0 right-0 z-30 lg:hidden"
 			style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
 		>
 			{/* Results mini-bar */}
@@ -87,34 +87,30 @@ export function MobileBottomBar({ activeSection, onSectionClick }: MobileBottomB
 					borderTop: "1px solid rgba(255,255,255,0.07)",
 				}}
 			>
-				<div className="relative">
-					<div className="flex h-12 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-						{visibleSections.map((s) => (
-							<button
-								key={s.id}
-								onClick={() => {
-									onSectionClick(s.id);
-									document
-										.getElementById(`section-${s.id}`)
-										?.scrollIntoView({ behavior: "smooth", block: "start" });
-								}}
-								className={`flex flex-col items-center justify-center gap-0.5 min-w-[52px] flex-shrink-0 min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
-							activeSection === s.id
-									? "text-[var(--color-accent)]"
-									: "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-								}`}
-							>
-								<s.Icon
-									className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? "scale-110" : ""}`}
-								/>
-								<span className="truncate max-w-[52px] leading-tight">
-									{t(s.shortKey)}
-								</span>
-							</button>
-						))}
-					</div>
-					{/* Fade gradient on right edge to indicate scrollability */}
-					<div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--color-bg-primary)] to-transparent pointer-events-none" />
+				<div className="flex items-center h-12 px-1">
+					{visibleSections.map((s) => (
+						<button
+							key={s.id}
+							onClick={() => {
+								onSectionClick(s.id);
+								document
+									.getElementById(`section-${s.id}`)
+									?.scrollIntoView({ behavior: "smooth", block: "start" });
+							}}
+							className={`flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 min-h-[44px] text-[8px] font-semibold tracking-wide transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+						activeSection === s.id
+								? "text-[var(--color-accent)]"
+								: "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+							}`}
+						>
+							<s.Icon
+								className={`w-[15px] h-[15px] transition-transform ${activeSection === s.id ? "scale-110" : ""}`}
+							/>
+							<span className="truncate leading-tight">
+								{t(s.shortKey)}
+							</span>
+						</button>
+					))}
 				</div>
 			</nav>
 		</div>

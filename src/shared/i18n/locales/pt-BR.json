@@ -17,7 +17,8 @@
     "tutorial": "Tutorial",
     "language": "Mudar idioma",
     "navigation": "Navegação",
-    "mainNavigation": "Navegação principal"
+    "mainNavigation": "Navegação principal",
+    "more": "Mais"
   },
   "dashboard": {
     "totalCost": "Custo Total",
@@ -613,6 +614,90 @@
               "`src/data/printers-database.json` — 385 impressoras com specs detalhadas",
               "`src/types/customer.ts` — interfaces Customer e CustomerFormData",
               "`src/types/quote.ts` — interfaces Quote, QuoteItem, QuoteFormData"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.9.0",
+        "date": "2026-07-01",
+        "sections": [
+          {
+            "title": "🎨 UX — Usability & Accessibility",
+            "items": [
+              "**53 tooltips** on calculator fields with Floating UI (touch + a11y)",
+              "**LevelToggle renamed**: Quick/Detailed/Complete with descriptions",
+              "**Interactive tutorial rewritten**: 7 steps, non-blocking, overlay dismiss",
+              "**Quick Start**: \"Fill with Example\" button with realistic values",
+              "**Empty States**: History, Inventory, Quotes empty with helpful messages",
+              "**Smooth scroll** + keyboard shortcuts (Ctrl+Z, Ctrl+E, Ctrl+P)"
+            ]
+          },
+          {
+            "title": "♿ Accessibility",
+            "items": [
+              "**Skip link** to bypass navigation",
+              "**Heading hierarchy** fixed (h1→h2→h3, no gaps)",
+              "**Touch targets** ≥ 44px on all interactive elements",
+              "**Tooltips migrated** to i18n (pt-BR + en-US)"
+            ]
+          },
+          {
+            "title": "🐛 Fixes",
+            "items": [
+              "Tutorial navigation: MutationObserver ignores tutorial card",
+              "Tutorial card positioning: fixed position (no Floating UI)",
+              "Export: buttons no longer overlap",
+              "Mobile nav: horizontal scroll removed",
+              "Desktop sidebar: full page height, no unnecessary scroll"
+            ]
+          },
+          {
+            "title": "🧪 Tests",
+            "items": [
+              "**483 tests passing** (was 448)",
+              "+35 new tests (tutorialStore, Tutorial, QuickStart, EmptyState)"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.8.2",
+        "date": "2026-06-29",
+        "sections": [
+          {
+            "title": "🐛 Fixes",
+            "items": [
+              "Fix: database module import in Electron (.js extension)",
+              "Fix: icon references in electron-builder"
+            ]
+          },
+          {
+            "title": "🏡 Chore",
+            "items": [
+              "Release workflow: artifact upload with bash array"
+            ]
+          }
+        ]
+      },
+      {
+        "version": "1.8.0",
+        "date": "2026-06-29",
+        "sections": [
+          {
+            "title": "🚀 Bifrost — Major Refactor",
+            "items": [
+              "**Calculator.tsx refactored**: from 1459 to 234 lines — 11 components extracted",
+              "**calculatorStore.ts refactored**: from 561 to 278 lines",
+              "**Unified types** in `src/shared/types/index.ts`",
+              "**Automatic migration** from old data format to new one"
+            ]
+          },
+          {
+            "title": "🧪 Tests",
+            "items": [
+              "**417 tests** (was 321), coverage maintained at 93%",
+              "historyStore +12, filamentInventory +11, Calculator mobile export +3"
             ]
           }
         ]

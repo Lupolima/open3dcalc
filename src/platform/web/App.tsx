@@ -37,7 +37,6 @@ type LegacyProduct = {
   result?: CalculationResult
   snapshot?: Partial<CalculationSnapshot> | null
 }
-
 type LegacyHistoryItem = {
   type?: 'fdm' | 'resin'
   summary?: string
@@ -48,10 +47,8 @@ type LegacyHistoryItem = {
   snapshot?: CalculationSnapshot | null
 }
 
-// PRIMARY_MOBILE_TABS and MORE_TABS
 // On mobile, show first 5 tabs + More button
-const PRIMARY_MOBILE_TABS: Tab[] = ['calculator', 'dashboard', 'infill', 'catalog', 'history']
-const MORE_TABS: Tab[] = ['inventory', 'changelog', 'quotes', 'customers']
+const MORE_TABS: Tab[] = ['inventory', 'quotes', 'customers', 'changelog']
 
 const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[] = [
   { id: 'calculator', icon: <CalculatorIcon className="w-[18px] h-[18px]" />, labelKey: 'nav.calculator', label: 'Calculadora' },
@@ -60,7 +57,6 @@ const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; label: string }[
   { id: 'inventory',  icon: <Spool className="w-[18px] h-[18px]" />,          labelKey: 'nav.inventory',  label: 'Filamentos' },
   { id: 'catalog',    icon: <Settings2 className="w-[18px] h-[18px]" />,      labelKey: 'nav.catalog',    label: 'Catálogo' },
   { id: 'history',    icon: <Clock className="w-[18px] h-[18px]" />,          labelKey: 'nav.history',    label: 'Histórico' },
-  { id: 'changelog',  icon: <Sparkles className="w-[18px] h-[18px]" />,     labelKey: 'nav.changelog',  label: 'Novidades' },
   { id: 'quotes',     icon: <FileText className="w-[18px] h-[18px]" />,    labelKey: 'nav.quotes',     label: 'Quotes' },
   { id: 'customers',  icon: <Users className="w-[18px] h-[18px]" />,      labelKey: 'nav.customers',  label: 'Clientes' },
 ]
@@ -196,7 +192,7 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-dvh flex flex-col">
+    <div className="min-h-dvh flex flex-col overflow-x-hidden">
       <Header />
       <PrivacyBanner />
 
@@ -238,6 +234,13 @@ function App() {
           ))}
 
           <div className="mt-auto pt-4 border-t border-[var(--color-border)]">
+            <button
+              onClick={() => setActiveTab('changelog')}
+              className={`nav-item w-full text-left focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${activeTab === 'changelog' ? 'active' : ''}`}
+            >
+              <Sparkles className="w-[18px] h-[18px]" />
+              <span>{t('nav.changelog')}</span>
+            </button>
             <a
               href="https://github.com/ils15/open3dcalc"
               target="_blank"
@@ -271,7 +274,7 @@ function App() {
         </a>
 
         {/* ── Main Content ── */}
-        <main id="main" className="flex-1 min-w-0 px-8 sm:px-10 lg:px-12 xl:px-16 py-10 pb-32 lg:pb-12">
+        <main id="main" className="flex-1 min-w-0 px-6 sm:px-8 lg:px-10 xl:px-14 py-8 sm:py-10 pb-32 lg:pb-10">
           <div className="animate-fade-up">
             {activeTab === 'calculator' && <Calculator />}
             {activeTab === 'dashboard'  && <Dashboard />}
@@ -287,33 +290,30 @@ function App() {
       </div>
       {/* ── Mobile Bottom Navigation ── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         style={{ background: 'var(--color-bg-primary)', borderTop: '1px solid var(--color-border)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         aria-label={t('nav.mainNavigation')}
       >
-        <div className="flex items-center h-[72px] px-2">
-          {PRIMARY_MOBILE_TABS.map(tabId => {
+        <div className="flex items-center h-[56px] px-1">
+          {['calculator', 'dashboard', 'infill', 'catalog', 'history'].map(tabId => {
             const tab = TABS.find(t => t.id === tabId)!
             const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1.5 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[44px] ${
                   isActive ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'
                 }`}
                 aria-selected={isActive}
               >
                 {isActive && (
-                  <span
-                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                    style={{ background: 'var(--color-accent)' }}
-                  />
+                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-[var(--color-accent)]" />
                 )}
                 <span className={`transition-transform ${isActive ? 'scale-110' : ''}`}>
                   {tab.icon}
                 </span>
-                <span className="text-[10px] font-semibold leading-tight tracking-wide truncate max-w-full">
+                <span className="text-[9px] font-semibold leading-tight tracking-wide truncate max-w-full">
                   {t(tab.labelKey)}
                 </span>
               </button>
@@ -322,13 +322,13 @@ function App() {
           {/* More button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1.5 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none ${
+            className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-1 px-0.5 transition-all focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[44px] ${
               mobileMenuOpen ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'
             }`}
-            aria-label={t('nav.more') || 'Mais'}
+            aria-label={t('nav.more')}
           >
-            <span><MoreHorizontal className="w-[18px] h-[18px]" /></span>
-            <span className="text-[10px] font-semibold leading-tight tracking-wide">{t('nav.more') || 'Mais'}</span>
+            <MoreHorizontal className="w-[18px] h-[18px]" />
+            <span className="text-[9px] font-semibold leading-tight tracking-wide max-w-full truncate">{t('nav.more')}</span>
           </button>
         </div>
       </nav>
@@ -366,7 +366,8 @@ function App() {
               </div>
               <div className="px-3 pb-3 overflow-y-auto space-y-0.5">
                 {MORE_TABS.map(tabId => {
-                  const tab = TABS.find(t => t.id === tabId)!
+                  const tab = TABS.find(t => t.id === tabId) || (tabId === 'changelog' ? { id: 'changelog' as Tab, icon: <Sparkles className="w-[18px] h-[18px]" />, labelKey: 'nav.changelog', label: 'Novidades' } : undefined)!
+                  if (!tab) return null
                   return (
                     <button
                       key={tab.id}
@@ -389,23 +390,7 @@ function App() {
       </AnimatePresence>
       <footer className="hidden lg:block text-center text-xs text-[var(--color-text-muted)] py-3 border-t border-[var(--color-border)]">
         <div className="flex items-center justify-center gap-3">
-          <a
-            href="https://github.com/ils15/open3dcalc"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--color-text-secondary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none px-1 rounded"
-          >
-            Open3DCalc — Open Source · MIT License
-          </a>
-          <span className="text-[var(--color-text-muted)]">·</span>
-          <a
-            href="https://ofertachina.com.br"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none px-1 rounded"
-          >
-            ofertachina.com.br
-          </a>
+          <span>Open3DCalc v1.9.0 — Open Source · MIT License</span>
         </div>
       </footer>
 

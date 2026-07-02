@@ -1,15 +1,6 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  useFloating,
-  autoUpdate,
-  offset,
-  flip,
-  shift,
-  FloatingPortal,
-} from '@floating-ui/react'
-import type { Placement } from '@floating-ui/react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTutorialStore, TUTORIAL_TOTAL_STEPS } from '@/shared/stores/tutorialStore'
 import { useReducedMotion } from '@/shared/hooks/useReducedMotion'
@@ -75,6 +66,47 @@ function SpotlightOverlay({ targetRect, onClick }: { targetRect: DOMRect | null;
   )
 }
 
+// ── Simple card positioning (replaces Floating UI) ──────────────────────────
+
+function useCardPosition(targetRect: DOMRect | null) {
+  const [pos, setPos] = useState<{ top: number; left: number; placement: string }>({ top: 0, left: 0, placement: 'right' })
+
+  useEffect(() => {
+    if (!targetRect) {
+      // Center on screen when no target
+      setPos({ top: window.innerHeight / 2, left: window.innerWidth / 2, placement: 'center' })
+      return
+    }
+
+    const CARD_W = 300
+    const CARD_H = 240
+    const GAP = 14
+    const PAD = 16
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+
+    // Try placements in order: right → left → bottom → top
+    const placements = [
+      { name: 'right',  top: targetRect.top, left: targetRect.right + GAP },
+      { name: 'left',   top: targetRect.top, left: targetRect.left - CARD_W - GAP },
+      { name: 'bottom', top: targetRect.bottom + GAP, left: targetRect.left },
+      { name: 'top',    top: targetRect.top - CARD_H - GAP, left: targetRect.left },
+    ]
+
+    for (const p of placements) {
+      if (p.left >= PAD && p.left + CARD_W <= vw - PAD && p.top >= PAD && p.top + CARD_H <= vh - PAD) {
+        setPos({ top: p.top, left: p.left, placement: p.name })
+        return
+      }
+    }
+
+    // Fallback: center on screen
+    setPos({ top: vh / 2 - CARD_H / 2, left: vw / 2 - CARD_W / 2, placement: 'center' })
+  }, [targetRect])
+
+  return pos
+}
+
 // ── Tooltip card ─────────────────────────────────────────────────────────────
 
 function TooltipCard({
@@ -100,90 +132,35 @@ function TooltipCard({
   const isFirst = currentStep === 1
   const isLast = currentStep === totalSteps
   const hasSpotlight = targetRect !== null
+  const { top, left, placement } = useCardPosition(targetRect)
 
-  // ── Floating UI positioning (only when we have a target) ──
-  const preferredPlacement: Placement = 'right-start'
-  const { refs, floatingStyles, placement } = useFloating({
-    placement: preferredPlacement,
-    middleware: [
-      offset(14),
-      flip({ fallbackPlacements: ['left-start', 'bottom', 'top', 'right-end'] }),
-      shift({ padding: 16, crossAxis: true }),
-    ],
-    open: hasSpotlight,
-    whileElementsMounted: autoUpdate,
-  })
+  // Arrow position based on placement
+  const arrowStyle = useMemo(() => {
+    if (!hasSpotlight || placement === 'center') return { display: 'none' }
+    const base: React.CSSProperties = { position: 'absolute', width: 12, height: 12, transform: 'rotate(45deg)', background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255, 255, 255, 0.09)' }
+    if (placement === 'right') return { ...base, left: -6, top: 24 }
+    if (placement === 'left') return { ...base, right: -6, top: 24 }
+    if (placement === 'bottom') return { ...base, top: -6, left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
+    if (placement === 'top') return { ...base, bottom: -6, left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
+    return { display: 'none' }
+  }, [hasSpotlight, placement])
 
-  // Stable callback ref for FloatingUI (avoids accessing refs.setFloating during render)
-  const floatingRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      refs.setFloating(node)
-    },
-    [refs],
-  )
-
-  // Set virtual reference element positioned at the target
-  useEffect(() => {
-    if (!targetRect) return
-    const virtual = document.createElement('div')
-    virtual.style.position = 'fixed'
-    virtual.style.left = `${targetRect.x}px`
-    virtual.style.top = `${targetRect.y}px`
-    virtual.style.width = `${targetRect.width}px`
-    virtual.style.height = `${targetRect.height}px`
-    virtual.style.pointerEvents = 'none'
-    virtual.style.zIndex = '-1'
-    document.body.appendChild(virtual)
-    refs.setReference(virtual)
-    return () => {
-      document.body.removeChild(virtual)
-    }
-  }, [targetRect, refs])
-
-  // Centered style when no spotlight
-  const wrapperStyle = hasSpotlight
-    ? { ...floatingStyles, position: 'fixed' as const, zIndex: 56, maxWidth: '300px', width: 'max-content' }
-    : {
-        position: 'fixed' as const,
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 56,
-        maxWidth: '300px',
-        width: 'max-content',
-        maxHeight: '90vh',
-        overflowY: 'auto' as const,
-      }
+  const wrapperStyle: React.CSSProperties = hasSpotlight
+    ? { position: 'fixed', top, left, zIndex: 56, maxWidth: 300, width: 'max-content' }
+    : { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 56, maxWidth: 300, width: 'max-content', maxHeight: '90vh', overflowY: 'auto' }
 
   return (
-    <FloatingPortal>
-      <div
-        ref={floatingRef}
-        style={wrapperStyle}
-        role="dialog"
-        aria-modal="false"
-        data-tutorial="true"
-        aria-label={t(`tutorial.steps.${stepKey}.title`)}
-      >
-        {/* Arrow (only when spotlight is active) */}
-        {hasSpotlight && (
-          <div
-            className="absolute w-3 h-3 rotate-45"
-            style={{
-              background: 'rgba(15, 23, 42, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.09)',
-              ...(placement === 'right-start'
-                ? { left: '-6px', top: '24px' }
-                : placement === 'left-start'
-                  ? { right: '-6px', top: '24px' }
-                  : placement === 'bottom'
-                    ? { top: '-6px', left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
-                    : { bottom: '-6px', left: '50%', transform: 'translateX(-50%) rotate(45deg)' }),
-            }}
-          />
-        )}
+    <div
+      style={wrapperStyle}
+      role="dialog"
+      aria-modal="false"
+      data-tutorial="true"
+      aria-label={t(`tutorial.steps.${stepKey}.title`)}
+    >
+      {/* Arrow */}
+      <div style={arrowStyle as React.CSSProperties} />
 
-        {/* Card */}
+      {/* Card */}
         <div
           className="rounded-xl overflow-hidden"
           style={{
@@ -271,8 +248,7 @@ function TooltipCard({
             </div>
           </div>
         </div>
-      </div>
-    </FloatingPortal>
+    </div>
   )
 }
 
