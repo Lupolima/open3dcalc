@@ -1,12 +1,12 @@
 {
   "types": {
-    "feat": { "title": "✨ Novo" },
-    "fix": { "title": "🐛 Correções" },
-    "refactor": { "title": "🔧 Técnico" },
+    "feat": { "title": "✨ Features" },
+    "fix": { "title": "🐛 Bug Fixes" },
+    "refactor": { "title": "🔧 Technical" },
     "perf": { "title": "⚡ Performance" },
-    "docs": { "title": "📚 Documentação" },
+    "docs": { "title": "📚 Documentation" },
     "style": { "title": "🎨 UX" },
-    "test": { "title": "✅ Testes" },
+    "test": { "title": "✅ Tests" },
     "chore": { "title": "🏡 Chore" },
     "ci": { "title": "🤖 CI" },
     "build": { "title": "📦 Build" }

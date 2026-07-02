@@ -11,7 +11,7 @@ describe('useCustomerStore (integration)', () => {
   })
 
   // ── addCustomer ──────────────────────────────────────────────
-  it('addCustomer() → customer aparece na lista', () => {
+  it('addCustomer() → customer appears in the list', () => {
     const id = useCustomerStore.getState().addCustomer({
       name: 'João Silva',
       company: 'Silva Tech',
@@ -35,8 +35,8 @@ describe('useCustomerStore (integration)', () => {
     expect(customers[0].updatedAt).toBe(customers[0].createdAt)
   })
 
-  // ── addCustomer - apenas campos mínimos ──────────────────────
-  it('addCustomer() funciona apenas com name (campos mínimos)', () => {
+  // ── addCustomer - minimum fields only ──────────────────────
+  it('addCustomer() works with just name (minimum fields)', () => {
     const id = useCustomerStore.getState().addCustomer({
       name: 'Maria', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -50,8 +50,8 @@ describe('useCustomerStore (integration)', () => {
     expect(customer!.notes).toBeUndefined()
   })
 
-  // ── addCustomer valida name (min 2 chars) ────────────────────
-  it('addCustomer() rejeita name com menos de 2 caracteres', () => {
+  // ── addCustomer validates name (min 2 chars) ────────────────────
+  it('addCustomer() rejects name with less than 2 characters', () => {
     expect(() =>
       useCustomerStore.getState().addCustomer({
         name: 'A', company: '', email: '', phone: '', address: '', notes: '',
@@ -60,8 +60,8 @@ describe('useCustomerStore (integration)', () => {
     expect(useCustomerStore.getState().customers).toHaveLength(0)
   })
 
-  // ── addCustomer valida email ─────────────────────────────────
-  it('addCustomer() rejeita email inválido', () => {
+  // ── addCustomer validates email ─────────────────────────────────
+  it('addCustomer() rejects invalid email', () => {
     expect(() =>
       useCustomerStore.getState().addCustomer({
         name: 'Test', company: '', email: 'invalid-email', phone: '', address: '', notes: '',
@@ -71,7 +71,7 @@ describe('useCustomerStore (integration)', () => {
   })
 
   // ── updateCustomer ───────────────────────────────────────────
-  it('updateCustomer() → atualiza campos e updatedAt', () => {
+  it('updateCustomer() → updates fields and updatedAt', () => {
     const id = useCustomerStore.getState().addCustomer({
       name: 'Original', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -86,14 +86,14 @@ describe('useCustomerStore (integration)', () => {
     expect(updated.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt)
   })
 
-  // ── updateCustomer - não existente ───────────────────────────
-  it('updateCustomer() com id inexistente não altera nada', () => {
+  // ── updateCustomer - non-existent ───────────────────────────
+  it('updateCustomer() with non-existent id does nothing', () => {
     useCustomerStore.getState().updateCustomer('nonexistent', { name: 'Nope' })
     expect(useCustomerStore.getState().customers).toHaveLength(0)
   })
 
   // ── removeCustomer ───────────────────────────────────────────
-  it('removeCustomer() → customer sai da lista', () => {
+  it('removeCustomer() → customer is removed from the list', () => {
     const id1 = useCustomerStore.getState().addCustomer({
       name: 'One', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -109,8 +109,8 @@ describe('useCustomerStore (integration)', () => {
     expect(customers[0].name).toBe('Two')
   })
 
-  // ── removeCustomer não existente ─────────────────────────────
-  it('removeCustomer() com id inexistente não altera nada', () => {
+  // ── removeCustomer non-existent ─────────────────────────────
+  it('removeCustomer() with non-existent id does nothing', () => {
     useCustomerStore.getState().addCustomer({
       name: 'Only', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -120,8 +120,8 @@ describe('useCustomerStore (integration)', () => {
     expect(useCustomerStore.getState().customers).toHaveLength(1)
   })
 
-  // ── getCustomer pelo ID ──────────────────────────────────────
-  it('getCustomer() retorna customer pelo ID', () => {
+  // ── getCustomer by ID ──────────────────────────────────────
+  it('getCustomer() returns customer by ID', () => {
     const id = useCustomerStore.getState().addCustomer({
       name: 'Find Me', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -132,8 +132,8 @@ describe('useCustomerStore (integration)', () => {
     expect(customer!.name).toBe('Find Me')
   })
 
-  // ── getCustomer ID inexistente ───────────────────────────────
-  it('getCustomer() retorna undefined para ID inexistente', () => {
+  // ── getCustomer non-existent ID ───────────────────────────────
+  it('getCustomer() returns undefined for non-existent ID', () => {
     useCustomerStore.getState().addCustomer({
       name: 'Exists', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -143,7 +143,7 @@ describe('useCustomerStore (integration)', () => {
   })
 
   // ── searchCustomers ──────────────────────────────────────────
-  it('searchCustomers() busca por name, company e email', () => {
+  it('searchCustomers() searches by name, company and email', () => {
     useCustomerStore.getState().addCustomer({
       name: 'João Silva', company: 'Tech Corp', email: 'joao@tech.com', phone: '', address: '', notes: '',
     })
@@ -165,8 +165,8 @@ describe('useCustomerStore (integration)', () => {
     expect(useCustomerStore.getState().searchCustomers('TECH')).toHaveLength(2)
   })
 
-  // ── searchCustomers - sem resultados ─────────────────────────
-  it('searchCustomers() com query sem resultados retorna vazio', () => {
+  // ── searchCustomers - no results ─────────────────────────
+  it('searchCustomers() with query with no results returns empty', () => {
     useCustomerStore.getState().addCustomer({
       name: 'João', company: 'Tech', email: 'joao@email.com', phone: '', address: '', notes: '',
     })
@@ -174,8 +174,8 @@ describe('useCustomerStore (integration)', () => {
     expect(results).toHaveLength(0)
   })
 
-  // ── searchCustomers - query vazia retorna todos ──────────────
-  it('searchCustomers() com query vazia retorna todos', () => {
+  // ── searchCustomers - empty query returns all ──────────────
+  it('searchCustomers() with empty query returns all', () => {
     useCustomerStore.getState().addCustomer({
       name: 'Ana', company: 'Co1', email: 'a@co.com', phone: '', address: '', notes: '',
     })
@@ -186,7 +186,7 @@ describe('useCustomerStore (integration)', () => {
   })
 
   // ── getAllCustomers ─────────────────────────────────────────
-  it('getAllCustomers() retorna todos os customers', () => {
+  it('getAllCustomers() returns all customers', () => {
     expect(useCustomerStore.getState().getAllCustomers()).toHaveLength(0)
     useCustomerStore.getState().addCustomer({
       name: 'Alice', company: '', email: '', phone: '', address: '', notes: '',
@@ -202,7 +202,7 @@ describe('useCustomerStore (integration)', () => {
   })
 
   // ── incrementQuoteCount ──────────────────────────────────────
-  it('incrementQuoteCount() → incrementa quoteCount', () => {
+  it('incrementQuoteCount() → increments quoteCount', () => {
     const id = useCustomerStore.getState().addCustomer({
       name: 'Quoter', company: '', email: '', phone: '', address: '', notes: '',
     })
@@ -215,14 +215,14 @@ describe('useCustomerStore (integration)', () => {
     expect(useCustomerStore.getState().getCustomer(id)!.quoteCount).toBe(2)
   })
 
-  // ── incrementQuoteCount não existente ───────────────────────
-  it('incrementQuoteCount() com id inexistente não altera nada', () => {
+  // ── incrementQuoteCount non-existent ───────────────────────
+  it('incrementQuoteCount() with non-existent id does nothing', () => {
     useCustomerStore.getState().incrementQuoteCount('nonexistent')
     expect(useCustomerStore.getState().customers).toHaveLength(0)
   })
 
   // ── exportCustomers ─────────────────────────────────────────
-  it('exportCustomers() → retorna JSON string válido', () => {
+  it('exportCustomers() → returns valid JSON string', () => {
     useCustomerStore.getState().addCustomer({
       name: 'Export Test', company: 'Export Co', email: 'e@co.com', phone: '', address: '', notes: '',
     })
@@ -235,8 +235,8 @@ describe('useCustomerStore (integration)', () => {
     expect(parsed.customers[0].name).toBe('Export Test')
   })
 
-  // ── importCustomers - merge sem duplicar ─────────────────────
-  it('importCustomers() faz merge sem duplicar ids existentes', () => {
+  // ── importCustomers - merge without duplicates ─────────────────────
+  it('importCustomers() merges without duplicating existing ids', () => {
     const existingId = useCustomerStore.getState().addCustomer({
       name: 'Original', company: 'Orig Co', email: 'o@co.com', phone: '', address: '', notes: '',
     })
@@ -270,8 +270,8 @@ describe('useCustomerStore (integration)', () => {
 
     const result = useCustomerStore.getState().importCustomers(JSON.stringify(importPayload))
 
-    expect(result.skipped).toBe(1) // a duplicada
-    expect(result.imported).toBe(1) // a nova
+    expect(result.skipped).toBe(1) // the duplicate
+    expect(result.imported).toBe(1) // the new one
     expect(useCustomerStore.getState().customers).toHaveLength(2)
     expect(useCustomerStore.getState().getAllCustomers().map((c) => c.name).sort()).toEqual([
       'New Import',
@@ -279,22 +279,22 @@ describe('useCustomerStore (integration)', () => {
     ])
   })
 
-  // ── importCustomers - JSON inválido ──────────────────────────
-  it('importCustomers() com JSON inválido retorna 0 importados', () => {
+  // ── importCustomers - invalid JSON ──────────────────────────
+  it('importCustomers() with invalid JSON returns 0 imported', () => {
     const result = useCustomerStore.getState().importCustomers('not valid json')
     expect(result.imported).toBe(0)
     expect(result.skipped).toBe(0)
   })
 
-  // ── importCustomers - payload sem customers ─────────────────
-  it('importCustomers() com payload sem customers retorna 0', () => {
+  // ── importCustomers - payload without customers ─────────────────
+  it('importCustomers() with payload without customers returns 0', () => {
     const result = useCustomerStore.getState().importCustomers(JSON.stringify({}))
     expect(result.imported).toBe(0)
     expect(result.skipped).toBe(0)
   })
 
   // ── setSearchQuery ───────────────────────────────────────────
-  it('setSearchQuery() atualiza searchQuery', () => {
+  it('setSearchQuery() updates searchQuery', () => {
     expect(useCustomerStore.getState().searchQuery).toBe('')
 
     useCustomerStore.getState().setSearchQuery('joão')

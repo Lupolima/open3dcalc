@@ -1,170 +1,170 @@
 # 🗺️ Open3DCalc — Roadmap
 
-> **Data:** 01/07/2026
-> **Propósito:** Guia de prioridades para evolução do Open3DCalc.
-> **Fluxo:** Toda funcionalidade segue → branch → PR → review → merge (`BRANCH-POLICY.md`)
+> **Date:** 07/01/2026
+> **Purpose:** Priority guide for the evolution of Open3DCalc.
+> **Flow:** Every feature follows → branch → PR → review → merge (`BRANCH-POLICY.md`)
 
 ---
 
-## Prioridades (Ordem de Execução)
+## Priorities (Execution Order)
 
-### 🔴 Fase 1: Usabilidade & Tutoriais
+### 🔴 Phase 1: Usability & Tutorials
 
-**Problema:** Tutoriais e onboarding atuais não são bons. Precisamos de uma experiência mais fluida que ensine o usuário a usar a calculadora sem atrapalhar.
+**Problem:** Current tutorials and onboarding are not good. We need a smoother experience that teaches users how to use the calculator without getting in the way.
 
-**O que investigar primeiro (USO real):**
-- [x] Tooltips em 52+ campos da calculadora
-- [x] LevelToggle renomeado (Rápido/Detalhado/Completo)
-- [x] Tutorial interativo não-bloqueante
-- [x] Onboarding com CTA para tutorial
-- [x] Skip link + heading hierarchy + acessibilidade
-- [x] Tooltips migrados para i18n (pt-BR + en-US)
-- [x] Touch targets mínimos (44px) em botões
+**What to investigate first (real USAGE):**
+- [x] Tooltips on 52+ calculator fields
+- [x] LevelToggle renamed (Quick/Detailed/Complete)
+- [x] Non-blocking interactive tutorial
+- [x] Onboarding with CTA to tutorial
+- [x] Skip link + heading hierarchy + accessibility
+- [x] Tooltips migrated to i18n (pt-BR + en-US)
+- [x] Minimum touch targets (44px) on buttons
 
-**Entregáveis:**
-- [ ] Telemetria opcional anônima (opt-in) para entender uso real
-- [ ] Tutorial interativo reescrito (step-by-step, non-blocking)
-- [ ] Onboarding progressivo (mostra features conforme o usuário avança)
-- [ ] Tooltips contextuais nos campos da calculadora
-- [ ] Empty states informativos (quando não há dados)
-- [ ] Feedback visual de ações (undo, confirmação, animações)
-- [ ] Modo "Quick Start" com valores pré-preenchidos para teste
+**Deliverables:**
+- [ ] Optional anonymous telemetry (opt-in) to understand real usage
+- [ ] Rewritten interactive tutorial (step-by-step, non-blocking)
+- [ ] Progressive onboarding (shows features as the user progresses)
+- [ ] Contextual tooltips on calculator fields
+- [ ] Informative empty states (when there is no data)
+- [ ] Visual feedback for actions (undo, confirmation, animations)
+- [ ] "Quick Start" mode with pre-filled values for testing
 
-**Critérios de aceite:**
-- Tutorial pode ser ignorado/dispensado a qualquer momento
-- Não blockers — o usuário consegue usar a calculadora sem passar pelo tutorial
-- Telemetria é opt-in com consentimento explícito
-
----
-
-### 🔶 Fase 1.5: Usabilidade Avançada (PR #7)
-
-**Features entregues no PR #6:** Tooltips, LevelToggle, Tutorial, Skip link, i18n tooltips, acessibilidade.
-
-**Próximo ciclo — refinamentos de UX:**
-
-#### 5. Quick Start com valores pré-preenchidos
-- [x] Botão "Quick Start" que preenche a calculadora com valores realistas
-  - PLA R$90/kg, 150g, 2h impressão, 10% taxa de falha
-  - Margem de 50%, embalagem R$5, frete R$15
-- [x] Modo "Exemplo" vs "Começar do zero"
-- [x] Tooltip no botão explicando que valores são editáveis
-- **Arquivos:** CalculatorStore (reset/quickStart action), UI button
-- **Testes:** Verificar se quickStart preenche corretamente
-
-#### 6. Empty states para seções sem dados
-- [x] Histórico vazio: "Nenhum cálculo salvo ainda. Seu primeiro resultado aparecerá aqui."
-- [x] Inventário vazio: "Adicione filamentos ao seu inventário para agilizar os cálculos."
-- [x] Orçamentos vazios: "Crie seu primeiro orçamento para enviar ao cliente."
-- [x] Cotações vazias: mesma abordagem
-- **Arquivos:** HistoryTab, InventorySection, QuoteSection
-- **Testes:** Renderização com lista vazia
-
-#### 7. Scroll suave entre seções
-- [x] `scroll-behavior: smooth` no CSS global
-- [x] Seção ativa destacada na navegação
-- [x] Scroll suave ao clicar no SectionNav
-- **Arquivos:** index.css, SectionNav.tsx
-
-#### 8. Atalhos de teclado
-- [x] `Ctrl+Z` — Desfazer última alteração (undo na calculatorStore)
-- [x] `Ctrl+Shift+Z` — Refazer
-- [x] `Ctrl+E` — Exportar resultado
-- [x] `Ctrl+P` — Imprimir/PDF
-- [x] `?` — Mostrar help de atalhos
-- **Arquivos:** Novo hook `useKeyboardShortcuts.ts`, calculatorStore (undo stack)
-- **Testes:** Simular keydown events
-
-**Critérios de aceite:**
-- Quick Start preenche todos os campos essenciais
-- Empty states têm ilustração/ícone + texto + CTA
-- Scroll suave não quebra navegação por âncoras
-- Atalhos não conflitam com atalhos do navegador
-- Todos os 448+ testes passam
-
-### 🟡 Fase 2: STL Upload + Preview 3D Interativo
-
-**Problema:** O preview 3D existe mas é limitado — não há upload de STL do usuário, nem visualização interativa integrada ao cálculo.
-
-**O que já existe:**
-- `src/shared/components/StlPreview/StlPreview.tsx` — componente Three.js básico
-- `src/shared/lib/stlParser.ts` — parser STL (374 linhas)
-- Three.js + React Three Fiber + Drei já configurados
-
-**O que precisa ser feito:**
-- [ ] Upload de arquivo STL/OBJ/3MF com drag & drop
-- [ ] Preview 3D interativo (rotação, zoom, pan)
-- [ ] Cálculo automático de volume a partir do modelo 3D
-- [ ] Estimativa de peso e material baseado no volume
-- [ ] Visualização de camadas (slicing simulation)
-- [ ] Detecção automática de FDM vs Resina baseado no modelo
-- [ ] Suporte a múltiplos uploads e comparação
-
-**Critérios de aceite:**
-- Upload via clique + drag & drop
-- Preview 3D responsivo (funciona em mobile)
-- Volume calculado corretamente (validação com modelos conhecidos)
-- Custo estimado aparece automaticamente no cálculo
+**Acceptance criteria:**
+- Tutorial can be skipped/dismissed at any time
+- No blockers — the user can use the calculator without going through the tutorial
+- Telemetry is opt-in with explicit consent
 
 ---
 
-### 🟢 Fase 3: Dashboard Avançado
+### 🔶 Phase 1.5: Advanced Usability (PR #7)
 
-**Problema:** O dashboard atual existe mas é básico — faltam projeções, métricas de negócio e análises que ajudem o usuário a tomar decisões.
+**Features delivered in PR #6:** Tooltips, LevelToggle, Tutorial, Skip link, i18n tooltips, accessibility.
 
-**O que já existe:**
+**Next cycle — UX refinements:**
+
+#### 5. Quick Start with pre-filled values
+- [x] "Quick Start" button that fills the calculator with realistic values
+  - PLA R$90/kg, 150g, 2h print, 10% failure rate
+  - 50% margin, packaging R$5, shipping R$15
+- [x] "Example" vs "Start from scratch" mode
+- [x] Tooltip on the button explaining values are editable
+- **Files:** CalculatorStore (reset/quickStart action), UI button
+- **Tests:** Verify quickStart fills correctly
+
+#### 6. Empty states for sections without data
+- [x] Empty history: "No calculations saved yet. Your first result will appear here."
+- [x] Empty inventory: "Add filaments to your inventory to speed up calculations."
+- [x] Empty quotes: "Create your first quote to send to the client."
+- [x] Empty estimates: same approach
+- **Files:** HistoryTab, InventorySection, QuoteSection
+- **Tests:** Rendering with empty list
+
+#### 7. Smooth scroll between sections
+- [x] `scroll-behavior: smooth` in global CSS
+- [x] Active section highlighted in navigation
+- [x] Smooth scroll when clicking on SectionNav
+- **Files:** index.css, SectionNav.tsx
+
+#### 8. Keyboard shortcuts
+- [x] `Ctrl+Z` — Undo last change (undo in calculatorStore)
+- [x] `Ctrl+Shift+Z` — Redo
+- [x] `Ctrl+E` — Export result
+- [x] `Ctrl+P` — Print/PDF
+- [x] `?` — Show shortcut help
+- **Files:** New hook `useKeyboardShortcuts.ts`, calculatorStore (undo stack)
+- **Tests:** Simulate keydown events
+
+**Acceptance criteria:**
+- Quick Start fills all essential fields
+- Empty states have illustration/icon + text + CTA
+- Smooth scroll does not break anchor navigation
+- Shortcuts do not conflict with browser shortcuts
+- All 448+ tests pass
+
+### 🟡 Phase 2: STL Upload + Interactive 3D Preview
+
+**Problem:** The 3D preview exists but is limited — there is no user STL upload or interactive visualization integrated with the calculation.
+
+**What already exists:**
+- `src/shared/components/StlPreview/StlPreview.tsx` — basic Three.js component
+- `src/shared/lib/stlParser.ts` — STL parser (374 lines)
+- Three.js + React Three Fiber + Drei already configured
+
+**What needs to be done:**
+- [ ] STL/OBJ/3MF file upload with drag & drop
+- [ ] Interactive 3D preview (rotation, zoom, pan)
+- [ ] Automatic volume calculation from the 3D model
+- [ ] Weight and material estimation based on volume
+- [ ] Layer visualization (slicing simulation)
+- [ ] Automatic FDM vs Resin detection based on model
+- [ ] Support for multiple uploads and comparison
+
+**Acceptance criteria:**
+- Upload via click + drag & drop
+- Responsive 3D preview (works on mobile)
+- Volume calculated correctly (validation with known models)
+- Estimated cost appears automatically in the calculation
+
+---
+
+### 🟢 Phase 3: Advanced Dashboard
+
+**Problem:** The current dashboard exists but is basic — it lacks projections, business metrics, and analyses that help the user make decisions.
+
+**What already exists:**
 - `src/shared/components/Dashboard/Dashboard.tsx`
 - `src/shared/components/Dashboard/RechartsLazy.tsx`
-- Recharts 2 já configurado
-- `historyStore.ts` com dados históricos
+- Recharts 2 already configured
+- `historyStore.ts` with historical data
 
-**O que precisa ser feito:**
-- [ ] KPIs principais: lucro total, custo médio por impressão, margem média
-- [ ] Gráfico de evolução de lucro (linha do tempo)
-- [ ] Distribuição de custos por categoria (pizza/barras)
-- [ ] Projeções: "se você imprimir X peças por mês..."
-- [ ] Comparação de períodos (mês atual vs anterior)
-- [ ] Top impressoras mais lucrativas
-- [ ] Top materiais mais usados
-- [ ] Exportação de relatório executivo (PDF)
-- [ ] Metas personalizadas (ex: "quero lucrar R$500/mês")
-- [ ] Alertas de baixa margem em peças recorrentes
+**What needs to be done:**
+- [ ] Main KPIs: total profit, average cost per print, average margin
+- [ ] Profit evolution chart (timeline)
+- [ ] Cost distribution by category (pie/bar)
+- [ ] Projections: "if you print X parts per month..."
+- [ ] Period comparison (current month vs previous)
+- [ ] Top most profitable printers
+- [ ] Top most used materials
+- [ ] Executive report export (PDF)
+- [ ] Custom goals (e.g., "I want to profit R$500/month")
+- [ ] Low margin alerts for recurring parts
 
-**Critérios de aceite:**
-- Dashboard carrega rápido com dados históricos
-- Gráficos responsivos
-- Export PDF funcional
-- Dados reais (não mockados)
-
----
-
-## 📊 Métricas de Qualidade
-
-| Métrica | Atual | Meta |
-|---------|-------|------|
-| Cobertura de testes (geral) | ~33% | ≥60% |
-| Cobertura (cálculo) | ~85% | ≥90% |
-| Testes | 417 | 500+ |
-| Componentes com testes | Parcial | 100% |
-| Acessibilidade (a11y) | — | WCAG A |
-
-## 🔒 Não escopo (por enquanto)
-
-- ❌ Cloud sync / multi-usuário
-- ❌ Integração com APIs de fornecedores
-- ❌ FDM vs Resina comparativo (não faz sentido — cada um é para um propósito)
-- ❌ Marketplace de modelos 3D
+**Acceptance criteria:**
+- Dashboard loads fast with historical data
+- Responsive charts
+- PDF export functional
+- Real data (not mocked)
 
 ---
 
-## Como contribuir
+## 📊 Quality Metrics
 
-1. Escolha uma issue ou feature deste roadmap
-2. Crie branch: `feat/<nome-da-feature>`
-3. Desenvolva com TDD (RED → GREEN → REFACTOR)
-4. Commit seguindo [Conventional Commits](https://www.conventionalcommits.org/)
-5. Abra PR → aguarde review → merge
+| Metric | Current | Target |
+|--------|---------|--------|
+| Test coverage (overall) | ~33% | ≥60% |
+| Coverage (calculation) | ~85% | ≥90% |
+| Tests | 417 | 500+ |
+| Components with tests | Partial | 100% |
+| Accessibility (a11y) | — | WCAG A |
+
+## 🔒 Not in scope (for now)
+
+- ❌ Cloud sync / multi-user
+- ❌ Integration with supplier APIs
+- ❌ FDM vs Resin comparison (not meaningful — each serves a different purpose)
+- ❌ 3D model marketplace
 
 ---
 
-_Atualizado em Julho 2026. Este roadmap é vivo e muda conforme o feedback dos usuários._
+## How to contribute
+
+1. Pick an issue or feature from this roadmap
+2. Create branch: `feat/<feature-name>`
+3. Develop with TDD (RED → GREEN → REFACTOR)
+4. Commit following [Conventional Commits](https://www.conventionalcommits.org/)
+5. Open PR → wait for review → merge
+
+---
+
+_Updated July 2026. This roadmap is alive and changes based on user feedback._

@@ -70,15 +70,15 @@ function App() {
   useEffect(() => {
     restoreAutoSnapshot()
 
-    // Migração de dados antigos para historyStore
+    // Migrate legacy data to historyStore
     const migrateOldData = () => {
       const historyStore = useHistoryStore.getState()
       const existing = historyStore.entries.length
 
-      // Se já migrou antes, não repete
+      // Skip if already migrated
       if (localStorage.getItem('open3dcalc_migration_done_v2')) return
 
-      // Só migra se historyStore estiver vazia (evita duplicação)
+      // Only migrate if historyStore is empty (prevent duplicates)
       if (existing > 0) return
 
       // Migrar productStore antigo

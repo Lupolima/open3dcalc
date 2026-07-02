@@ -30,7 +30,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── addQuote ──────────────────────────────────────────────────
-  it('addQuote() → quote aparece na lista com número e id corretos', () => {
+  it('addQuote() → quote appears in the list with correct number and id', () => {
     const id = useQuoteStore.getState().addQuote(validFormData())
     const { quotes } = useQuoteStore.getState()
 
@@ -43,7 +43,7 @@ describe('useQuoteStore (integration)', () => {
     expect(quotes[0].updatedAt).toBe(quotes[0].createdAt)
   })
 
-  it('addQuote() auto-incrementa o número a cada quote', () => {
+  it('addQuote() auto-increments the number each quote', () => {
     useQuoteStore.getState().addQuote(validFormData({ title: 'First' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Second' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Third' }))
@@ -56,7 +56,7 @@ describe('useQuoteStore (integration)', () => {
     expect(useQuoteStore.getState().nextNumber).toBe(4)
   })
 
-  it('addQuote() com items calcula subtotal corretamente', () => {
+  it('addQuote() with items calculates subtotal correctly', () => {
     // Items: 2 units of item A + 1 unit of item B
     // Each item has unitPrice extracted from snapshot
     // The test depends on the snapshot lookup: we'll test with history lookups
@@ -79,7 +79,7 @@ describe('useQuoteStore (integration)', () => {
     expect(quote.total).toBe(0)
   })
 
-  it('addQuote() com globalDiscountPercent calcula descontos corretamente', () => {
+  it('addQuote() with globalDiscountPercent calculates discounts correctly', () => {
     const data = validFormData({ globalDiscountPercent: 10 })
     const id = useQuoteStore.getState().addQuote(data)
     const quote = useQuoteStore.getState().getQuote(id)!
@@ -87,7 +87,7 @@ describe('useQuoteStore (integration)', () => {
     expect(quote.globalDiscountPercent).toBe(10)
   })
 
-  it('addQuote() com items vazios cria quote com zero totals', () => {
+  it('addQuote() with empty items creates quote with zero totals', () => {
     const data = validFormData({ items: [] })
     const id = useQuoteStore.getState().addQuote(data)
     const quote = useQuoteStore.getState().getQuote(id)!
@@ -98,13 +98,13 @@ describe('useQuoteStore (integration)', () => {
     expect(quote.total).toBe(0)
   })
 
-  it('addQuote() gera ID no formato quote_{timestamp}_{random5}', () => {
+  it('addQuote() generates ID in format quote_{timestamp}_{random5}', () => {
     const id = useQuoteStore.getState().addQuote(validFormData())
     expect(id).toMatch(/^quote_\d+_[a-z0-9]{5}$/)
   })
 
   // ── updateQuote ──────────────────────────────────────────────
-  it('updateQuote() modifica campos do quote', () => {
+  it('updateQuote() modifies quote fields', () => {
     const id = useQuoteStore.getState().addQuote(validFormData())
     const original = useQuoteStore.getState().getQuote(id)!
     const originalUpdatedAt = original.updatedAt
@@ -122,7 +122,7 @@ describe('useQuoteStore (integration)', () => {
     expect(updated.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt)
   })
 
-  it('updateQuote() com id inexistente não altera nada', () => {
+  it('updateQuote() with non-existent id does nothing', () => {
     useQuoteStore.getState().addQuote(validFormData())
     expect(useQuoteStore.getState().quotes).toHaveLength(1)
 
@@ -132,7 +132,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── removeQuote ──────────────────────────────────────────────
-  it('removeQuote() → quote sai da lista', () => {
+  it('removeQuote() → quote is removed from the list', () => {
     const id1 = useQuoteStore.getState().addQuote(validFormData({ title: 'One' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Two' }))
     expect(useQuoteStore.getState().quotes).toHaveLength(2)
@@ -144,7 +144,7 @@ describe('useQuoteStore (integration)', () => {
     expect(quotes[0].title).toBe('Two')
   })
 
-  it('removeQuote() com id inexistente não altera nada', () => {
+  it('removeQuote() with non-existent id does nothing', () => {
     useQuoteStore.getState().addQuote(validFormData())
     expect(useQuoteStore.getState().quotes).toHaveLength(1)
 
@@ -153,7 +153,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── getQuote ──────────────────────────────────────────────────
-  it('getQuote() retorna quote pelo ID', () => {
+  it('getQuote() returns quote by ID', () => {
     const id = useQuoteStore.getState().addQuote(validFormData({ title: 'Find Me' }))
     const quote = useQuoteStore.getState().getQuote(id)
 
@@ -162,14 +162,14 @@ describe('useQuoteStore (integration)', () => {
     expect(quote!.title).toBe('Find Me')
   })
 
-  it('getQuote() retorna undefined para ID inexistente', () => {
+  it('getQuote() returns undefined for non-existent ID', () => {
     useQuoteStore.getState().addQuote(validFormData())
     const quote = useQuoteStore.getState().getQuote('nonexistent')
     expect(quote).toBeUndefined()
   })
 
   // ── getQuotesByCustomer ──────────────────────────────────────
-  it('getQuotesByCustomer() retorna quotes de um cliente específico', () => {
+  it('getQuotesByCustomer() returns quotes for a specific customer', () => {
     const custId = 'cust_12345'
     useQuoteStore.getState().addQuote(validFormData({
       title: 'Quote A',
@@ -189,13 +189,13 @@ describe('useQuoteStore (integration)', () => {
     expect(customerQuotes.map((q) => q.title).sort()).toEqual(['Quote A', 'Quote B'])
   })
 
-  it('getQuotesByCustomer() retorna vazio para cliente sem quotes', () => {
+  it('getQuotesByCustomer() returns empty for customer with no quotes', () => {
     const result = useQuoteStore.getState().getQuotesByCustomer('nonexistent')
     expect(result).toHaveLength(0)
   })
 
   // ── setQuoteStatus ───────────────────────────────────────────
-  it('setQuoteStatus() altera status', () => {
+  it('setQuoteStatus() changes status', () => {
     const id = useQuoteStore.getState().addQuote(validFormData())
     expect(useQuoteStore.getState().getQuote(id)!.status).toBe('draft')
 
@@ -209,13 +209,13 @@ describe('useQuoteStore (integration)', () => {
     expect(useQuoteStore.getState().getQuote(id)!.status).toBe('rejected')
   })
 
-  it('setQuoteStatus() com id inexistente não altera nada', () => {
+  it('setQuoteStatus() with non-existent id does nothing', () => {
     useQuoteStore.getState().setQuoteStatus('nonexistent', 'sent')
     expect(useQuoteStore.getState().quotes).toHaveLength(0)
   })
 
   // ── exportQuotes ──────────────────────────────────────────────
-  it('exportQuotes() retorna JSON string válido com estrutura correta', () => {
+  it('exportQuotes() returns valid JSON string with correct structure', () => {
     useQuoteStore.getState().addQuote(validFormData({ title: 'Export Test' }))
 
     const json = useQuoteStore.getState().exportQuotes()
@@ -228,7 +228,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── importQuotes ──────────────────────────────────────────────
-  it('importQuotes() faz merge sem duplicar ids existentes', () => {
+  it('importQuotes() merges without duplicating existing ids', () => {
     const existingId = useQuoteStore.getState().addQuote(validFormData({ title: 'Original' }))
 
     const importPayload = {
@@ -276,8 +276,8 @@ describe('useQuoteStore (integration)', () => {
 
     const result = useQuoteStore.getState().importQuotes(JSON.stringify(importPayload))
 
-    expect(result.skipped).toBe(1) // a duplicada
-    expect(result.imported).toBe(1) // a nova
+    expect(result.skipped).toBe(1) // the duplicate
+    expect(result.imported).toBe(1) // the new one
     expect(useQuoteStore.getState().quotes).toHaveLength(2)
     expect(useQuoteStore.getState().quotes.map((q) => q.title).sort()).toEqual([
       'New Import',
@@ -285,20 +285,20 @@ describe('useQuoteStore (integration)', () => {
     ])
   })
 
-  it('importQuotes() com JSON inválido retorna 0 importados', () => {
+  it('importQuotes() with invalid JSON returns 0 imported', () => {
     const result = useQuoteStore.getState().importQuotes('not valid json')
     expect(result.imported).toBe(0)
     expect(result.skipped).toBe(0)
   })
 
-  it('importQuotes() com payload sem quotes retorna 0', () => {
+  it('importQuotes() with payload without quotes returns 0', () => {
     const result = useQuoteStore.getState().importQuotes(JSON.stringify({}))
     expect(result.imported).toBe(0)
     expect(result.skipped).toBe(0)
   })
 
   // ── getFilteredQuotes ─────────────────────────────────────────
-  it('getFilteredQuotes() filtra por searchQuery (título)', () => {
+  it('getFilteredQuotes() filters by searchQuery (title)', () => {
     useQuoteStore.getState().addQuote(validFormData({ title: 'Benchy 3D' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Vase Decorativo' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Benchy V2' }))
@@ -312,7 +312,7 @@ describe('useQuoteStore (integration)', () => {
     expect(filtered2).toHaveLength(1)
   })
 
-  it('getFilteredQuotes() filtra por statusFilter', () => {
+  it('getFilteredQuotes() filters by statusFilter', () => {
     const id1 = useQuoteStore.getState().addQuote(validFormData({ title: 'Draft Quote' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Another Draft' }))
     const id3 = useQuoteStore.getState().addQuote(validFormData({ title: 'Sent Quote' }))
@@ -329,7 +329,7 @@ describe('useQuoteStore (integration)', () => {
     expect(filtered2).toHaveLength(1)
   })
 
-  it('getFilteredQuotes() com statusFilter "all" retorna todos', () => {
+  it('getFilteredQuotes() with statusFilter "all" returns all', () => {
     useQuoteStore.getState().addQuote(validFormData())
     useQuoteStore.getState().addQuote(validFormData())
 
@@ -338,7 +338,7 @@ describe('useQuoteStore (integration)', () => {
     expect(filtered).toHaveLength(2)
   })
 
-  it('getFilteredQuotes() combina search + status filter', () => {
+  it('getFilteredQuotes() combines search + status filter', () => {
     const id = useQuoteStore.getState().addQuote(validFormData({ title: 'Special Quote' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Special Draft' }))
     useQuoteStore.getState().addQuote(validFormData({ title: 'Other Quote' }))
@@ -352,7 +352,7 @@ describe('useQuoteStore (integration)', () => {
     expect(filtered[0].title).toBe('Special Quote')
   })
 
-  it('getFilteredQuotes() com quotes vazios retorna array vazio', () => {
+  it('getFilteredQuotes() with empty quotes returns empty array', () => {
     useQuoteStore.getState().setSearchQuery('')
     useQuoteStore.getState().setStatusFilter('all')
     const filtered = useQuoteStore.getState().getFilteredQuotes()
@@ -360,7 +360,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── setSearchQuery / setStatusFilter ──────────────────────────
-  it('setSearchQuery() atualiza searchQuery', () => {
+  it('setSearchQuery() updates searchQuery', () => {
     expect(useQuoteStore.getState().searchQuery).toBe('')
     useQuoteStore.getState().setSearchQuery('benchy')
     expect(useQuoteStore.getState().searchQuery).toBe('benchy')
@@ -368,7 +368,7 @@ describe('useQuoteStore (integration)', () => {
     expect(useQuoteStore.getState().searchQuery).toBe('')
   })
 
-  it('setStatusFilter() atualiza statusFilter', () => {
+  it('setStatusFilter() updates statusFilter', () => {
     expect(useQuoteStore.getState().statusFilter).toBe('all')
     useQuoteStore.getState().setStatusFilter('sent')
     expect(useQuoteStore.getState().statusFilter).toBe('sent')
@@ -383,7 +383,7 @@ describe('useQuoteStore (integration)', () => {
   })
 
   // ── calculateTotals ───────────────────────────────────────────
-  it('calculateTotals() computa subtotal, discountAmount e total corretamente', () => {
+  it('calculateTotals() computes subtotal, discountAmount and total correctly', () => {
     const items = [
       { historyEntryId: 'a', name: 'Item A', quantity: 2, unitPrice: 100, totalPrice: 0, discountPercent: 0 },
       { historyEntryId: 'b', name: 'Item B', quantity: 3, unitPrice: 50, totalPrice: 0, discountPercent: 0 },
@@ -398,14 +398,14 @@ describe('useQuoteStore (integration)', () => {
     expect(result.total).toBe(315)
   })
 
-  it('calculateTotals() com items vazios retorna zeros', () => {
+  it('calculateTotals() with empty items returns zeros', () => {
     const result = useQuoteStore.getState().calculateTotals([], 10)
     expect(result.subtotal).toBe(0)
     expect(result.discountAmount).toBe(0)
     expect(result.total).toBe(0)
   })
 
-  it('calculateTotals() com discount 0 retorna total = subtotal', () => {
+  it('calculateTotals() with discount 0 returns total = subtotal', () => {
     const items = [
       { historyEntryId: 'a', name: 'Item A', quantity: 5, unitPrice: 20, totalPrice: 0, discountPercent: 0 },
     ]
@@ -415,7 +415,7 @@ describe('useQuoteStore (integration)', () => {
     expect(result.total).toBe(100)
   })
 
-  it('addQuote() com itens com discountPercent individual calcula totalPrice do item', () => {
+  it('addQuote() with items with individual discountPercent calculates item totalPrice', () => {
     const data = validFormData({
       items: [
         { historyEntryId: 'hist_1', quantity: 2, discountPercent: 10 },

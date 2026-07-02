@@ -26,7 +26,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── addSpool ──────────────────────────────────────────────────
-  it('addSpool() → spool aparece na lista com id e dateAdded', () => {
+  it('addSpool() → spool appears in the list with id and dateAdded', () => {
     const data = makeSpool({ brand: 'eSun', material: 'ABS', weightGrams: 800 })
     useFilamentInventory.getState().addSpool(data)
 
@@ -40,7 +40,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── deductWeight ──────────────────────────────────────────────
-  it('deductWeight() → reduz weightGrams', () => {
+  it('deductWeight() → reduces weightGrams', () => {
     const data = makeSpool({ weightGrams: 500 })
     useFilamentInventory.getState().addSpool(data)
     const { spools: spoolsAfterAdd } = useFilamentInventory.getState()
@@ -52,8 +52,8 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[0].weightGrams).toBe(350)
   })
 
-  // ── deductWeight não abaixo de zero ──────────────────────────
-  it('deductWeight() não permite weightGrams < 0', () => {
+  // ── deductWeight not below zero ──────────────────────────
+  it('deductWeight() does not allow weightGrams < 0', () => {
     const data = makeSpool({ weightGrams: 100 })
     useFilamentInventory.getState().addSpool(data)
     const id = useFilamentInventory.getState().spools[0].id
@@ -65,7 +65,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── getLowStockSpools ─────────────────────────────────────────
-  it('getLowStockSpools(200) → retorna apenas spools com weightGrams < 200', () => {
+  it('getLowStockSpools(200) → returns only spools with weightGrams < 200', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 150 }))  // low
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 500 }))  // ok
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 50 }))   // low
@@ -79,7 +79,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── updateSpool ───────────────────────────────────────────────
-  it('updateSpool() → atualiza campos parciais sem afetar outros', () => {
+  it('updateSpool() → updates partial fields without affecting others', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'OOriginal', notes: 'original' }))
     const id = useFilamentInventory.getState().spools[0].id
 
@@ -88,13 +88,13 @@ describe('useFilamentInventory (integration)', () => {
 
     expect(spools[0].brand).toBe('Updated')
     expect(spools[0].notes).toBe('modified')
-    // Campos não atualizados permanecem
+    // Unupdated fields remain unchanged
     expect(spools[0].material).toBe('PLA')
     expect(spools[0].weightGrams).toBe(1000)
   })
 
   // ── removeSpool ───────────────────────────────────────────────
-  it('removeSpool() → spool sai da lista', () => {
+  it('removeSpool() → spool is removed from the list', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'RemoveMe' }))
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'KeepMe' }))
     expect(useFilamentInventory.getState().spools).toHaveLength(2)
@@ -108,7 +108,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── getTotalWeight ────────────────────────────────────────────
-  it('getTotalWeight() → soma correta dos pesos', () => {
+  it('getTotalWeight() → correct sum of weights', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 200 }))
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 300 }))
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 500 }))
@@ -118,7 +118,7 @@ describe('useFilamentInventory (integration)', () => {
   })
 
   // ── getSpoolsByMaterial ───────────────────────────────────────
-  it('getSpoolsByMaterial() → filtra por material (case-insensitive)', () => {
+  it('getSpoolsByMaterial() → filters by material (case-insensitive)', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ material: 'PLA', brand: 'A' }))
     useFilamentInventory.getState().addSpool(makeSpool({ material: 'ABS', brand: 'B' }))
     useFilamentInventory.getState().addSpool(makeSpool({ material: 'pla', brand: 'C' })) // lowercase
@@ -128,9 +128,9 @@ describe('useFilamentInventory (integration)', () => {
     expect(plaSpools.map((s) => s.brand).sort()).toEqual(['A', 'C'])
   })
 
-  // ── NOVOS TESTES ────────────────────────────────────────────────
+  // ── NEW TESTS ────────────────────────────────────────────────
 
-  it('addSpool() persiste dados corretamente com campos opcionais', () => {
+  it('addSpool() persists data correctly with optional fields', () => {
     const data = makeSpool({
       brand: 'Overture',
       material: 'PETG',
@@ -161,7 +161,7 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[0].purchaseStore).toBe('Aliexpress')
   })
 
-  it('removeSpool() com ID inexistente não afeta outros spools', () => {
+  it('removeSpool() with non-existent ID does not affect other spools', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'A' }))
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'B' }))
     expect(useFilamentInventory.getState().spools).toHaveLength(2)
@@ -173,7 +173,7 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[1].brand).toBe('B')
   })
 
-  it('updateSpool() com ID inexistente não lança erro', () => {
+  it('updateSpool() with non-existent ID does not throw', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ brand: 'KeepMe' }))
     expect(() => {
       useFilamentInventory.getState().updateSpool('non-existent', { brand: 'Changed' })
@@ -183,7 +183,7 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[0].brand).toBe('KeepMe')
   })
 
-  it('deductWeight() com ID inexistente não lança erro', () => {
+  it('deductWeight() with non-existent ID does not throw', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 500 }))
     expect(() => {
       useFilamentInventory.getState().deductWeight('non-existent', 100)
@@ -193,32 +193,32 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[0].weightGrams).toBe(500)
   })
 
-  it('removeSpool() em lista vazia não causa erro', () => {
+  it('removeSpool() on empty list does not cause error', () => {
     expect(() => {
       useFilamentInventory.getState().removeSpool('any-id')
     }).not.toThrow()
     expect(useFilamentInventory.getState().spools).toHaveLength(0)
   })
 
-  it('getTotalWeight() com spools vazios retorna 0', () => {
+  it('getTotalWeight() with empty spools returns 0', () => {
     const total = useFilamentInventory.getState().getTotalWeight()
     expect(total).toBe(0)
   })
 
-  it('getSpoolsByMaterial() sem matches retorna array vazio', () => {
+  it('getSpoolsByMaterial() with no matches returns empty array', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ material: 'PLA' }))
     const result = useFilamentInventory.getState().getSpoolsByMaterial('NYLON')
     expect(result).toEqual([])
   })
 
-  it('getLowStockSpools() com threshold 0 retorna array vazio (pesos são >= 0)', () => {
+  it('getLowStockSpools() with threshold 0 returns empty array (weights are >= 0)', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 100 }))
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 0 }))
     const low = useFilamentInventory.getState().getLowStockSpools(0)
     expect(low).toHaveLength(0)
   })
 
-  it('deductWeight() com 0 gramas não altera o peso', () => {
+  it('deductWeight() with 0 grams does not change weight', () => {
     useFilamentInventory.getState().addSpool(makeSpool({ weightGrams: 500 }))
     const id = useFilamentInventory.getState().spools[0].id
 
@@ -227,7 +227,7 @@ describe('useFilamentInventory (integration)', () => {
     expect(spools[0].weightGrams).toBe(500)
   })
 
-  it('updateSpool() só atualiza campos fornecidos (merge parcial)', () => {
+  it('updateSpool() only updates provided fields (partial merge)', () => {
     useFilamentInventory.getState().addSpool(makeSpool({
       brand: 'Original',
       material: 'PLA',
@@ -237,20 +237,20 @@ describe('useFilamentInventory (integration)', () => {
     }))
     const id = useFilamentInventory.getState().spools[0].id
 
-    // Atualiza apenas notes
+    // Updates only notes
     useFilamentInventory.getState().updateSpool(id, { notes: 'updated note' })
 
     const { spools } = useFilamentInventory.getState()
-    // Campo atualizado
+    // Updated field
     expect(spools[0].notes).toBe('updated note')
-    // Campos não fornecidos permanecem inalterados
+    // Unprovided fields remain unchanged
     expect(spools[0].brand).toBe('Original')
     expect(spools[0].material).toBe('PLA')
     expect(spools[0].color).toBe('Red')
     expect(spools[0].weightGrams).toBe(1000)
   })
 
-  it('addSpool() com valores negativos de peso não é rejeitado', () => {
+  it('addSpool() with negative weight values is not rejected', () => {
     const data = makeSpool({ weightGrams: -100, originalWeightGrams: -200 })
     useFilamentInventory.getState().addSpool(data)
     const { spools } = useFilamentInventory.getState()

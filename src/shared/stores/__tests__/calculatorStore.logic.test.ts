@@ -288,21 +288,21 @@ describe('CalculatorStore logic', () => {
   })
 
   describe('AMS logic', () => {
-    it('AMS habilitado persiste no estado', () => {
+    it('AMS enabled persists in state', () => {
       const store = useCalculatorStore.getState()
       store.setFdmAmsEnabled(true)
       const state = useCalculatorStore.getState()
       expect(state.fdmAmsEnabled).toBe(true)
     })
 
-    it('AMS desabilitado persiste no estado', () => {
+    it('AMS disabled persists in state', () => {
       const store = useCalculatorStore.getState()
       store.setFdmAmsEnabled(false)
       const state = useCalculatorStore.getState()
       expect(state.fdmAmsEnabled).toBe(false)
     })
 
-    it('AMS setFdmAmsSlot atualiza slot específico', () => {
+    it('AMS setFdmAmsSlot updates specific slot', () => {
       const store = useCalculatorStore.getState()
       const slot: AMSSlot = {
         enabled: true, materialType: 'PLA', costPerKg: 100, weightUsedGrams: 40,
@@ -314,7 +314,7 @@ describe('CalculatorStore logic', () => {
       expect(state.fdmAmsSlots[0].color).toBe('#ff0000')
     })
 
-    it('AMS reload de histórico preserva fdmAmsEnabled', () => {
+    it('AMS history reload preserves fdmAmsEnabled', () => {
       const entry = buildSnapshot({ fdmAmsEnabled: true })
       const store = useCalculatorStore.getState()
       store.loadHistoryItem(entry)
@@ -322,7 +322,7 @@ describe('CalculatorStore logic', () => {
       expect(state.fdmAmsEnabled).toBe(true)
     })
 
-    it('AMS reload preserva fdmAmsSlots', () => {
+    it('AMS reload preserves fdmAmsSlots', () => {
       const slots: AMSSlot[] = [
         { enabled: true, materialType: 'PLA', costPerKg: 100, weightUsedGrams: 40, purgeWeightGrams: 5, transitionPurgeGrams: 3, density: 1.24, spoolEfficiency: 98, color: '#ff0000' },
         { enabled: true, materialType: 'PETG', costPerKg: 80, weightUsedGrams: 30, purgeWeightGrams: 5, transitionPurgeGrams: 4, density: 1.27, spoolEfficiency: 95, color: '#0000ff' },
@@ -335,12 +335,12 @@ describe('CalculatorStore logic', () => {
       expect(state.fdmAmsSlots[1].materialType).toBe('PETG')
     })
 
-    it('AMS padrão tem 4 slots', () => {
+    it('AMS default has 4 slots', () => {
       const state = useCalculatorStore.getState()
       expect(state.fdmAmsSlots).toHaveLength(4)
     })
 
-    it('AMS enabledSlots conta apenas slots enabled', () => {
+    it('AMS enabledSlots counts only enabled slots', () => {
       const store = useCalculatorStore.getState()
       store.setFdmAmsEnabled(true)
       const slots = store.fdmAmsSlots.map((s, i) => ({

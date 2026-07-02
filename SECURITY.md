@@ -1,33 +1,33 @@
-# Política de Segurança do Open3DCalc
+# Open3DCalc Security Policy
 
-## Reportando Vulnerabilidades
+## Reporting Vulnerabilities
 
-Valorizamos a segurança do Open3DCalc. Se você encontrar uma vulnerabilidade de segurança:
+We value the security of Open3DCalc. If you find a security vulnerability:
 
-1. **Não abra uma issue pública** — reporte por email ou channel privado
-2. Envie um email para **ils15@github.com** com:
-   - Descrição clara do problema
-   - Passos para reproduzir
-   - Impacto estimado
-   - Sugestão de correção (se houver)
+1. **Do not open a public issue** — report via email or private channel
+2. Send an email to **ils15@github.com** with:
+   - Clear description of the problem
+   - Steps to reproduce
+   - Estimated impact
+   - Suggested fix (if any)
 
-## Processo de Resposta
+## Response Process
 
-- ✅ Confirmação de recebimento em até **48h**
-- 🔄 Atualizações a cada **7 dias** até a resolução
-- 🏆 Crédito público ao reporter após o fix (se desejado)
-- 📦 Patch release dentro de **14 dias** para vulnerabilidades críticas
+- ✅ Acknowledgment within **48h**
+- 🔄 Updates every **7 days** until resolution
+- 🏆 Public credit to the reporter after fix (if desired)
+- 📦 Patch release within **14 days** for critical vulnerabilities
 
-## Escopo
+## Scope
 
-Este projeto é um **aplicativo front-end React** que roda 100% no navegador. Não há backend, banco de dados ou servidor próprio. Vulnerabilidades potenciais incluem:
+This project is a **React front-end application** that runs 100% in the browser. There is no backend, database, or custom server. Potential vulnerabilities include:
 
 - XSS (Cross-Site Scripting)
-- vazamento de dados do localStorage
-- dependências com CVEs conhecidas
+- localStorage data leakage
+- dependencies with known CVEs
 
-## Boas Práticas
+## Best Practices
 
-- Sempre use a versão mais recente do Open3DCalc
-- Mantenha seu navegador atualizado
-- Revise as permissões se usar a versão PWA instalada
+- Always use the latest version of Open3DCalc
+- Keep your browser updated
+- Review permissions if using the installed PWA version
