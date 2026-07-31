@@ -43,6 +43,59 @@ describe("audited release notes", () => {
       authorFor({ commit: { author: { login: "github-actions[bot]" } } }),
     ).toBe("Unknown");
   });
+  it("extracts real titles from nested GitHub commit payloads", () => {
+    const catalog = normalize({
+      releases: [{ tag_name: "v1.0.0", assets: [] }],
+      tags: [{ name: "v1.0.0" }],
+      // Real GitHub API shape: { sha, commit: { message, ... }, author }
+      commits: [
+        {
+          sha: "nested-nopr",
+          commit: {
+            message: "fix: direct commit without PR",
+            author: { name: "Carol", email: "carol@example.com" },
+          },
+          author: { login: "carol" },
+        },
+        {
+          sha: "nested-pr",
+          commit: {
+            message: "feat: nested payload merged via PR",
+            author: { name: "Dave", email: "dave@example.com" },
+          },
+          author: { login: "dave" },
+        },
+      ],
+      pullRequests: [
+        {
+          number: 101,
+          title: "feat: nested payload merged via PR",
+          merge_commit_sha: "nested-pr",
+          user: { login: "dave" },
+        },
+      ],
+    });
+    expect(catalog.partial).toBe(false);
+    expect(catalog.items.map((item) => item.title)).toEqual(
+      expect.arrayContaining([
+        "fix: direct commit without PR",
+        "feat: nested payload merged via PR",
+      ]),
+    );
+    // Regression: titles must never degrade to the "Unknown" fallback when
+    // the payload is nested ({ sha, commit: { message } }) instead of flat.
+    expect(catalog.items.map((item) => item.title)).not.toContain("Unknown");
+    const direct = catalog.items.find(
+      (item) => item.key === "commit:nested-nopr",
+    );
+    expect(direct).toMatchObject({
+      title: "fix: direct commit without PR",
+      author: "carol",
+    });
+    expect(catalog.items.find((item) => item.key === "pr:101")?.title).toBe(
+      "feat: nested payload merged via PR",
+    );
+  });
   it("deduplicates squash commits and sorts deterministically", async () => {
     const catalog = normalize(await fixture());
     expect(catalog.items.filter((item) => item.key === "pr:11")).toHaveLength(
@@ -319,6 +372,85 @@ describe("audited release notes", () => {
     await expect(
       readFile(resolve(renderedOutput, "release-notes.md"), "utf8"),
     ).resolves.toContain("# Release notes");
+  });
+  it("never re-normalizes collect() output in main(), keeping real tags, items, and asset URLs", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string) => {
+      if (url.includes("/commits/") && url.includes("/pulls"))
+        return Response.json([]);
+      if (url.includes("/releases"))
+        return Response.json([
+          {
+            tag_name: "v1.0.0",
+            target_commitish: "main",
+            assets: [
+              {
+                name: "open3dcalc-v1.0.0.zip",
+                browser_download_url:
+                  "https://github.com/ils15/open3dcalc/releases/download/v1.0.0/open3dcalc-v1.0.0.zip",
+                digest: "sha256:abc123",
+              },
+            ],
+          },
+        ]);
+      if (url.includes("/tags")) return Response.json([{ name: "v1.0.0" }]);
+      if (url.includes("/commits"))
+        return Response.json([
+          {
+            sha: "abc123",
+            commit: {
+              message: "fix: double normalization",
+              author: { login: "alice" },
+            },
+          },
+        ]);
+      if (url.includes("/pulls"))
+        return Response.json([
+          {
+            number: 7,
+            title: "fix: double normalization",
+            merge_commit_sha: "abc123",
+            user: { login: "alice" },
+          },
+        ]);
+      return Response.json([]);
+    }) as typeof fetch;
+    try {
+      const output = await mkdtemp(resolve(tmpdir(), "release-notes-dedupe-"));
+      const audit = await main(["--all", "--dry-run", "--output", output]);
+      const { catalog } = audit;
+      expect(catalog.partial).toBe(false);
+      expect(catalog.errors).toEqual([]);
+      expect(catalog.tags).toContain("v1.0.0");
+      expect(catalog.releases.map((release) => release.tag)).toEqual([
+        "v1.0.0",
+      ]);
+      expect(catalog.releases[0]?.target).toBe("main");
+      expect(catalog.releases[0]?.assets[0]?.url).toBe(
+        "https://github.com/ils15/open3dcalc/releases/download/v1.0.0/open3dcalc-v1.0.0.zip",
+      );
+      expect(catalog.releases[0]?.assets[0]?.digest).toBe("sha256:abc123");
+      expect(catalog.items).toHaveLength(1);
+      expect(catalog.items[0]?.pr?.number).toBe(7);
+      expect(catalog.items[0]?.title).toBe("fix: double normalization");
+      // A second normalization pass would rename these fields to placeholders.
+      const serialized = JSON.stringify(catalog);
+      expect(serialized).not.toContain('"tag":"Unknown"');
+      expect(serialized).not.toContain('"target":"Unknown"');
+      expect(serialized).not.toContain('"url":"Not available"');
+      expect(serialized).not.toContain('"digest":"Not available"');
+      expect(serialized).not.toContain('"items":[]');
+      const markdown = await readFile(
+        resolve(output, "release-notes.md"),
+        "utf8",
+      );
+      expect(markdown).toContain("fix: double normalization");
+      expect(markdown).toContain("[alice](https://github.com/alice)");
+      expect(markdown).toContain("## Full Changelog");
+      expect(markdown).toContain("## Contributors");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
   it("records malformed pages, paginates, validates tags, and renders failures", async () => {
     const originalFetch = globalThis.fetch;
