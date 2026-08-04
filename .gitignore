@@ -52,3 +52,9 @@ yarn-debug.log*
 *.sw?
 *.local
 .husky/_/
+
+# Secrets / env
+.env*
+*.env
+*.secret
+*.pem

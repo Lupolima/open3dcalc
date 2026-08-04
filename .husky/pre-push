@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/h"
 
 echo "🔒 Running pre-push validation..."
 echo "  • TypeScript type check..."

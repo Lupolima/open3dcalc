@@ -1,12 +1,49 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/h"
+# Husky 9: este arquivo é o script cru — o wrapper .husky/_/pre-commit executa
+# este corpo via .husky/_/h. NÃO adicione `. "$(dirname -- "$0")/_/h"` aqui
+# (convenção legada husky <=5.x que, no v9, encerra o hook prematuramente).
 
-# 🔒 Gitleaks scan (se instalado)
-if command -v gitleaks >/dev/null 2>&1; then
-  echo "🔒 Scanning staged files for secrets..."
-  gitleaks git --pre-commit --staged || exit 1
+# ────────────────────────────────────────────────────────────────────────────
+#  Proteção de secrets em camadas (hardening)
+#  1. gitleaks — OBRIGATÓRIO (v8.x). SKIP_GITLEAKS=1 para pular.
+#  2. Guardião .env — bloqueia .env* / *.pem. SKIP_ENV_GUARD=1 para pular.
+#  3. Bifrost AI exposure check — heurísticas + LLM. SKIP_BIFROST_EXPOSURE=1.
+#  4. lint-staged (ESLint + Prettier)
+# ────────────────────────────────────────────────────────────────────────────
+
+# 🔒 1. Gitleaks — obrigatório
+if [ "${SKIP_GITLEAKS:-}" = "1" ]; then
+  echo "  ⏭️  Gitleaks pulado (SKIP_GITLEAKS=1)"
+else
+  if command -v gitleaks >/dev/null 2>&1; then
+    echo "🔒 Gitleaks: scanning staged files for secrets..."
+    gitleaks git --pre-commit --staged || exit 1
+  else
+    echo "❌ gitleaks não instalado — proteção de secrets obrigatória."
+    echo "   Instale (brew install gitleaks ou https://github.com/gitleaks/gitleaks)"
+    echo "   ou export SKIP_GITLEAKS=1 para pular (não recomendado)."
+    exit 1
+  fi
 fi
 
-# 🔍 lint-staged (ESLint + Prettier)
+# 🛡️ 2. Guardião .env — bloqueia .env* e *.pem no staged
+if [ "${SKIP_ENV_GUARD:-}" = "1" ]; then
+  echo "  ⏭️  Guardião .env pulado (SKIP_ENV_GUARD=1)"
+else
+  ENV_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)(\.env(\.[A-Za-z0-9_-]+)*|[^/]*\.pem)$' || true)
+  if [ -n "$ENV_FILES" ]; then
+    echo "❌ Arquivos sensíveis detectados no commit:"
+    echo "$ENV_FILES" | sed 's/^/   /'
+    echo ""
+    echo "   NUNCA commite .env / *.pem (vazam credenciais)."
+    echo "   export SKIP_ENV_GUARD=1 para forçar (não recomendado)."
+    exit 1
+  fi
+fi
+
+# 🤖 3. Bifrost AI exposure check (heurísticas determinísticas + LLM)
+node scripts/scan-secrets-bifrost.mjs || exit 1
+
+# 🔍 4. lint-staged (ESLint + Prettier)
 echo "🔍 Running lint-staged..."
 npx lint-staged || exit 1
