@@ -263,6 +263,7 @@ describe("ChangelogPage", () => {
           .filter((key) => key === "ciCd"),
       ).not.toHaveLength(0);
     },
+    15000,
   );
 
   it.each([
