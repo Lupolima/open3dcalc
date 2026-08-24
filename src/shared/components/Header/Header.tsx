@@ -215,6 +215,9 @@ export function Header() {
 
           {/* Theme toggle — visible on all sizes */}
           <ThemeToggle />
+
+          {/* Data sync — visible on all sizes */}
+          <DataSyncButton variant="icon" />
         </div>
       </div>
 
@@ -311,9 +314,6 @@ export function Header() {
                     {i18n.language === "pt-BR" ? "PT-BR" : "EN-US"}
                   </span>
                 </button>
-
-                {/* Data Sync */}
-                <DataSyncButton onOpenChange={setShowSettings} />
 
                 {/* Version */}
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--color-text-muted)]">

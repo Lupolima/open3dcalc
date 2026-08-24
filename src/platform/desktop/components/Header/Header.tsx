@@ -265,7 +265,7 @@ export function Header() {
           </button>
 
           {/* Data Sync */}
-          <DataSyncButton />
+          <DataSyncButton variant="icon" />
         </div>
       </div>
     </header>
