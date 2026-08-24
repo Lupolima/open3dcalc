@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.10.0
+
+[compare changes](https://github.com/ils15/open3dcalc/compare/v1.9.3...v1.10.0)
+
+### 🚀 Enhancements
+
+- **sync:** Cross-device data sync via encrypted export/import ([#56](https://github.com/ils15/open3dcalc/pull/56), closes [#55](https://github.com/ils15/open3dcalc/issues/55))
+  - AES-256-GCM encryption with PBKDF2 key derivation (browser-native Web Crypto API)
+  - Export/import modal with merge/replace modes
+  - Header bar button for easy access
+  - Full i18n support (PT-BR + EN-US)
+  - LGPD-compliant: 100% client-side, zero server transmission
+
+### 🩹 Fixes
+
+- **ci:** Fix npm ci failure — regenerate lock file with missing Windows-only optional deps
+- **ci:** Make postinstall (`electron-rebuild`) conditional — skips in CI environments
+- **vite:** Resolve CJS interop issues with `use-sync-external-store` and `scheduler`
+- **ui:** Resolve recharts infinite loop via i18n `useSuspense: false` workaround ([recharts#7463](https://github.com/recharts/recharts/issues/7463))
+
+### ❤️ Contributors
+
+- Ils15 ([@ils15](https://github.com/ils15))
+
 ## v1.9.3
 
 [compare changes](https://github.com/ils15/open3dcalc/compare/v1.9.2...v1.9.3)
