@@ -539,7 +539,14 @@
       "readPolicy": "📖 Read full Privacy Policy"
     },
     "policy": {
-      "title": "Privacy Policy"
+      "title": "Privacy Policy",
+      "section8Title": "8. Data Export and Portability",
+      "section8Intro": "Open3DCalc supports local data export and import via encrypted .open3dcalc bundles:",
+      "section8Item1": "Local export/import via encrypted .open3dcalc bundles",
+      "section8Item2": "All data processing happens exclusively client-side",
+      "section8Item3": "No data is transmitted to any server during export or import",
+      "section8Item4": "You can encrypt bundles with your own password",
+      "section8Lgpd": "In compliance with LGPD Art. 18 (right to data portability), you can export your data at any time and import it on another device."
     }
   },
   "tooltip": {
@@ -688,9 +695,7 @@
           },
           {
             "title": "❤️ Contributors",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -732,9 +737,7 @@
           },
           {
             "title": "❤️ Contributors",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -818,9 +821,7 @@
           },
           {
             "title": "❤️ Contributors",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -836,15 +837,11 @@
           },
           {
             "title": "🧹 Other",
-            "items": [
-              "**release:** V1.8.1 [skip ci] (079945e)"
-            ]
+            "items": ["**release:** V1.8.1 [skip ci] (079945e)"]
           },
           {
             "title": "❤️ Contributors",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -876,10 +873,7 @@
           },
           {
             "title": "✅ Testes",
-            "items": [
-              "417 testes, 36/36 arquivos passando",
-              "Cobertura >80%"
-            ]
+            "items": ["417 testes, 36/36 arquivos passando", "Cobertura >80%"]
           }
         ]
       },
@@ -1271,5 +1265,46 @@
     "emptyItems": "Add items from calculation history",
     "saveSuccess": "Quote saved successfully!",
     "deleteConfirm": "Are you sure you want to delete quote #{{number}}?"
+  },
+  "sync": {
+    "title": "Data Synchronization",
+    "export": {
+      "tab": "Export",
+      "title": "Export Data",
+      "description": "Export all your data locally. No data is sent to servers.",
+      "encrypt": "Encrypt data with password",
+      "password": "Encryption password",
+      "passwordPlaceholder": "Enter a password (optional)",
+      "button": "Export Data",
+      "success": "Data exported successfully",
+      "downloading": "Preparing download..."
+    },
+    "import": {
+      "tab": "Import",
+      "title": "Import Data",
+      "warning": "Imported data will be merged with existing data. Data with the same ID will be updated.",
+      "selectFile": "Select file",
+      "dragDrop": "Drag and drop file here or click to select",
+      "acceptedFormats": "Accepted format: .open3dcalc",
+      "password": "Decryption password",
+      "passwordPlaceholder": "Enter file password",
+      "mode": "Import mode",
+      "modeMerge": "Merge (recommended)",
+      "modeReplace": "Replace all",
+      "modeMergeDesc": "Add new data, update existing",
+      "modeReplaceDesc": "Remove all current data and replace with imported",
+      "button": "Import Data",
+      "success": "Data imported successfully",
+      "importing": "Importing data...",
+      "invalidFile": "Invalid or corrupted file",
+      "wrongPassword": "Wrong password",
+      "results": {
+        "imported": "{{count}} items imported",
+        "conflicts": "{{count}} conflicts resolved",
+        "errors": "{{count}} errors found"
+      }
+    },
+    "lgpd_notice": "All data stays in your browser. No data is sent to external servers. See our Privacy Policy.",
+    "privacy_link": "Privacy Policy"
   }
 }

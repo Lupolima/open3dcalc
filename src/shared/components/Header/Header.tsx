@@ -18,6 +18,7 @@ import { CURRENCIES, type CurrencyCode } from "@/shared/lib/currency";
 import { useCurrency } from "@/shared/hooks/useCurrency";
 import { useDismissablePopover } from "@/shared/hooks/useDismissablePopover";
 import { ThemeToggle } from "./ThemeToggle";
+import { DataSyncButton } from "@/shared/components/ui/DataSyncButton";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -214,6 +215,9 @@ export function Header() {
 
           {/* Theme toggle — visible on all sizes */}
           <ThemeToggle />
+
+          {/* Data sync — visible on all sizes */}
+          <DataSyncButton variant="icon" />
         </div>
       </div>
 

@@ -539,7 +539,14 @@
       "readPolicy": "📖 Ler Política de Privacidade completa"
     },
     "policy": {
-      "title": "Política de Privacidade"
+      "title": "Política de Privacidade",
+      "section8Title": "8. Exportação e Portabilidade de Dados",
+      "section8Intro": "O Open3DCalc suporta exportação e importação local de dados por meio de pacotes criptografados .open3dcalc:",
+      "section8Item1": "Exportação/importação local via pacotes .open3dcalc criptografados",
+      "section8Item2": "Todo o processamento de dados acontece exclusivamente no lado do cliente (client-side)",
+      "section8Item3": "Nenhum dado é transmitido a qualquer servidor durante a exportação ou importação",
+      "section8Item4": "Você pode criptografar os pacotes com sua própria senha",
+      "section8Lgpd": "Em conformidade com o Art. 18 da LGPD (direito à portabilidade dos dados), você pode exportar seus dados a qualquer momento e importá-los em outro dispositivo."
     }
   },
   "tooltip": {
@@ -688,9 +695,7 @@
           },
           {
             "title": "❤️ Contribuidores",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -732,9 +737,7 @@
           },
           {
             "title": "❤️ Contribuidores",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -818,9 +821,7 @@
           },
           {
             "title": "❤️ Contribuidores",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -836,15 +837,11 @@
           },
           {
             "title": "🧹 Outros",
-            "items": [
-              "**release:** V1.8.1 [skip ci] (079945e)"
-            ]
+            "items": ["**release:** V1.8.1 [skip ci] (079945e)"]
           },
           {
             "title": "❤️ Contribuidores",
-            "items": [
-              "Ils15 (@ils15)"
-            ]
+            "items": ["Ils15 (@ils15)"]
           }
         ]
       },
@@ -876,10 +873,7 @@
           },
           {
             "title": "✅ Testes",
-            "items": [
-              "417 testes, 36/36 arquivos passando",
-              "Cobertura >80%"
-            ]
+            "items": ["417 testes, 36/36 arquivos passando", "Cobertura >80%"]
           }
         ]
       },
@@ -1271,5 +1265,46 @@
     "emptyItems": "Adicione itens do histórico de cálculos",
     "saveSuccess": "Orçamento salvo com sucesso!",
     "deleteConfirm": "Tem certeza que deseja excluir o orçamento #{{number}}?"
+  },
+  "sync": {
+    "title": "Sincronização de Dados",
+    "export": {
+      "tab": "Exportar",
+      "title": "Exportar Dados",
+      "description": "Exporte todos os seus dados localmente. Nenhum dado é enviado a servidores.",
+      "encrypt": "Criptografar dados com senha",
+      "password": "Senha para criptografia",
+      "passwordPlaceholder": "Digite uma senha (opcional)",
+      "button": "Exportar Dados",
+      "success": "Dados exportados com sucesso",
+      "downloading": "Preparando download..."
+    },
+    "import": {
+      "tab": "Importar",
+      "title": "Importar Dados",
+      "warning": "Os dados importados serão mesclados com os dados existentes. Dados com o mesmo ID serão atualizados.",
+      "selectFile": "Selecionar arquivo",
+      "dragDrop": "Arraste e solte o arquivo aqui ou clique para selecionar",
+      "acceptedFormats": "Formato aceito: .open3dcalc",
+      "password": "Senha de descriptografia",
+      "passwordPlaceholder": "Digite a senha do arquivo",
+      "mode": "Modo de importação",
+      "modeMerge": "Mesclar (recomendado)",
+      "modeReplace": "Substituir tudo",
+      "modeMergeDesc": "Adiciona dados novos, atualiza existentes",
+      "modeReplaceDesc": "Remove todos os dados atuais e substitui pelos importados",
+      "button": "Importar Dados",
+      "success": "Dados importados com sucesso",
+      "importing": "Importando dados...",
+      "invalidFile": "Arquivo inválido ou corrompido",
+      "wrongPassword": "Senha incorreta",
+      "results": {
+        "imported": "{{count}} itens importados",
+        "conflicts": "{{count}} conflitos resolvidos",
+        "errors": "{{count}} erros encontrados"
+      }
+    },
+    "lgpd_notice": "Todos os dados permanecem no seu navegador. Nenhum dado é enviado a servidores externos. Consulte nossa Política de Privacidade.",
+    "privacy_link": "Política de Privacidade"
   }
 }

@@ -17,6 +17,7 @@ import { useCurrency } from "@/shared/hooks/useCurrency";
 import { useDismissablePopover } from "@/shared/hooks/useDismissablePopover";
 import { ThemeToggle } from "@/shared/components/Header/ThemeToggle";
 import { useUpdaterStore } from "../UpdateNotification/UpdaterStore";
+import { DataSyncButton } from "@/shared/components/ui/DataSyncButton";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -262,6 +263,9 @@ export function Header() {
               {i18n.language === "pt-BR" ? "EN" : "PT"}
             </span>
           </button>
+
+          {/* Data Sync */}
+          <DataSyncButton variant="icon" />
         </div>
       </div>
     </header>

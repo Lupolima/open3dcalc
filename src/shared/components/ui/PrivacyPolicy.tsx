@@ -1,54 +1,54 @@
-import { useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Shield, X } from 'lucide-react'
+import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Shield, X } from "lucide-react";
 
 interface PrivacyPolicyProps {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
 }
 
 export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
-  const { t } = useTranslation()
-  const dialogRef = useRef<HTMLDivElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const { t } = useTranslation();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Focus trap + ESC close
   useEffect(() => {
-    if (!open) return
-    closeButtonRef.current?.focus()
+    if (!open) return;
+    closeButtonRef.current?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
+      if (e.key === "Escape") {
+        onClose();
+        return;
       }
-      if (e.key !== 'Tab') return
-      const dialog = dialogRef.current
-      if (!dialog) return
+      if (e.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
       const focusable = dialog.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      )
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
 
       if (e.shiftKey) {
         if (document.activeElement === first) {
-          e.preventDefault()
-          last.focus()
+          e.preventDefault();
+          last.focus();
         }
       } else {
         if (document.activeElement === last) {
-          e.preventDefault()
-          first.focus()
+          e.preventDefault();
+          first.focus();
         }
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [open, onClose])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div
@@ -56,7 +56,7 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={t('privacy.policy.title')}
+      aria-label={t("privacy.policy.title")}
     >
       <div
         ref={dialogRef}
@@ -69,13 +69,15 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
             <Shield className="w-5 h-5 text-[var(--color-accent)]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold gradient-text">{t('privacy.policy.title')}</h2>
+            <h2 className="text-lg font-bold gradient-text">
+              {t("privacy.policy.title")}
+            </h2>
           </div>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             className="shrink-0 p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-white hover:bg-[var(--color-bg-hover)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
-            aria-label={t('common.close')}
+            aria-label={t("common.close")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -83,13 +85,17 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
 
         {/* Content */}
         <div className="space-y-5 text-sm text-[var(--color-text-secondary)] leading-relaxed pr-1">
-          <p className="text-xs text-[var(--color-text-muted)]">Última atualização: 28 de Junho de 2026</p>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            Última atualização: 28 de Junho de 2026
+          </p>
 
           <Section title="1. Modelo de Dados">
             <p>
-              O Open3DCalc é uma aplicação 100% client-side. Todos os dados inseridos pelo usuário — parâmetros de cálculo,
-              dados de clientes, orçamentos, configurações — são armazenados exclusivamente no navegador do usuário
-              (localStorage). Nenhum dado é enviado, transmitido ou armazenado em servidores externos.
+              O Open3DCalc é uma aplicação 100% client-side. Todos os dados
+              inseridos pelo usuário — parâmetros de cálculo, dados de clientes,
+              orçamentos, configurações — são armazenados exclusivamente no
+              navegador do usuário (localStorage). Nenhum dado é enviado,
+              transmitido ou armazenado em servidores externos.
             </p>
           </Section>
 
@@ -107,13 +113,18 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
             <ul className="list-disc list-inside space-y-1">
               <li>Acessar seus dados (via interface do app)</li>
               <li>Corrigir dados incompletos ou desatualizados</li>
-              <li>Excluir seus dados (botão &ldquo;Limpar todos os dados&rdquo;)</li>
+              <li>
+                Excluir seus dados (botão &ldquo;Limpar todos os dados&rdquo;)
+              </li>
               <li>Exportar seus dados em formato JSON</li>
             </ul>
           </Section>
 
           <Section title="4. Transferência Internacional">
-            <p>Não há transferência internacional de dados, pois nenhum dado sai do seu dispositivo.</p>
+            <p>
+              Não há transferência internacional de dados, pois nenhum dado sai
+              do seu dispositivo.
+            </p>
           </Section>
 
           <Section title="5. Retenção de Dados">
@@ -130,13 +141,17 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
             <ul className="list-disc list-inside space-y-1">
               <li>Fazer backup regular dos dados (export JSON)</li>
               <li>Manter o navegador atualizado</li>
-              <li>Não utilizar em computadores compartilhados sem limpar os dados ao final</li>
+              <li>
+                Não utilizar em computadores compartilhados sem limpar os dados
+                ao final
+              </li>
             </ul>
           </Section>
 
           <Section title="7. Contato">
             <p>
-              Desenvolvido por @ils15. Para questões de privacidade, abra uma issue em{' '}
+              Desenvolvido por @ils15. Para questões de privacidade, abra uma
+              issue em{" "}
               <a
                 href="https://github.com/ils15/open3dcalc"
                 target="_blank"
@@ -147,17 +162,36 @@ export function PrivacyPolicy({ open, onClose }: PrivacyPolicyProps) {
               </a>
             </p>
           </Section>
+
+          <Section title={t("privacy.policy.section8Title")}>
+            <p>{t("privacy.policy.section8Intro")}</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>{t("privacy.policy.section8Item1")}</li>
+              <li>{t("privacy.policy.section8Item2")}</li>
+              <li>{t("privacy.policy.section8Item3")}</li>
+              <li>{t("privacy.policy.section8Item4")}</li>
+            </ul>
+            <p>{t("privacy.policy.section8Lgpd")}</p>
+          </Section>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <h4 className="font-semibold text-[var(--color-text-primary)] mb-1.5">{title}</h4>
+      <h4 className="font-semibold text-[var(--color-text-primary)] mb-1.5">
+        {title}
+      </h4>
       <div className="space-y-1.5">{children}</div>
     </div>
-  )
+  );
 }

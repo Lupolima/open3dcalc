@@ -1,21 +1,31 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'node:path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
 
 export default defineConfig({
-  base: './',
+  base: "./",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@/platform': path.resolve(__dirname, 'src/platform'),
-      '@/shared': path.resolve(__dirname, 'src/shared'),
+      "@/platform": path.resolve(__dirname, "src/platform"),
+      "@/shared": path.resolve(__dirname, "src/shared"),
     },
   },
   server: {
     allowedHosts: true,
   },
   optimizeDeps: {
-    exclude: ['three', '@react-three/fiber', '@react-three/drei'],
+    // use-sync-external-store (transitive dep of zustand/react) is CJS and
+    // breaks Vite's interop ("does not provide an export named 'default'").
+    // Pre-bundling the main entry AND the /shim/with-selector.js subpath that
+    // zustand imports forces correct CJS interop.
+    include: [
+      "use-sync-external-store",
+      "use-sync-external-store/shim/with-selector.js",
+      "scheduler",
+      "stats.js",
+    ],
+    exclude: ["three", "@react-three/fiber", "@react-three/drei"],
   },
-})
+});
