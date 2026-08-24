@@ -539,7 +539,14 @@
       "readPolicy": "📖 Read full Privacy Policy"
     },
     "policy": {
-      "title": "Privacy Policy"
+      "title": "Privacy Policy",
+      "section8Title": "8. Data Export and Portability",
+      "section8Intro": "Open3DCalc supports local data export and import via encrypted .open3dcalc bundles:",
+      "section8Item1": "Local export/import via encrypted .open3dcalc bundles",
+      "section8Item2": "All data processing happens exclusively client-side",
+      "section8Item3": "No data is transmitted to any server during export or import",
+      "section8Item4": "You can encrypt bundles with your own password",
+      "section8Lgpd": "In compliance with LGPD Art. 18 (right to data portability), you can export your data at any time and import it on another device."
     }
   },
   "tooltip": {

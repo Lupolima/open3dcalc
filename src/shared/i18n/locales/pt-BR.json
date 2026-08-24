@@ -539,7 +539,14 @@
       "readPolicy": "📖 Ler Política de Privacidade completa"
     },
     "policy": {
-      "title": "Política de Privacidade"
+      "title": "Política de Privacidade",
+      "section8Title": "8. Exportação e Portabilidade de Dados",
+      "section8Intro": "O Open3DCalc suporta exportação e importação local de dados por meio de pacotes criptografados .open3dcalc:",
+      "section8Item1": "Exportação/importação local via pacotes .open3dcalc criptografados",
+      "section8Item2": "Todo o processamento de dados acontece exclusivamente no lado do cliente (client-side)",
+      "section8Item3": "Nenhum dado é transmitido a qualquer servidor durante a exportação ou importação",
+      "section8Item4": "Você pode criptografar os pacotes com sua própria senha",
+      "section8Lgpd": "Em conformidade com o Art. 18 da LGPD (direito à portabilidade dos dados), você pode exportar seus dados a qualquer momento e importá-los em outro dispositivo."
     }
   },
   "tooltip": {
