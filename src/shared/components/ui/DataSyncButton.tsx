@@ -47,18 +47,22 @@ export function DataSyncButton({
         title={t("sync.title")}
         className={
           isIcon
-            ? `flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 min-h-[44px] min-w-[44px] rounded-xl transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-muted)] ${className}`
+            ? `flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] min-w-[44px] whitespace-nowrap rounded-xl transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-muted)] ${className}`
             : `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none min-h-[48px] ${className}`
         }
       >
         <RefreshCw
           className={
             isIcon
-              ? "w-5 h-5"
+              ? "w-5 h-5 shrink-0"
               : "w-[18px] h-[18px] shrink-0 text-[var(--color-accent-light)]"
           }
         />
-        {!isIcon && (
+        {isIcon ? (
+          <span className="hidden sm:inline text-[13px] font-semibold">
+            {t("sync.title")}
+          </span>
+        ) : (
           <span className="text-sm font-medium">{t("sync.title")}</span>
         )}
       </button>
