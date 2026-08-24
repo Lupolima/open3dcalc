@@ -4,8 +4,7 @@ O release é dividido em **preparação** e **publicação**. A preparação nun
 cria tag ou GitHub Release. A publicação só aceita uma tag imutável apontando
 para um commit já incorporado em `main`.
 
-> **Regra permanente:** não inventar, criar ou publicar `v1.10.0` neste fluxo.
-> Tags publicadas nunca são movidas, apagadas ou recriadas.
+> **Regra permanente:** tags publicadas nunca são movidas, apagadas ou recriadas.
 
 ## Pré-requisitos
 

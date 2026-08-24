@@ -6,7 +6,7 @@ name: Release preparation
     inputs:
       bump:
         description: >-
-          Version bump to prepare (v1.10.0 is intentionally not supported)
+          Version bump to prepare
         required: true
         type: choice
         default: patch
@@ -88,10 +88,6 @@ jobs:
           if [ "${#EXISTING_BRANCHES[@]}" -eq 1 ]; then
             BRANCH="${EXISTING_BRANCHES[0]}"
             VERSION="${BRANCH#release/}"
-            [ "$VERSION" != "v1.10.0" ] || {
-              echo "v1.10.0 is intentionally excluded from this automation." >&2
-              exit 1
-            }
             git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
             git switch --track "origin/$BRANCH"
             message="Reusing existing $BRANCH; changelog/version are not bumped"
@@ -108,10 +104,6 @@ jobs:
           esac
 
           VERSION="v$(node -p "require('./package.json').version")"
-          if [ "$VERSION" = "v1.10.0" ]; then
-            echo "v1.10.0 is intentionally excluded from this automation." >&2
-            exit 1
-          fi
           BRANCH="release/$VERSION"
           git switch -c "$BRANCH"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"

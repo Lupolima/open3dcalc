@@ -663,6 +663,31 @@
     },
     "versions": [
       {
+        "version": "1.10.0",
+        "date": "",
+        "sections": [
+          {
+            "title": "🚀 Novidades",
+            "items": [
+              "**sync:** Cross-device data sync via encrypted export/import (#56, closes #55)"
+            ]
+          },
+          {
+            "title": "🐛 Correções",
+            "items": [
+              "**ci:** Fix npm ci failure — regenerate lock file with missing Windows-only optional deps",
+              "**ci:** Make postinstall (`electron-rebuild`) conditional — skips in CI environments",
+              "**vite:** Resolve CJS interop issues with `use-sync-external-store` and `scheduler`",
+              "**ui:** Resolve recharts infinite loop via i18n `useSuspense: false` workaround (recharts#7463)"
+            ]
+          },
+          {
+            "title": "❤️ Contribuidores",
+            "items": ["Ils15 (@ils15)"]
+          }
+        ]
+      },
+      {
         "version": "1.9.3",
         "date": "",
         "sections": [
