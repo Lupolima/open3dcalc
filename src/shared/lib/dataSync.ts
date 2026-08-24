@@ -859,7 +859,7 @@ function triggerDownload(blob: Blob, fileName: string): void {
 function syncFileName(date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   const stamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
-  return `open3dcalc-sync-${stamp}.json`;
+  return `open3dcalc-sync-${stamp}.open3dcalc`;
 }
 
 /**

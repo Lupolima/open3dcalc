@@ -18,6 +18,7 @@ import { CURRENCIES, type CurrencyCode } from "@/shared/lib/currency";
 import { useCurrency } from "@/shared/hooks/useCurrency";
 import { useDismissablePopover } from "@/shared/hooks/useDismissablePopover";
 import { ThemeToggle } from "./ThemeToggle";
+import { DataSyncButton } from "@/shared/components/ui/DataSyncButton";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -310,6 +311,9 @@ export function Header() {
                     {i18n.language === "pt-BR" ? "PT-BR" : "EN-US"}
                   </span>
                 </button>
+
+                {/* Data Sync */}
+                <DataSyncButton onOpenChange={setShowSettings} />
 
                 {/* Version */}
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--color-text-muted)]">
