@@ -308,18 +308,35 @@ export async function analyzeMeshFile(
   throw new Error(`Unsupported format: ${ext}. Use STL, OBJ or 3MF.`);
 }
 
-async function parse3mf(
-  file: File,
-  options: ParseOptions = {},
-): Promise<{ geometry: THREE.BufferGeometry; analysis: MeshAnalysis }> {
-  const THREE = await import("three");
-  const buffer = await file.arrayBuffer();
-  const uint8 = new Uint8Array(buffer);
+/**
+ * Uma entrada do diretório central do ZIP que embala o 3MF.
+ * O 3MF é um pacote OPC (um ZIP), então ler o arquivo é ler o ZIP primeiro.
+ */
+interface ZipEntry {
+  name: string;
+  compressionMethod: number;
+  compressedSize: number;
+  uncompressedSize: number;
+  localHeaderOffset: number;
+}
 
-  // Minimal ZIP parser for 3MF (3MF is a ZIP archive containing XML)
-  // Find the End of Central Directory record
+/**
+ * Lê o diretório central do ZIP e devolve TODAS as entradas indexadas por nome
+ * em minúsculas (nomes de parte OPC são comparados sem diferenciar maiúsculas).
+ *
+ * Antes esta varredura parava na PRIMEIRA entrada terminada em ".model" e
+ * decodificava só ela. Isso quebra os arquivos da "production extension"
+ * (projetos do OrcaSlicer/BambuStudio), em que o modelo raiz não contém malha
+ * nenhuma — só <components p:path="/3D/Objects/object_N.model"> — e as malhas
+ * de verdade moram em outras partes do mesmo ZIP.
+ */
+function readZipCentralDirectory(uint8: Uint8Array): Map<string, ZipEntry> {
+  // O End Of Central Directory fica, por especificação, nos últimos
+  // 22 + 65535 bytes (o comentário do ZIP tem no máximo 64 KiB). Limitar a
+  // busca a essa janela evita varrer um arquivo de centenas de MB byte a byte.
+  const scanStart = Math.max(0, uint8.length - 22 - 0xffff);
   let eocdOffset = -1;
-  for (let i = uint8.length - 22; i >= 0; i--) {
+  for (let i = uint8.length - 22; i >= scanStart; i--) {
     if (
       uint8[i] === 0x50 &&
       uint8[i + 1] === 0x4b &&
@@ -333,165 +350,365 @@ async function parse3mf(
   if (eocdOffset === -1)
     throw new Error("Invalid 3MF file: not a valid ZIP archive");
 
-  // Read central directory offset
   const cdOffset =
-    uint8[eocdOffset + 16] |
-    (uint8[eocdOffset + 17] << 8) |
-    (uint8[eocdOffset + 18] << 16) |
-    (uint8[eocdOffset + 19] << 24);
+    (uint8[eocdOffset + 16] |
+      (uint8[eocdOffset + 17] << 8) |
+      (uint8[eocdOffset + 18] << 16) |
+      (uint8[eocdOffset + 19] << 24)) >>>
+    0;
   const numEntries = uint8[eocdOffset + 10] | (uint8[eocdOffset + 11] << 8);
 
-  // Find the 3D/3DModel.model file
+  const entries = new Map<string, ZipEntry>();
   let offset = cdOffset;
   for (let i = 0; i < numEntries; i++) {
+    // 0x02014b50 = assinatura de um cabeçalho do diretório central.
     if (uint8[offset] !== 0x50 || uint8[offset + 1] !== 0x4b) break;
 
     const fileNameLen = uint8[offset + 28] | (uint8[offset + 29] << 8);
     const extraLen = uint8[offset + 30] | (uint8[offset + 31] << 8);
     const commentLen = uint8[offset + 32] | (uint8[offset + 33] << 8);
-    const localHeaderOffset =
-      uint8[offset + 42] |
-      (uint8[offset + 43] << 8) |
-      (uint8[offset + 44] << 16) |
-      (uint8[offset + 45] << 24);
-    const compressedSize =
-      uint8[offset + 20] |
-      (uint8[offset + 21] << 8) |
-      (uint8[offset + 22] << 16) |
-      (uint8[offset + 23] << 24);
-    const uncompressedSize =
-      uint8[offset + 24] |
-      (uint8[offset + 25] << 8) |
-      (uint8[offset + 26] << 16) |
-      (uint8[offset + 27] << 24);
-    const compressionMethod = uint8[offset + 10] | (uint8[offset + 11] << 8);
-
-    const fileName = new TextDecoder().decode(
+    const name = new TextDecoder().decode(
       uint8.slice(offset + 46, offset + 46 + fileNameLen),
     );
 
-    if (fileName === "3D/3DModel.model" || fileName.endsWith(".model")) {
-      // Extract the file data
-      const localHeaderStart = localHeaderOffset;
-      const localFileNameLen =
-        uint8[localHeaderStart + 26] | (uint8[localHeaderStart + 27] << 8);
-      const localExtraLen =
-        uint8[localHeaderStart + 28] | (uint8[localHeaderStart + 29] << 8);
-      const dataStart =
-        localHeaderStart + 30 + localFileNameLen + localExtraLen;
-
-      if (compressionMethod === 0) {
-        // Stored (no compression)
-        const xmlData = new TextDecoder().decode(
-          uint8.slice(dataStart, dataStart + uncompressedSize),
-        );
-        return parse3mfXml(xmlData, THREE, options);
-      } else if (compressionMethod === 8) {
-        // Deflate - use DecompressionStream
-        const compressed = uint8.slice(dataStart, dataStart + compressedSize);
-        const ds = new DecompressionStream("deflate-raw");
-        const writer = ds.writable.getWriter();
-        writer.write(compressed);
-        writer.close();
-        const reader = ds.readable.getReader();
-        const chunks: Uint8Array[] = [];
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-        const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
-        const decompressed = new Uint8Array(totalLen);
-        let pos = 0;
-        for (const chunk of chunks) {
-          decompressed.set(chunk, pos);
-          pos += chunk.length;
-        }
-        const xmlData = new TextDecoder().decode(decompressed);
-        return parse3mfXml(xmlData, THREE, options);
-      } else {
-        throw new Error(`Unsupported compression method: ${compressionMethod}`);
-      }
-    }
+    entries.set(normalizePartName(name), {
+      name,
+      compressionMethod: uint8[offset + 10] | (uint8[offset + 11] << 8),
+      compressedSize:
+        (uint8[offset + 20] |
+          (uint8[offset + 21] << 8) |
+          (uint8[offset + 22] << 16) |
+          (uint8[offset + 23] << 24)) >>>
+        0,
+      uncompressedSize:
+        (uint8[offset + 24] |
+          (uint8[offset + 25] << 8) |
+          (uint8[offset + 26] << 16) |
+          (uint8[offset + 27] << 24)) >>>
+        0,
+      localHeaderOffset:
+        (uint8[offset + 42] |
+          (uint8[offset + 43] << 8) |
+          (uint8[offset + 44] << 16) |
+          (uint8[offset + 45] << 24)) >>>
+        0,
+    });
 
     offset += 46 + fileNameLen + extraLen + commentLen;
   }
 
+  return entries;
+}
+
+/**
+ * Normaliza um nome de parte OPC para servir de chave: sem a barra inicial
+ * (o `p:path` do 3MF é absoluto, `/3D/Objects/x.model`, mas o ZIP guarda
+ * `3D/Objects/x.model`), com barras invertidas viradas e em minúsculas.
+ */
+function normalizePartName(name: string): string {
+  return name.replace(/\\/g, "/").replace(/^\/+/, "").toLowerCase();
+}
+
+/** Descomprime uma entrada do ZIP e devolve o texto (as partes do 3MF são XML). */
+async function readZipEntryText(
+  uint8: Uint8Array,
+  entry: ZipEntry,
+): Promise<string> {
+  // Os tamanhos vêm do diretório central; o cabeçalho local só é consultado
+  // para saber onde os dados começam, porque os campos de tamanho dele podem
+  // estar zerados quando o escritor usou data descriptor.
+  const lhs = entry.localHeaderOffset;
+  const localFileNameLen = uint8[lhs + 26] | (uint8[lhs + 27] << 8);
+  const localExtraLen = uint8[lhs + 28] | (uint8[lhs + 29] << 8);
+  const dataStart = lhs + 30 + localFileNameLen + localExtraLen;
+
+  if (entry.compressionMethod === 0) {
+    // Stored: os bytes já são o conteúdo.
+    return new TextDecoder().decode(
+      uint8.slice(dataStart, dataStart + entry.uncompressedSize),
+    );
+  }
+
+  if (entry.compressionMethod === 8) {
+    // Deflate cru (sem cabeçalho zlib) — é o que o ZIP usa.
+    const compressed = uint8.slice(dataStart, dataStart + entry.compressedSize);
+    const ds = new DecompressionStream("deflate-raw");
+    const writer = ds.writable.getWriter();
+    writer.write(compressed);
+    writer.close();
+    const reader = ds.readable.getReader();
+    const chunks: Uint8Array[] = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
+    const decompressed = new Uint8Array(totalLen);
+    let pos = 0;
+    for (const chunk of chunks) {
+      decompressed.set(chunk, pos);
+      pos += chunk.length;
+    }
+    return new TextDecoder().decode(decompressed);
+  }
+
+  throw new Error(`Unsupported compression method: ${entry.compressionMethod}`);
+}
+
+/**
+ * Escolhe a parte que é o modelo raiz do pacote.
+ * Ordem: o caminho convencional `3D/3dmodel.model` e, se ele não existir,
+ * a primeira parte `.model` do pacote.
+ */
+function pick3mfRootModel(entries: Map<string, ZipEntry>): string {
+  if (entries.has("3d/3dmodel.model")) return "3d/3dmodel.model";
+
+  for (const key of entries.keys()) {
+    if (key.endsWith(".model")) return key;
+  }
   throw new Error("3MF file does not contain a valid 3D model");
 }
 
-function parse3mfXml(
-  xmlData: string,
-  THREE: typeof import("three"),
-  options: ParseOptions = {},
-): { geometry: THREE.BufferGeometry; analysis: MeshAnalysis } {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlData, "text/xml");
+/**
+ * Matriz do 3MF: 12 números que formam uma 4x3 em convenção de vetor-linha
+ * (`m00 m01 m02 m10 m11 m12 m20 m21 m22 m30 m31 m32`), onde a última linha é
+ * a translação. A identidade é o valor implícito quando o atributo falta.
+ */
+type Mat3mf = number[];
 
-  const error = doc.querySelector("parsererror");
-  if (error) throw new Error("Error parsing 3MF XML");
+const IDENTITY_3MF: Mat3mf = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
 
-  const objects = doc.querySelectorAll("object");
-  const allPositions: number[] = [];
-  const allNormals: number[] = [];
+function parse3mfTransform(value: string | null): Mat3mf {
+  if (!value) return IDENTITY_3MF;
+  const n = value.trim().split(/\s+/).map(Number);
+  if (n.length !== 12 || n.some((v) => !Number.isFinite(v)))
+    return IDENTITY_3MF;
+  return n;
+}
 
-  for (const obj of Array.from(objects)) {
-    const mesh = obj.querySelector("mesh");
-    if (!mesh) continue;
-
-    // Parse vertices
-    const vertices = mesh.querySelectorAll("vertex");
-    const vertexCoords: [number, number, number][] = [];
-    for (const v of Array.from(vertices)) {
-      const x = parseFloat(v.getAttribute("x") || "0");
-      const y = parseFloat(v.getAttribute("y") || "0");
-      const z = parseFloat(v.getAttribute("z") || "0");
-      vertexCoords.push([x, y, z]);
+/**
+ * Compõe duas transformações: aplica `a` primeiro e `b` depois
+ * (p' = p · a · b, seguindo a convenção de vetor-linha do 3MF).
+ */
+function mul3mf(a: Mat3mf, b: Mat3mf): Mat3mf {
+  const out = new Array<number>(12);
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 3; col++) {
+      out[row * 3 + col] =
+        a[row * 3] * b[col] +
+        a[row * 3 + 1] * b[3 + col] +
+        a[row * 3 + 2] * b[6 + col];
     }
+  }
+  // Linha de translação: a translação de `a` passa pela rotação de `b`.
+  for (let col = 0; col < 3; col++) {
+    out[9 + col] =
+      a[9] * b[col] + a[10] * b[3 + col] + a[11] * b[6 + col] + b[9 + col];
+  }
+  return out;
+}
 
-    // Parse triangles
-    const triangles = mesh.querySelectorAll("triangle");
-    for (const t of Array.from(triangles)) {
-      const v1 = parseInt(t.getAttribute("v1") || "0");
-      const v2 = parseInt(t.getAttribute("v2") || "0");
-      const v3 = parseInt(t.getAttribute("v3") || "0");
+/**
+ * Percorre o grafo de objetos do 3MF a partir dos itens de `<build>` e acumula
+ * os triângulos já transformados para as coordenadas finais da bandeja.
+ *
+ * Trata os três casos que o parser antigo não tratava:
+ *  - `<components>`, que montam um objeto a partir de outros objetos;
+ *  - `p:path`, que põe o objeto referenciado em OUTRA parte do ZIP
+ *    (production extension — é o layout de projeto do OrcaSlicer/BambuStudio);
+ *  - as matrizes de `<item>` e `<component>`, sem as quais objetos múltiplos
+ *    se empilham todos na origem.
+ */
+async function collect3mfTriangles(
+  uint8: Uint8Array,
+  entries: Map<string, ZipEntry>,
+  rootPath: string,
+): Promise<{ positions: number[]; normals: number[] }> {
+  const parser = new DOMParser();
+  const docs = new Map<string, Document>();
 
-      if (
-        v1 < vertexCoords.length &&
-        v2 < vertexCoords.length &&
-        v3 < vertexCoords.length
-      ) {
-        const [x1, y1, z1] = vertexCoords[v1];
-        const [x2, y2, z2] = vertexCoords[v2];
-        const [x3, y3, z3] = vertexCoords[v3];
+  /** Carrega e memoiza uma parte `.model` do pacote. */
+  const loadDoc = async (path: string): Promise<Document> => {
+    const key = normalizePartName(path);
+    const cached = docs.get(key);
+    if (cached) return cached;
 
-        allPositions.push(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+    const entry = entries.get(key);
+    if (!entry) throw new Error(`3MF part not found: ${path}`);
 
-        // Calculate normal
-        const ax = x2 - x1,
-          ay = y2 - y1,
-          az = z2 - z1;
-        const bx = x3 - x1,
-          by = y3 - y1,
-          bz = z3 - z1;
-        let nx = ay * bz - az * by;
-        let ny = az * bx - ax * bz;
-        let nz = ax * by - ay * bx;
-        const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
-        nx /= len;
-        ny /= len;
-        nz /= len;
+    const doc = parser.parseFromString(
+      await readZipEntryText(uint8, entry),
+      "text/xml",
+    );
+    if (doc.querySelector("parsererror"))
+      throw new Error(`Error parsing 3MF XML in ${path}`);
+    docs.set(key, doc);
+    return doc;
+  };
 
-        for (let i = 0; i < 3; i++) {
-          allNormals.push(nx, ny, nz);
-        }
+  const positions: number[] = [];
+  const normals: number[] = [];
+
+  /**
+   * Emite um objeto (e o que ele referenciar) já transformado.
+   * `stack` guarda os pares parte#id do caminho atual para barrar ciclos —
+   * um 3MF malformado poderia se auto-referenciar e travar a aba do navegador.
+   */
+  const emitObject = async (
+    path: string,
+    objectId: string,
+    transform: Mat3mf,
+    stack: Set<string>,
+  ): Promise<void> => {
+    const key = `${normalizePartName(path)}#${objectId}`;
+    if (stack.has(key) || stack.size > 32) return;
+
+    const doc = await loadDoc(path);
+    const obj = Array.from(doc.querySelectorAll("object")).find(
+      (o) => o.getAttribute("id") === objectId,
+    );
+    if (!obj) return;
+
+    stack.add(key);
+    try {
+      const mesh = obj.querySelector("mesh");
+      if (mesh) {
+        appendMesh(mesh, transform, positions, normals);
       }
+
+      for (const component of Array.from(obj.querySelectorAll("component"))) {
+        const childId = component.getAttribute("objectid");
+        if (!childId) continue;
+        // `p:path` aponta para outra parte; sem ele, o objeto é local.
+        const childPath =
+          component.getAttribute("p:path") ||
+          component.getAttribute("path") ||
+          path;
+        const childTransform = mul3mf(
+          parse3mfTransform(component.getAttribute("transform")),
+          transform,
+        );
+        await emitObject(childPath, childId, childTransform, stack);
+      }
+    } finally {
+      stack.delete(key);
+    }
+  };
+
+  const rootDoc = await loadDoc(rootPath);
+  const items = Array.from(rootDoc.querySelectorAll("build > item"));
+
+  if (items.length > 0) {
+    for (const item of items) {
+      const objectId = item.getAttribute("objectid");
+      if (!objectId) continue;
+      const itemPath =
+        item.getAttribute("p:path") || item.getAttribute("path") || rootPath;
+      await emitObject(
+        itemPath,
+        objectId,
+        parse3mfTransform(item.getAttribute("transform")),
+        new Set<string>(),
+      );
     }
   }
 
-  if (allPositions.length === 0)
-    throw new Error("No triangles found in 3MF file");
+  // Recurso final: pacotes sem `<build>` utilizável (ou cujos itens não
+  // resolveram) ainda rendem geometria se houver malha solta em <resources>.
+  if (positions.length === 0) {
+    for (const mesh of Array.from(rootDoc.querySelectorAll("object mesh"))) {
+      appendMesh(mesh, IDENTITY_3MF, positions, normals);
+    }
+  }
 
+  return { positions, normals };
+}
+
+/** Converte um `<mesh>` do 3MF em triângulos soltos, aplicando a matriz. */
+function appendMesh(
+  mesh: Element,
+  m: Mat3mf,
+  positions: number[],
+  normals: number[],
+): void {
+  const vertices = mesh.querySelectorAll("vertex");
+  // Coordenadas já transformadas, em array plano: 3 números por vértice.
+  const coords = new Float64Array(vertices.length * 3);
+  let i = 0;
+  for (const v of Array.from(vertices)) {
+    const x = parseFloat(v.getAttribute("x") || "0");
+    const y = parseFloat(v.getAttribute("y") || "0");
+    const z = parseFloat(v.getAttribute("z") || "0");
+    coords[i++] = x * m[0] + y * m[3] + z * m[6] + m[9];
+    coords[i++] = x * m[1] + y * m[4] + z * m[7] + m[10];
+    coords[i++] = x * m[2] + y * m[5] + z * m[8] + m[11];
+  }
+
+  const vertexCount = vertices.length;
+  for (const t of Array.from(mesh.querySelectorAll("triangle"))) {
+    const v1 = parseInt(t.getAttribute("v1") || "0");
+    const v2 = parseInt(t.getAttribute("v2") || "0");
+    const v3 = parseInt(t.getAttribute("v3") || "0");
+    if (v1 >= vertexCount || v2 >= vertexCount || v3 >= vertexCount) continue;
+
+    const x1 = coords[v1 * 3],
+      y1 = coords[v1 * 3 + 1],
+      z1 = coords[v1 * 3 + 2];
+    const x2 = coords[v2 * 3],
+      y2 = coords[v2 * 3 + 1],
+      z2 = coords[v2 * 3 + 2];
+    const x3 = coords[v3 * 3],
+      y3 = coords[v3 * 3 + 1],
+      z3 = coords[v3 * 3 + 2];
+
+    positions.push(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+
+    // Normal da face, calculada depois da transformação — assim espelhamento
+    // e rotação já vêm embutidos, sem precisar transformar normais à parte.
+    const ax = x2 - x1,
+      ay = y2 - y1,
+      az = z2 - z1;
+    const bx = x3 - x1,
+      by = y3 - y1,
+      bz = z3 - z1;
+    let nx = ay * bz - az * by;
+    let ny = az * bx - ax * bz;
+    let nz = ax * by - ay * bx;
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+    nx /= len;
+    ny /= len;
+    nz /= len;
+    for (let k = 0; k < 3; k++) normals.push(nx, ny, nz);
+  }
+}
+
+async function parse3mf(
+  file: File,
+  options: ParseOptions = {},
+): Promise<{ geometry: THREE.BufferGeometry; analysis: MeshAnalysis }> {
+  const THREE = await import("three");
+  const uint8 = new Uint8Array(await file.arrayBuffer());
+
+  const entries = readZipCentralDirectory(uint8);
+  const rootPath = pick3mfRootModel(entries);
+  const { positions, normals } = await collect3mfTriangles(
+    uint8,
+    entries,
+    rootPath,
+  );
+
+  if (positions.length === 0) throw new Error("No triangles found in 3MF file");
+
+  return build3mfGeometry(positions, normals, THREE, options);
+}
+
+function build3mfGeometry(
+  allPositions: number[],
+  allNormals: number[],
+  THREE: typeof import("three"),
+  options: ParseOptions = {},
+): { geometry: THREE.BufferGeometry; analysis: MeshAnalysis } {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
     "position",
@@ -505,77 +722,11 @@ function parse3mfXml(
   }
   geometry.computeBoundingBox();
 
-  const volume = calcVolumeFromPositions(allPositions);
-  const box = geometry.boundingBox!;
-  const meshSurfaceArea = calculateSurfaceArea(geometry);
-  const analysis: MeshAnalysis = {
-    volume,
-    triangleCount: allPositions.length / 9,
-    vertexCount: allPositions.length / 3,
-    dimensions: {
-      x: box.max.x - box.min.x,
-      y: box.max.y - box.min.y,
-      z: box.max.z - box.min.z,
-    },
-    surfaceArea: +meshSurfaceArea.toFixed(2),
-    boundingBox: {
-      min: { x: box.min.x, y: box.min.y, z: box.min.z },
-      max: { x: box.max.x, y: box.max.y, z: box.max.z },
-    },
-    integrity: { valid: true, issues: [] },
-  };
-
-  if (options.estimateSupport) {
-    analysis.supportVolumeCm3 = +estimateSupportVolume(
-      extractTriangles(geometry),
-      options,
-    ).toFixed(2);
-  }
-
-  return { geometry, analysis };
-}
-
-function calcVolumeFromPositions(positions: number[]): number {
-  let volume = 0;
-  const v1 = new (typeof Float32Array !== "undefined" ? Float32Array : Array)(
-    3,
-  );
-  const v2 = new (typeof Float32Array !== "undefined" ? Float32Array : Array)(
-    3,
-  );
-  const v3 = new (typeof Float32Array !== "undefined" ? Float32Array : Array)(
-    3,
-  );
-  const normal = new (
-    typeof Float32Array !== "undefined" ? Float32Array : Array
-  )(3);
-
-  for (let i = 0; i < positions.length; i += 9) {
-    v1[0] = positions[i];
-    v1[1] = positions[i + 1];
-    v1[2] = positions[i + 2];
-    v2[0] = positions[i + 3];
-    v2[1] = positions[i + 4];
-    v2[2] = positions[i + 5];
-    v3[0] = positions[i + 6];
-    v3[1] = positions[i + 7];
-    v3[2] = positions[i + 8];
-
-    normal[0] =
-      (v2[1] - v1[1]) * (v3[2] - v1[2]) - (v2[2] - v1[2]) * (v3[1] - v1[1]);
-    normal[1] =
-      (v2[2] - v1[2]) * (v3[0] - v1[0]) - (v2[0] - v1[0]) * (v3[2] - v1[2]);
-    normal[2] =
-      (v2[0] - v1[0]) * (v3[1] - v1[1]) - (v2[1] - v1[1]) * (v3[0] - v1[0]);
-
-    volume +=
-      (normal[0] * (v1[0] + v2[0] + v3[0]) +
-        normal[1] * (v1[1] + v2[1] + v3[1]) +
-        normal[2] * (v1[2] + v2[2] + v3[2])) /
-      6;
-  }
-
-  return Math.abs(volume);
+  // A análise usa o MESMO caminho de STL e OBJ. Antes o 3MF tinha uma cópia
+  // própria dela, que calculava o volume pelo teorema da divergência dividindo
+  // por 6 em vez de 18 — devolvia o TRIPLO do valor real — e ainda declarava
+  // `integrity: { valid: true }` sem verificar malha nenhuma.
+  return { geometry, analysis: analyzeGeometry(geometry, options) };
 }
 
 function mergeGeometries(
