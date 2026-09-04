@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { estimateSupportVolume } from "../stlParser";
+import { estimateMaterialVolumeCm3, estimateSupportVolume } from "../stlParser";
+import { estimatePrintTime } from "../printTimeEstimator";
 import type { Triangle } from "../stlParser";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -105,5 +106,50 @@ describe("estimateSupportVolume", () => {
     // 1.5 mm³ → 0.0015 cm³
     expect(volume).toBeLessThan(1);
     expect(volume).toBeCloseTo(0.0015, 6);
+  });
+});
+
+describe("estimateMaterialVolumeCm3 — casca por área", () => {
+  it("peça fina sai praticamente maciça, mesmo com infill baixo", () => {
+    // Caso real medido: projeto de litofania do BambuStudio, 4 objetos.
+    // Modelo 92,52 cm³ / 1134 cm² de área → espessura média 1,63 mm, menor
+    // que as duas paredes de 0,42 mm de cada lado. O fatiador gastou 72,8 cm³
+    // (79% do volume); a fórmula antiga previa 32%.
+    const v = estimateMaterialVolumeCm3(92.52, 15, 1134);
+    expect(v).toBeCloseTo(92.52, 2); // satura no volume da peça
+  });
+
+  it("peça grande e maciça fica perto do infill nominal", () => {
+    // Cubo de 100 mm: 1000 cm³, 600 cm² de área. A casca é fração pequena,
+    // então o resultado tem que se aproximar dos 15% de infill — a fórmula
+    // antiga cravava 32% para qualquer geometria.
+    const v = estimateMaterialVolumeCm3(1000, 15, 600);
+    expect(v / 1000).toBeGreaterThan(0.15);
+    expect(v / 1000).toBeLessThan(0.25);
+  });
+
+  it("sem área informada, mantém o modelo antigo", () => {
+    expect(estimateMaterialVolumeCm3(100, 20)).toBeCloseTo(100 * 0.36, 6);
+  });
+
+  it("infill 100% nunca passa do volume da peça", () => {
+    expect(estimateMaterialVolumeCm3(50, 100, 400)).toBeCloseTo(50, 6);
+  });
+});
+
+describe("estimatePrintTime — física da extrusão", () => {
+  it("usa o caminho do BICO, não o comprimento de filamento", () => {
+    // 72,78 cm³ de plástico, altura 90,2 mm, camada 0,2 mm, linha 0,42 mm,
+    // 60 mm/s. Caminho = 72780 / (0,2 × 0,42) = 866.429 mm.
+    // A impressão real levou 4h23m; o modelo antigo dava 0,5 h.
+    const t = estimatePrintTime({
+      volumeCm3: 92.52,
+      materialVolumeCm3: 72.78,
+      dimensions: { x: 405.7, y: 391.6, z: 90.2 },
+      layerHeight: 0.2,
+      speed: 60,
+    });
+    expect(t.estimatedHours).toBeGreaterThan(4);
+    expect(t.estimatedHours).toBeLessThan(6);
   });
 });

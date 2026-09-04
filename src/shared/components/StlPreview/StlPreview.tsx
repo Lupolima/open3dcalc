@@ -325,8 +325,12 @@ export function StlPreview({
           setModelInfo(result);
           onFileParsed?.(result);
         } else {
-          const { analyzeMeshFile, volumeToCm3, estimateWeight } =
-            await import("@/shared/lib/stlParser");
+          const {
+            analyzeMeshFile,
+            volumeToCm3,
+            estimateWeight,
+            estimateMaterialVolumeCm3,
+          } = await import("@/shared/lib/stlParser");
           const { geometry: parsedGeometry, analysis } = await analyzeMeshFile(
             file,
             {
@@ -344,9 +348,26 @@ export function StlPreview({
           const volumeCm3 = volumeToCm3(analysis.volume);
           const density = materialDensity ?? 1.24;
           const infill = infillPercent ?? 20;
-          const weight = estimateWeight(volumeCm3, density, infill, 10);
+          // A área de superfície já era calculada e nunca usada. É ela que
+          // permite estimar a casca de verdade, em vez de assumir 20% do volume.
+          const surfaceAreaCm2 = analysis.surfaceArea / 100; // mm² → cm²
+          const weight = estimateWeight(
+            volumeCm3,
+            density,
+            infill,
+            10,
+            surfaceAreaCm2,
+          );
+          // O tempo tem que usar o plástico REALMENTE extrudado, não o volume
+          // maciço do modelo — senão peça oca é cobrada como se fosse sólida.
+          const materialVolumeCm3 = estimateMaterialVolumeCm3(
+            volumeCm3,
+            infill,
+            surfaceAreaCm2,
+          );
           const timeEstimate = estimatePrintTime({
             volumeCm3,
+            materialVolumeCm3,
             dimensions: analysis.dimensions,
             layerHeight,
             speed,

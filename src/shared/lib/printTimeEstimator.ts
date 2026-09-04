@@ -18,6 +18,14 @@ export interface PrintTimeParams {
   speed?: number;
   /** Infill percentage. Default 20. */
   infillPercent?: number;
+  /** Largura da linha extrudada em mm. Padrão 0,42 (bico de 0,4). */
+  lineWidthMm?: number;
+  /**
+   * Volume de plástico realmente extrudado, em cm³ (casca + infill).
+   * Quando ausente, usa `volumeCm3`, que é o volume MACIÇO do modelo e
+   * portanto superestima o tempo de peça oca.
+   */
+  materialVolumeCm3?: number;
   /** Number of perimeter walls. Default 3. */
   wallCount?: number;
   /** Printer power draw in watts (from store fdmPrintParams / selectedPrinter). */
@@ -34,6 +42,9 @@ const DEFAULT_SETTINGS = {
   layerHeightMm: 0.2,
   nozzleDiameterMm: 0.4,
   printSpeedMmPerS: 60,
+  // Largura da linha extrudada. Bico de 0,4 mm deposita ~0,42 mm nos perfis
+  // padrão de Bambu Studio, OrcaSlicer e PrusaSlicer.
+  lineWidthMm: 0.42,
   travelSpeedMmPerS: 150,
   infillPercent: 20,
   wallCount: 3,
@@ -52,17 +63,21 @@ export function estimatePrintTime(params: PrintTimeParams): PrintTimeEstimate {
   const heightMm = dimensions.z;
   const layers = Math.ceil(heightMm / layerHeight);
 
-  // Estimate filament length from volume
-  // Volume = π * r² * length
+  // Comprimento de filamento CONSUMIDO (só para relatório).
+  // Volume = π * r² * comprimento
   const filamentRadiusMm = 1.75 / 2;
-  const volumeMm3 = volumeCm3 * 1000;
+  const volumeMm3 = (params.materialVolumeCm3 ?? volumeCm3) * 1000;
   const filamentLengthMm =
     volumeMm3 / (Math.PI * filamentRadiusMm * filamentRadiusMm);
 
-  // Estimate print time
-  // Print time = (filament length / print speed) + (travel distance / travel speed)
-  // Travel distance is roughly 25% of print distance
-  const printDistanceMm = filamentLengthMm;
+  // Distância que o BICO percorre. Não é o comprimento de filamento: o bico
+  // deposita uma fita de (altura de camada × largura de linha), muito mais fina
+  // que os 1,75 mm do filamento. A versão anterior dividia o comprimento de
+  // FILAMENTO pela velocidade do BICO, o que subestimava o tempo em ~30×
+  // (2,405 mm² de seção do filamento contra 0,084 mm² da fita extrudada).
+  const lineWidthMm = params.lineWidthMm ?? DEFAULT_SETTINGS.lineWidthMm;
+  const extrusionCrossSectionMm2 = layerHeight * lineWidthMm;
+  const printDistanceMm = volumeMm3 / extrusionCrossSectionMm2;
   const travelDistanceMm = printDistanceMm * 0.25;
 
   const printTimeSeconds = printDistanceMm / speed;

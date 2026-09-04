@@ -605,15 +605,66 @@ export function volumeToCm3(volumeMm3: number): number {
   return volumeMm3 / 1000;
 }
 
+/**
+ * Espessura de casca assumida quando o perfil do fatiador não é informado:
+ * 2 perímetros de 0,42 mm, que é o padrão de Bambu Studio, OrcaSlicer,
+ * PrusaSlicer e Cura para bico de 0,4 mm.
+ */
+export const DEFAULT_SHELL_THICKNESS_MM = 0.84;
+
+/**
+ * Volume de plástico realmente extrudado, em cm³.
+ *
+ * A casca é estimada por **área de superfície × espessura de parede**, limitada
+ * ao volume da peça; só o que sobra recebe infill. A versão anterior assumia
+ * `casca = 20% do volume` — um chute fixo que erra nos dois extremos:
+ *
+ *  - peça fina (litofania, caixa de parede única): as paredes consomem a seção
+ *    inteira e a peça sai praticamente maciça, mas a fórmula antiga previa 20%
+ *    + infill. Medido num projeto real de litofania: 92,5 cm³ de modelo
+ *    gastaram 72,8 cm³ de plástico (79%), contra os 32% que a conta antiga dava;
+ *  - peça grande e maciça: a casca é uma fração pequena do volume, e a fórmula
+ *    antiga superestimava ao cravar 20% (um cubo de 100 mm a 15% de infill é
+ *    ~19% denso, não 32%).
+ *
+ * `surfaceAreaCm2` ausente ou zero cai no modelo antigo, para não quebrar quem
+ * chama a função sem ter a malha em mãos.
+ */
+export function estimateMaterialVolumeCm3(
+  volumeCm3: number,
+  infill: number,
+  surfaceAreaCm2?: number,
+  shellThicknessMm: number = DEFAULT_SHELL_THICKNESS_MM,
+): number {
+  const infillRatio = infill / 100;
+
+  if (!surfaceAreaCm2 || surfaceAreaCm2 <= 0) {
+    return volumeCm3 * (0.2 + 0.8 * infillRatio);
+  }
+
+  // cm² × mm = cm³/10 (1 cm² × 1 mm = 100 mm³ = 0,1 cm³)
+  const shellCm3 = Math.min(
+    volumeCm3,
+    (surfaceAreaCm2 * shellThicknessMm) / 10,
+  );
+  return shellCm3 + (volumeCm3 - shellCm3) * infillRatio;
+}
+
 export function estimateWeight(
   volumeCm3: number,
   density: number,
   infill: number,
   purge: number,
+  surfaceAreaCm2?: number,
+  shellThicknessMm: number = DEFAULT_SHELL_THICKNESS_MM,
 ): number {
-  const infillRatio = infill / 100;
   const purgeRatio = purge / 100;
-  const effectiveVolume = volumeCm3 * (0.2 + 0.8 * infillRatio);
+  const effectiveVolume = estimateMaterialVolumeCm3(
+    volumeCm3,
+    infill,
+    surfaceAreaCm2,
+    shellThicknessMm,
+  );
   const waste = effectiveVolume * purgeRatio;
   return (effectiveVolume + waste) * density;
 }
