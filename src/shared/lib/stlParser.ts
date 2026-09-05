@@ -321,19 +321,21 @@ export async function analyzeMeshFile(
 /** Max total decompressed bytes across all parts of one 3MF package.
 //
 // Sized from a real-world probe: a 15.6 MB 3MF whose largest part inflates to
-// ~76 MB (ratio ~5:1, perfectly legitimate slicer output). 512 MB leaves ~6x
-// headroom above that part while staying orders of magnitude below any real
-// bomb (42.zip expands KBs to GBs/TBs, ratio ~10^9).
+// ~76 MB (ratio ~5:1, perfectly legitimate slicer output). Multicolor and
+// lithophane parts routinely exceed 100 MB per part, so 1 GB keeps ~10x
+// headroom above the probed part while staying orders of magnitude below any
+// real bomb (42.zip expands KBs to GBs/TBs, ratio ~10^9).
 // Kept in check by MAX_RATIO (100:1) and MAX_ENTRIES below, which are what
 // actually stop bombs — not these absolute byte caps. */
-export const MAX_DECOMPRESSED_TOTAL = 512 * 1024 * 1024; // 512 MB
+export const MAX_DECOMPRESSED_TOTAL = 1024 * 1024 * 1024; // 1 GB
 /** Max decompressed bytes of a single ZIP entry.
 //
-// Was 32 MB and false-positived on the legit ~76 MB part above. 256 MB keeps
-// ~3x headroom over it; bombs are still caught by MAX_RATIO (a 42.zip-style
+// Was 32 MB and false-positived on the legit ~76 MB part above. 512 MB keeps
+// ~6x headroom over it (multicolor/lithophane parts pass 100 MB per part);
+// bombs are still caught by MAX_RATIO (a 42.zip-style
 // payload claims ratios ~10^9, far above the 100:1 cap) and by the streaming
 // during-decompression counters, not by this ceiling. */
-export const MAX_EACH_ENTRY = 256 * 1024 * 1024; // 256 MB
+export const MAX_EACH_ENTRY = 512 * 1024 * 1024; // 512 MB
 /** Max allowed expansion ratio (uncompressed / compressed) per entry. */
 export const MAX_RATIO = 100; // 100:1
 /** Max number of entries in the ZIP central directory. */
