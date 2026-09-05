@@ -319,6 +319,50 @@ ${objects}  </resources>
     expect(analysis.volume).toBeCloseTo(1000);
   });
 
+  it("infla entrada deflate grande (> buffer interno) sem deadlock por backpressure", async () => {
+    // Regressão: o padrão sequencial `await write -> await close -> read`
+    // trava em payloads reais (35KB->164KB trava no close(); só payloads
+    // minúsculos cabem no buffer interno do DecompressionStream). A leitura
+    // precisa ser concorrente ao close. Este XML repetitivo infla para
+    // ~1.5MB — muito acima do buffer — e trava para sempre com o padrão
+    // antigo; com o pump concorrente infla em ms.
+    if (typeof globalThis.DecompressionStream === "undefined") {
+      globalThis.DecompressionStream =
+        NodeDecompressionStream as unknown as typeof DecompressionStream;
+    }
+
+    // Conteúdo variado de propósito: precisa inflar para >1MB (bem acima
+    // do buffer interno do DecompressionStream) mas com ratio baixo (~2:1,
+    // como peça real) para não tripar o cap MAX_RATIO=100:1. Um bloco
+    // puramente repetitivo comprimiria 400:1+ e seria (corretamente)
+    // rejeitado como bomba.
+    const padding = Array.from(
+      { length: 120000 },
+      (_, i) => `v${i}x${((i * 2654435761) >>> 0).toString(36)}`,
+    ).join(" "); // ~1.7MB, ratio ~2:1
+    const model = `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <!-- ${padding} -->
+  <resources><object id="1" type="model">${CUBE_MESH}</object></resources>
+  <build><item objectid="1"/></build>
+</model>`;
+    const modelBytes = new TextEncoder().encode(model);
+    expect(modelBytes.length).toBeGreaterThan(1024 * 1024);
+    const compressed = new Uint8Array(deflateRawSync(modelBytes));
+    const zip = makeZip({
+      "[Content_Types].xml": '<?xml version="1.0"?><Types/>',
+      "3D/3dmodel.model": {
+        data: compressed,
+        method: 8,
+        declaredSize: modelBytes.length,
+      },
+    });
+
+    const { analysis } = await analyzeMeshFile(file3mf(zip));
+    expect(analysis.triangleCount).toBe(12);
+    expect(analysis.volume).toBeCloseTo(1000);
+  }, 20000);
+
   it("estoura o cap de profundidade com ZipBombError em vez de drop silencioso", async () => {
     // Cadeia mais longa que MAX_DEPTH: precisa falhar alto, nunca perder
     // geometria em silêncio.

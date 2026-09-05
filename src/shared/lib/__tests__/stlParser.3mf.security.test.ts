@@ -64,9 +64,12 @@ function makeBombZip(opts: {
 }
 
 describe("3MF hardening", () => {
-  it("exports caps sized between real slicer files (1-20MB) and bombs (GBs)", () => {
-    expect(MAX_DECOMPRESSED_TOTAL).toBe(64 * 1024 * 1024);
-    expect(MAX_EACH_ENTRY).toBe(32 * 1024 * 1024);
+  it("exports caps sized between real slicer files (up to ~76MB/part) and bombs (GBs)", () => {
+    // Regression anchor: a real 15.6MB 3MF carries a ~76MB part (ratio ~5:1),
+    // so the per-entry cap must sit comfortably above 76MB while MAX_RATIO
+    // (100:1, vs ~10^9 for 42.zip) remains the actual bomb stopper.
+    expect(MAX_DECOMPRESSED_TOTAL).toBe(512 * 1024 * 1024);
+    expect(MAX_EACH_ENTRY).toBe(256 * 1024 * 1024);
     expect(MAX_RATIO).toBe(100);
     expect(MAX_ENTRIES).toBe(200);
     expect(MAX_DEPTH).toBe(8);

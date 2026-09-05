@@ -318,10 +318,22 @@ export async function analyzeMeshFile(
 // standards.
 // ---------------------------------------------------------------------------
 
-/** Max total decompressed bytes across all parts of one 3MF package. */
-export const MAX_DECOMPRESSED_TOTAL = 64 * 1024 * 1024; // 64 MB
-/** Max decompressed bytes of a single ZIP entry. */
-export const MAX_EACH_ENTRY = 32 * 1024 * 1024; // 32 MB
+/** Max total decompressed bytes across all parts of one 3MF package.
+//
+// Sized from a real-world probe: a 15.6 MB 3MF whose largest part inflates to
+// ~76 MB (ratio ~5:1, perfectly legitimate slicer output). 512 MB leaves ~6x
+// headroom above that part while staying orders of magnitude below any real
+// bomb (42.zip expands KBs to GBs/TBs, ratio ~10^9).
+// Kept in check by MAX_RATIO (100:1) and MAX_ENTRIES below, which are what
+// actually stop bombs — not these absolute byte caps. */
+export const MAX_DECOMPRESSED_TOTAL = 512 * 1024 * 1024; // 512 MB
+/** Max decompressed bytes of a single ZIP entry.
+//
+// Was 32 MB and false-positived on the legit ~76 MB part above. 256 MB keeps
+// ~3x headroom over it; bombs are still caught by MAX_RATIO (a 42.zip-style
+// payload claims ratios ~10^9, far above the 100:1 cap) and by the streaming
+// during-decompression counters, not by this ceiling. */
+export const MAX_EACH_ENTRY = 256 * 1024 * 1024; // 256 MB
 /** Max allowed expansion ratio (uncompressed / compressed) per entry. */
 export const MAX_RATIO = 100; // 100:1
 /** Max number of entries in the ZIP central directory. */
@@ -543,37 +555,58 @@ async function readZipEntryText(
     try {
       const ds = new DecompressionStream("deflate-raw");
       const writer = ds.writable.getWriter();
-      // Order matters (MDN): write, then close, then read. A corrupt stream
-      // surfaces its error on read, so the whole block stays in try/catch.
-      await writer.write(compressed);
-      await writer.close();
       const reader = ds.readable.getReader();
       const chunks: Uint8Array[] = [];
       let entryTotal = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        entryTotal += value.length;
-        // During-decompression caps: byte counting on the stream catches flat
-        // bombs whose central-directory headers lie about the sizes.
-        if (entryTotal > entry.uncompressedSize) {
-          throw new ZipBombError(
-            `entry "${entry.name}" expanded past its declared ${entry.uncompressedSize} bytes`,
-          );
+      // Concurrent pump: the read loop must be PENDING before write/close
+      // complete. Awaiting `writer.close()` with nobody draining `readable`
+      // deadlocks by backpressure once the output exceeds the internal queue
+      // (probed: 35 KB compressed -> 164 KB inflated hangs in close(); tiny
+      // test payloads fit the buffer and mask the bug). A corrupt stream
+      // surfaces its error on read, so the whole block stays in try/catch.
+      const pump = (async () => {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          entryTotal += value.length;
+          // During-decompression caps: byte counting on the stream catches flat
+          // bombs whose central-directory headers lie about the sizes.
+          if (entryTotal > entry.uncompressedSize) {
+            throw new ZipBombError(
+              `entry "${entry.name}" expanded past its declared ${entry.uncompressedSize} bytes`,
+            );
+          }
+          if (entryTotal > MAX_EACH_ENTRY) {
+            throw new ZipBombError(
+              `entry "${entry.name}" exceeds ${MAX_EACH_ENTRY} decompressed bytes`,
+            );
+          }
+          budget.total += value.length;
+          if (budget.total > MAX_DECOMPRESSED_TOTAL) {
+            throw new ZipBombError(
+              `package exceeds ${MAX_DECOMPRESSED_TOTAL} decompressed bytes total`,
+            );
+          }
+          chunks.push(value);
         }
-        if (entryTotal > MAX_EACH_ENTRY) {
-          throw new ZipBombError(
-            `entry "${entry.name}" exceeds ${MAX_EACH_ENTRY} decompressed bytes`,
-          );
+      })();
+      try {
+        await writer.write(compressed);
+        await writer.close();
+      } catch (writeErr) {
+        // If the write side fails, unblock the pending read so `pump`
+        // never hangs forever, then let the outer catch wrap the error.
+        try {
+          await reader.cancel();
+        } catch {
+          /* reader already settled — pump carries the real error */
         }
-        budget.total += value.length;
-        if (budget.total > MAX_DECOMPRESSED_TOTAL) {
-          throw new ZipBombError(
-            `package exceeds ${MAX_DECOMPRESSED_TOTAL} decompressed bytes total`,
-          );
-        }
-        chunks.push(value);
+        throw writeErr;
+      } finally {
+        writer.releaseLock();
       }
+      await pump;
+      reader.releaseLock();
       const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
       const decompressed = new Uint8Array(totalLen);
       let pos = 0;
