@@ -1,26 +1,43 @@
 import { describe, it, expect } from "vitest";
-import { analyzeMeshFile } from "../stlParser";
+import { deflateRawSync } from "node:zlib";
+import { DecompressionStream as NodeDecompressionStream } from "node:stream/web";
+import { analyzeMeshFile, MAX_DEPTH, ZipBombError } from "../stlParser";
 
 /**
  * Escreve um ZIP mínimo com entradas STORED (sem compressão).
  * O parser do 3MF não confere CRC, então o campo vai zerado de propósito —
  * o que interessa aqui é a topologia do pacote, não a integridade dele.
  */
-function makeZip(files: Record<string, string>): Uint8Array {
+interface ZipFixture {
+  /** Bytes já prontos (ex.: saída de deflateRawSync para o método 8). */
+  data: Uint8Array;
+  method?: 0 | 8;
+  /**
+   * Tamanho descomprimido declarado no diretório central. Quando omitido,
+   * vale o tamanho real — informar outro valor simula um header mentiroso.
+   */
+  declaredSize?: number;
+}
+
+function makeZip(files: Record<string, string | ZipFixture>): Uint8Array {
   const enc = new TextEncoder();
   const locals: Uint8Array[] = [];
   const centrals: Uint8Array[] = [];
   let offset = 0;
 
-  for (const [name, content] of Object.entries(files)) {
+  for (const [name, spec] of Object.entries(files)) {
     const nameBytes = enc.encode(name);
-    const data = enc.encode(content);
+    const fixture: ZipFixture =
+      typeof spec === "string" ? { data: enc.encode(spec) } : spec;
+    const data = fixture.data;
+    const method = fixture.method ?? 0;
+    const declared = fixture.declaredSize ?? data.length;
 
     const local = new Uint8Array(30 + nameBytes.length + data.length);
     const lv = new DataView(local.buffer);
     lv.setUint32(0, 0x04034b50, true); // assinatura do cabeçalho local
     lv.setUint16(4, 20, true); // versão necessária
-    lv.setUint16(8, 0, true); // método 0 = stored
+    lv.setUint16(8, method, true);
     lv.setUint32(18, data.length, true); // tamanho comprimido
     lv.setUint32(22, data.length, true); // tamanho original
     lv.setUint16(26, nameBytes.length, true);
@@ -31,9 +48,9 @@ function makeZip(files: Record<string, string>): Uint8Array {
     const central = new Uint8Array(46 + nameBytes.length);
     const cv = new DataView(central.buffer);
     cv.setUint32(0, 0x02014b50, true); // assinatura do diretório central
-    cv.setUint16(10, 0, true); // método 0 = stored
+    cv.setUint16(10, method, true);
     cv.setUint32(20, data.length, true);
-    cv.setUint32(24, data.length, true);
+    cv.setUint32(24, declared, true);
     cv.setUint16(28, nameBytes.length, true);
     cv.setUint32(42, offset, true); // deslocamento do cabeçalho local
     central.set(nameBytes, 46);
@@ -167,6 +184,164 @@ describe("3MF parsing", () => {
 
     await expect(analyzeMeshFile(file3mf(zip))).rejects.toThrow(
       /No triangles found/,
+    );
+  });
+
+  it("não trava com componentes que se referenciam mutuamente (ciclo A<->B)", async () => {
+    const zip = makeZip({
+      "3D/3dmodel.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources>
+    <object id="1" type="model">
+      <components><component objectid="2"/></components>
+    </object>
+    <object id="2" type="model">
+      <components><component objectid="1"/></components>
+    </object>
+  </resources>
+  <build><item objectid="1"/></build>
+</model>`,
+    });
+
+    await expect(analyzeMeshFile(file3mf(zip))).rejects.toThrow(
+      /No triangles found/,
+    );
+  });
+
+  it("lê uma entrada deflate (método 8) do ZIP", async () => {
+    // jsdom não tem DecompressionStream; o Node 22 tem. Os bytes deflate crus
+    // vêm de node:zlib (deflateRawSync = raw deflate, o que o ZIP usa).
+    if (typeof globalThis.DecompressionStream === "undefined") {
+      globalThis.DecompressionStream =
+        NodeDecompressionStream as unknown as typeof DecompressionStream;
+    }
+
+    const model = `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources><object id="1" type="model">${CUBE_MESH}</object></resources>
+  <build><item objectid="1"/></build>
+</model>`;
+    const modelBytes = new TextEncoder().encode(model);
+    const compressed = new Uint8Array(deflateRawSync(modelBytes));
+    const zip = makeZip({
+      "[Content_Types].xml": '<?xml version="1.0"?><Types/>',
+      "3D/3dmodel.model": {
+        data: compressed,
+        method: 8,
+        declaredSize: modelBytes.length,
+      },
+    });
+
+    const { analysis } = await analyzeMeshFile(file3mf(zip));
+    expect(analysis.triangleCount).toBe(12);
+    expect(analysis.volume).toBeCloseTo(1000);
+  });
+
+  it("rejeita p:path com .. que escapa da raiz do pacote", async () => {
+    const zip = makeZip({
+      "3D/3dmodel.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter"
+ xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+ xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
+  <resources>
+    <object id="1" type="model">
+      <components><component p:path="/3D/../../evil.model" objectid="2"/></components>
+    </object>
+  </resources>
+  <build><item objectid="1"/></build>
+</model>`,
+      "evil.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources><object id="2" type="model">${CUBE_MESH}</object></resources>
+  <build/>
+</model>`,
+    });
+
+    await expect(analyzeMeshFile(file3mf(zip))).rejects.toThrow(
+      /escapes package root/,
+    );
+  });
+
+  it("resolve p:path com casing divergente via fallback case-insensitive", async () => {
+    // ZIP guarda `3D/Objects/Object_1.MODEL`, mas o p:path usa outro casing:
+    // o lookup exato falha e o fallback case-insensitive precisa resolver.
+    const zip = makeZip({
+      "[Content_Types].xml": '<?xml version="1.0"?><Types/>',
+      "_rels/.rels": '<?xml version="1.0"?><Relationships/>',
+      "3D/3dmodel.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter"
+ xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+ xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">
+  <resources>
+    <object id="1" type="model">
+      <components>
+        <component p:path="/3d/OBJECTS/object_1.model" objectid="2"/>
+      </components>
+    </object>
+  </resources>
+  <build><item objectid="1"/></build>
+</model>`,
+      "3D/Objects/Object_1.MODEL": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources><object id="2" type="model">${CUBE_MESH}</object></resources>
+  <build/>
+</model>`,
+    });
+
+    const { analysis } = await analyzeMeshFile(file3mf(zip));
+    expect(analysis.triangleCount).toBe(12);
+    expect(analysis.volume).toBeCloseTo(1000);
+  });
+
+  it("preserva geometria com nesting >= 3 (dentro do cap)", async () => {
+    // Cadeia de 4 níveis: item -> 1 -> 2 -> 3 -> malha. Com o cap antigo
+    // (MAX_DEPTH=2) a malha era descartada em silêncio; com o cap atual
+    // ela precisa ser emitida.
+    const chainDepth = 4;
+    let objects = "";
+    for (let i = 1; i <= chainDepth; i++) {
+      objects +=
+        i < chainDepth
+          ? `    <object id="${i}" type="model"><components><component objectid="${i + 1}"/></components></object>\n`
+          : `    <object id="${i}" type="model">${CUBE_MESH}</object>\n`;
+    }
+    const zip = makeZip({
+      "3D/3dmodel.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources>
+${objects}  </resources>
+  <build><item objectid="1"/></build>
+</model>`,
+    });
+
+    const { analysis } = await analyzeMeshFile(file3mf(zip));
+    expect(analysis.triangleCount).toBe(12);
+    expect(analysis.volume).toBeCloseTo(1000);
+  });
+
+  it("estoura o cap de profundidade com ZipBombError em vez de drop silencioso", async () => {
+    // Cadeia mais longa que MAX_DEPTH: precisa falhar alto, nunca perder
+    // geometria em silêncio.
+    const chainLen = MAX_DEPTH + 3;
+    let objects = "";
+    for (let i = 1; i <= chainLen; i++) {
+      objects +=
+        i < chainLen
+          ? `    <object id="${i}" type="model"><components><component objectid="${i + 1}"/></components></object>\n`
+          : `    <object id="${i}" type="model">${CUBE_MESH}</object>\n`;
+    }
+    const zip = makeZip({
+      "3D/3dmodel.model": `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <resources>
+${objects}  </resources>
+  <build><item objectid="1"/></build>
+</model>`,
+    });
+
+    await expect(analyzeMeshFile(file3mf(zip))).rejects.toThrow(ZipBombError);
+    await expect(analyzeMeshFile(file3mf(zip))).rejects.toThrow(
+      /maximum component depth/,
     );
   });
 });

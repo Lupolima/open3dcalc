@@ -308,9 +308,43 @@ export async function analyzeMeshFile(
   throw new Error(`Unsupported format: ${ext}. Use STL, OBJ or 3MF.`);
 }
 
+// ---------------------------------------------------------------------------
+// 3MF (OPC/ZIP) hardening limits.
+//
+// A slicer-produced 3MF is typically 1-20 MB. A zip bomb is orders of
+// magnitude bigger once decompressed (GBs out of KBs), so these caps sit far
+// above any legitimate file and far below anything dangerous. There is no
+// canonical number for them — the values below are justified ranges, not
+// standards.
+// ---------------------------------------------------------------------------
+
+/** Max total decompressed bytes across all parts of one 3MF package. */
+export const MAX_DECOMPRESSED_TOTAL = 64 * 1024 * 1024; // 64 MB
+/** Max decompressed bytes of a single ZIP entry. */
+export const MAX_EACH_ENTRY = 32 * 1024 * 1024; // 32 MB
+/** Max allowed expansion ratio (uncompressed / compressed) per entry. */
+export const MAX_RATIO = 100; // 100:1
+/** Max number of entries in the ZIP central directory. */
+export const MAX_ENTRIES = 200;
+/** Max nesting depth of the <components> object graph. */
+export const MAX_DEPTH = 8;
+
+/** Thrown when a 3MF package trips any anti-zip-bomb cap. */
+export class ZipBombError extends Error {
+  constructor(message: string) {
+    super(`3MF zip bomb blocked: ${message}`);
+    this.name = "ZipBombError";
+  }
+}
+
+/** Tracks cumulative decompressed bytes to catch flat bombs while streaming. */
+interface ZipBudget {
+  total: number;
+}
+
 /**
- * Uma entrada do diretório central do ZIP que embala o 3MF.
- * O 3MF é um pacote OPC (um ZIP), então ler o arquivo é ler o ZIP primeiro.
+ * One entry of the ZIP central directory backing the 3MF package.
+ * A 3MF is an OPC package (a ZIP), so reading the file means reading the ZIP first.
  */
 interface ZipEntry {
   name: string;
@@ -321,19 +355,24 @@ interface ZipEntry {
 }
 
 /**
- * Lê o diretório central do ZIP e devolve TODAS as entradas indexadas por nome
- * em minúsculas (nomes de parte OPC são comparados sem diferenciar maiúsculas).
+ * Reads the ZIP central directory and returns ALL entries indexed by
+ * resolved part name.
  *
- * Antes esta varredura parava na PRIMEIRA entrada terminada em ".model" e
- * decodificava só ela. Isso quebra os arquivos da "production extension"
- * (projetos do OrcaSlicer/BambuStudio), em que o modelo raiz não contém malha
- * nenhuma — só <components p:path="/3D/Objects/object_N.model"> — e as malhas
- * de verdade moram em outras partes do mesmo ZIP.
+ * Previously this scan stopped at the FIRST entry ending in ".model" and
+ * decoded only that one. That breaks files using the "production extension"
+ * (OrcaSlicer/BambuStudio projects), where the root model holds no mesh at
+ * all — only <components p:path="/3D/Objects/object_N.model"> — and the real
+ * meshes live in other parts of the same ZIP.
+ *
+ * Also enforces the pre-decompression caps from the central directory's
+ * declared sizes: entry count, per-entry size, total size and expansion
+ * ratio. The streaming (during-decompression) checks in readZipEntryText
+ * catch flat bombs that lie in these headers.
  */
-function readZipCentralDirectory(uint8: Uint8Array): Map<string, ZipEntry> {
-  // O End Of Central Directory fica, por especificação, nos últimos
-  // 22 + 65535 bytes (o comentário do ZIP tem no máximo 64 KiB). Limitar a
-  // busca a essa janela evita varrer um arquivo de centenas de MB byte a byte.
+function buildZipMap(uint8: Uint8Array): Map<string, ZipEntry> {
+  // The End Of Central Directory sits, per spec, within the last
+  // 22 + 65535 bytes (the ZIP comment is at most 64 KiB). Limiting the
+  // search to that window avoids scanning a hundreds-of-MB file byte by byte.
   const scanStart = Math.max(0, uint8.length - 22 - 0xffff);
   let eocdOffset = -1;
   for (let i = uint8.length - 22; i >= scanStart; i--) {
@@ -358,10 +397,18 @@ function readZipCentralDirectory(uint8: Uint8Array): Map<string, ZipEntry> {
     0;
   const numEntries = uint8[eocdOffset + 10] | (uint8[eocdOffset + 11] << 8);
 
+  // Pre-check: entry-count cap before allocating anything per entry.
+  if (numEntries > MAX_ENTRIES) {
+    throw new ZipBombError(
+      `central directory declares ${numEntries} entries (limit ${MAX_ENTRIES})`,
+    );
+  }
+
   const entries = new Map<string, ZipEntry>();
   let offset = cdOffset;
+  let declaredTotal = 0;
   for (let i = 0; i < numEntries; i++) {
-    // 0x02014b50 = assinatura de um cabeçalho do diretório central.
+    // 0x02014b50 = central-directory header signature.
     if (uint8[offset] !== 0x50 || uint8[offset + 1] !== 0x4b) break;
 
     const fileNameLen = uint8[offset + 28] | (uint8[offset + 29] << 8);
@@ -370,28 +417,51 @@ function readZipCentralDirectory(uint8: Uint8Array): Map<string, ZipEntry> {
     const name = new TextDecoder().decode(
       uint8.slice(offset + 46, offset + 46 + fileNameLen),
     );
+    const compressionMethod = uint8[offset + 10] | (uint8[offset + 11] << 8);
+    const compressedSize =
+      (uint8[offset + 20] |
+        (uint8[offset + 21] << 8) |
+        (uint8[offset + 22] << 16) |
+        (uint8[offset + 23] << 24)) >>>
+      0;
+    const uncompressedSize =
+      (uint8[offset + 24] |
+        (uint8[offset + 25] << 8) |
+        (uint8[offset + 26] << 16) |
+        (uint8[offset + 27] << 24)) >>>
+      0;
+    const localHeaderOffset =
+      (uint8[offset + 42] |
+        (uint8[offset + 43] << 8) |
+        (uint8[offset + 44] << 16) |
+        (uint8[offset + 45] << 24)) >>>
+      0;
 
-    entries.set(normalizePartName(name), {
+    // Pre-checks on declared sizes: cheap, and reject honest bombs outright.
+    // Flat bombs that lie here are caught while streaming instead.
+    if (uncompressedSize > MAX_EACH_ENTRY) {
+      throw new ZipBombError(
+        `entry "${name}" declares ${uncompressedSize} bytes (limit ${MAX_EACH_ENTRY})`,
+      );
+    }
+    if (compressedSize > 0 && uncompressedSize / compressedSize > MAX_RATIO) {
+      throw new ZipBombError(
+        `entry "${name}" declares expansion ratio ${(uncompressedSize / compressedSize).toFixed(1)}:1 (limit ${MAX_RATIO}:1)`,
+      );
+    }
+    declaredTotal += uncompressedSize;
+    if (declaredTotal > MAX_DECOMPRESSED_TOTAL) {
+      throw new ZipBombError(
+        `package declares ${declaredTotal} bytes total (limit ${MAX_DECOMPRESSED_TOTAL})`,
+      );
+    }
+
+    entries.set(resolveModelPath(name), {
       name,
-      compressionMethod: uint8[offset + 10] | (uint8[offset + 11] << 8),
-      compressedSize:
-        (uint8[offset + 20] |
-          (uint8[offset + 21] << 8) |
-          (uint8[offset + 22] << 16) |
-          (uint8[offset + 23] << 24)) >>>
-        0,
-      uncompressedSize:
-        (uint8[offset + 24] |
-          (uint8[offset + 25] << 8) |
-          (uint8[offset + 26] << 16) |
-          (uint8[offset + 27] << 24)) >>>
-        0,
-      localHeaderOffset:
-        (uint8[offset + 42] |
-          (uint8[offset + 43] << 8) |
-          (uint8[offset + 44] << 16) |
-          (uint8[offset + 45] << 24)) >>>
-        0,
+      compressionMethod,
+      compressedSize,
+      uncompressedSize,
+      localHeaderOffset,
     });
 
     offset += 46 + fileNameLen + extraLen + commentLen;
@@ -401,79 +471,147 @@ function readZipCentralDirectory(uint8: Uint8Array): Map<string, ZipEntry> {
 }
 
 /**
- * Normaliza um nome de parte OPC para servir de chave: sem a barra inicial
- * (o `p:path` do 3MF é absoluto, `/3D/Objects/x.model`, mas o ZIP guarda
- * `3D/Objects/x.model`), com barras invertidas viradas e em minúsculas.
+ * Resolves a 3MF part reference (ZIP entry name, `p:path` attribute) into the
+ * single canonical key used for the ZIP map.
+ *
+ * Handles the forms producers emit: a leading `/` (the 3MF `p:path` is
+ * absolute, `/3D/Objects/x.model`, while the ZIP stores `3D/Objects/x.model`),
+ * backslashes, and `.` / `..` segments resolved lexically.
+ *
+ * Lookup is exact (case-sensitive) first, per the OPC spec; `loadModelPart`
+ * adds a case-insensitive fallback for producers whose ZIP entry casing
+ * diverges from the `p:path` casing. three.js
+ * ignores `p:path` altogether, so supporting it is our differential.
+ * A `..` that would escape the package root is rejected — it is the zip-slip
+ * cousin for part references.
  */
-function normalizePartName(name: string): string {
-  return name.replace(/\\/g, "/").replace(/^\/+/, "").toLowerCase();
+export function resolveModelPath(rawPath: string): string {
+  const trimmed = rawPath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const parts: string[] = [];
+  for (const seg of trimmed.split("/")) {
+    if (seg === "" || seg === ".") continue;
+    if (seg === "..") {
+      if (parts.length === 0) {
+        throw new Error(
+          `Invalid 3MF part path (escapes package root): ${rawPath}`,
+        );
+      }
+      parts.pop();
+      continue;
+    }
+    parts.push(seg);
+  }
+  return parts.join("/");
 }
 
-/** Descomprime uma entrada do ZIP e devolve o texto (as partes do 3MF são XML). */
+/** Decompresses one ZIP entry and returns its text (3MF parts are XML). */
 async function readZipEntryText(
   uint8: Uint8Array,
   entry: ZipEntry,
+  budget: ZipBudget,
 ): Promise<string> {
-  // Os tamanhos vêm do diretório central; o cabeçalho local só é consultado
-  // para saber onde os dados começam, porque os campos de tamanho dele podem
-  // estar zerados quando o escritor usou data descriptor.
+  // Sizes come from the central directory; the local header is only used to
+  // find where the data starts, because its size fields may be zero when the
+  // writer used a data descriptor.
   const lhs = entry.localHeaderOffset;
   const localFileNameLen = uint8[lhs + 26] | (uint8[lhs + 27] << 8);
   const localExtraLen = uint8[lhs + 28] | (uint8[lhs + 29] << 8);
   const dataStart = lhs + 30 + localFileNameLen + localExtraLen;
 
   if (entry.compressionMethod === 0) {
-    // Stored: os bytes já são o conteúdo.
+    // Stored: the bytes already are the content.
+    budget.total += entry.uncompressedSize;
+    if (budget.total > MAX_DECOMPRESSED_TOTAL) {
+      throw new ZipBombError(
+        `package exceeds ${MAX_DECOMPRESSED_TOTAL} decompressed bytes total`,
+      );
+    }
     return new TextDecoder().decode(
       uint8.slice(dataStart, dataStart + entry.uncompressedSize),
     );
   }
 
   if (entry.compressionMethod === 8) {
-    // Deflate cru (sem cabeçalho zlib) — é o que o ZIP usa.
+    // Raw deflate (no zlib header) — what ZIP uses.
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error(
+        "Cannot decompress 3MF entry: DecompressionStream is unavailable " +
+          "(use a modern browser or Node.js 18+)",
+      );
+    }
     const compressed = uint8.slice(dataStart, dataStart + entry.compressedSize);
-    const ds = new DecompressionStream("deflate-raw");
-    const writer = ds.writable.getWriter();
-    writer.write(compressed);
-    writer.close();
-    const reader = ds.readable.getReader();
-    const chunks: Uint8Array[] = [];
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
+    try {
+      const ds = new DecompressionStream("deflate-raw");
+      const writer = ds.writable.getWriter();
+      // Order matters (MDN): write, then close, then read. A corrupt stream
+      // surfaces its error on read, so the whole block stays in try/catch.
+      await writer.write(compressed);
+      await writer.close();
+      const reader = ds.readable.getReader();
+      const chunks: Uint8Array[] = [];
+      let entryTotal = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        entryTotal += value.length;
+        // During-decompression caps: byte counting on the stream catches flat
+        // bombs whose central-directory headers lie about the sizes.
+        if (entryTotal > entry.uncompressedSize) {
+          throw new ZipBombError(
+            `entry "${entry.name}" expanded past its declared ${entry.uncompressedSize} bytes`,
+          );
+        }
+        if (entryTotal > MAX_EACH_ENTRY) {
+          throw new ZipBombError(
+            `entry "${entry.name}" exceeds ${MAX_EACH_ENTRY} decompressed bytes`,
+          );
+        }
+        budget.total += value.length;
+        if (budget.total > MAX_DECOMPRESSED_TOTAL) {
+          throw new ZipBombError(
+            `package exceeds ${MAX_DECOMPRESSED_TOTAL} decompressed bytes total`,
+          );
+        }
+        chunks.push(value);
+      }
+      const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
+      const decompressed = new Uint8Array(totalLen);
+      let pos = 0;
+      for (const chunk of chunks) {
+        decompressed.set(chunk, pos);
+        pos += chunk.length;
+      }
+      return new TextDecoder().decode(decompressed);
+    } catch (err) {
+      if (err instanceof ZipBombError) throw err;
+      throw new Error(
+        `Error decompressing 3MF entry "${entry.name}": ${err instanceof Error ? err.message : err}`,
+        { cause: err },
+      );
     }
-    const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
-    const decompressed = new Uint8Array(totalLen);
-    let pos = 0;
-    for (const chunk of chunks) {
-      decompressed.set(chunk, pos);
-      pos += chunk.length;
-    }
-    return new TextDecoder().decode(decompressed);
   }
 
   throw new Error(`Unsupported compression method: ${entry.compressionMethod}`);
 }
 
 /**
- * Escolhe a parte que é o modelo raiz do pacote.
- * Ordem: o caminho convencional `3D/3dmodel.model` e, se ele não existir,
- * a primeira parte `.model` do pacote.
+ * Picks the part that is the package root model.
+ * Order: the conventional `3D/3dmodel.model` path and, if missing, the first
+ * `.model` part in the package.
  */
 function pick3mfRootModel(entries: Map<string, ZipEntry>): string {
-  if (entries.has("3d/3dmodel.model")) return "3d/3dmodel.model";
+  if (entries.has("3D/3dmodel.model")) return "3D/3dmodel.model";
 
   for (const key of entries.keys()) {
-    if (key.endsWith(".model")) return key;
+    if (key.toLowerCase().endsWith(".model")) return key;
   }
   throw new Error("3MF file does not contain a valid 3D model");
 }
 
 /**
- * Matriz do 3MF: 12 números que formam uma 4x3 em convenção de vetor-linha
- * (`m00 m01 m02 m10 m11 m12 m20 m21 m22 m30 m31 m32`), onde a última linha é
- * a translação. A identidade é o valor implícito quando o atributo falta.
+ * A 3MF matrix: 12 numbers forming a 4x3 in row-vector convention
+ * (`m00 m01 m02 m10 m11 m12 m20 m21 m22 m30 m31 m32`), where the last row is
+ * the translation. Identity is the implicit value when the attribute is missing.
  */
 type Mat3mf = number[];
 
@@ -488,8 +626,8 @@ function parse3mfTransform(value: string | null): Mat3mf {
 }
 
 /**
- * Compõe duas transformações: aplica `a` primeiro e `b` depois
- * (p' = p · a · b, seguindo a convenção de vetor-linha do 3MF).
+ * Composes two transforms: applies `a` first and `b` after
+ * (p' = p · a · b, following the 3MF row-vector convention).
  */
 function mul3mf(a: Mat3mf, b: Mat3mf): Mat3mf {
   const out = new Array<number>(12);
@@ -501,7 +639,7 @@ function mul3mf(a: Mat3mf, b: Mat3mf): Mat3mf {
         a[row * 3 + 2] * b[6 + col];
     }
   }
-  // Linha de translação: a translação de `a` passa pela rotação de `b`.
+  // Translation row: the translation of `a` goes through the rotation of `b`.
   for (let col = 0; col < 3; col++) {
     out[9 + col] =
       a[9] * b[col] + a[10] * b[3 + col] + a[11] * b[6 + col] + b[9 + col];
@@ -509,94 +647,165 @@ function mul3mf(a: Mat3mf, b: Mat3mf): Mat3mf {
   return out;
 }
 
+/** Memoized cache of parsed `.model` parts, keyed by resolved part name. */
+type ModelDocCache = Map<string, Document>;
+
+/** Loads and memoizes one `.model` part of the package. */
+async function loadModelPart(
+  uint8: Uint8Array,
+  entries: Map<string, ZipEntry>,
+  cache: ModelDocCache,
+  budget: ZipBudget,
+  path: string,
+): Promise<Document> {
+  const key = resolveModelPath(path);
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  let entryKey = key;
+  let entry = entries.get(key);
+  if (!entry) {
+    // Fallback case-insensitive: exact match first (OPC § — URIs are
+    // case-sensitive), then a case-folded scan for producers whose ZIP entry
+    // casing diverges from the `p:path` casing.
+    const lower = key.toLowerCase();
+    for (const k of entries.keys()) {
+      if (k.toLowerCase() === lower) {
+        entryKey = k;
+        entry = entries.get(k);
+        break;
+      }
+    }
+    const fallbackCached = cache.get(entryKey);
+    if (fallbackCached) {
+      cache.set(key, fallbackCached);
+      return fallbackCached;
+    }
+  }
+  if (!entry) throw new Error(`3MF part not found: ${path}`);
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(
+    await readZipEntryText(uint8, entry, budget),
+    "text/xml",
+  );
+  if (doc.querySelector("parsererror"))
+    throw new Error(`Error parsing 3MF XML in ${path}`);
+  cache.set(entryKey, doc);
+  if (entryKey !== key) cache.set(key, doc);
+  return doc;
+}
+
+/** Shared mutable state threaded through the object-graph walk. */
+interface GraphWalkState {
+  uint8: Uint8Array;
+  entries: Map<string, ZipEntry>;
+  cache: ModelDocCache;
+  budget: ZipBudget;
+  positions: number[];
+  normals: number[];
+}
+
 /**
- * Percorre o grafo de objetos do 3MF a partir dos itens de `<build>` e acumula
- * os triângulos já transformados para as coordenadas finais da bandeja.
+ * Emits one object (and everything it references) already transformed.
+ * `stack` holds the part#id pairs on the current path to stop cycles — a
+ * malformed 3MF could reference itself and hang the browser tab. `depth`
+ * caps nesting per MAX_DEPTH on top of cycle detection, throwing ZipBombError
+ * (never dropping geometry silently) when the cap is exceeded.
+ */
+async function walkObjectGraph(
+  state: GraphWalkState,
+  path: string,
+  objectId: string,
+  transform: Mat3mf,
+  stack: Set<string>,
+  depth: number,
+): Promise<void> {
+  if (depth > MAX_DEPTH)
+    throw new ZipBombError(
+      `maximum component depth exceeded (limit ${MAX_DEPTH})`,
+    );
+  const key = `${resolveModelPath(path)}#${objectId}`;
+  if (stack.has(key)) return;
+
+  const doc = await loadModelPart(
+    state.uint8,
+    state.entries,
+    state.cache,
+    state.budget,
+    path,
+  );
+  const obj = Array.from(doc.querySelectorAll("object")).find(
+    (o) => o.getAttribute("id") === objectId,
+  );
+  if (!obj) return;
+
+  stack.add(key);
+  try {
+    const mesh = obj.querySelector("mesh");
+    if (mesh) {
+      appendMesh(mesh, transform, state.positions, state.normals);
+    }
+
+    for (const component of Array.from(obj.querySelectorAll("component"))) {
+      const childId = component.getAttribute("objectid");
+      if (!childId) continue;
+      // `p:path` points at another part; without it the object is local.
+      const childPath =
+        component.getAttribute("p:path") ||
+        component.getAttribute("path") ||
+        path;
+      const childTransform = mul3mf(
+        parse3mfTransform(component.getAttribute("transform")),
+        transform,
+      );
+      await walkObjectGraph(
+        state,
+        childPath,
+        childId,
+        childTransform,
+        stack,
+        depth + 1,
+      );
+    }
+  } finally {
+    stack.delete(key);
+  }
+}
+
+/**
+ * Walks the 3MF object graph from the `<build>` items and accumulates the
+ * triangles already transformed into final tray coordinates.
  *
- * Trata os três casos que o parser antigo não tratava:
- *  - `<components>`, que montam um objeto a partir de outros objetos;
- *  - `p:path`, que põe o objeto referenciado em OUTRA parte do ZIP
- *    (production extension — é o layout de projeto do OrcaSlicer/BambuStudio);
- *  - as matrizes de `<item>` e `<component>`, sem as quais objetos múltiplos
- *    se empilham todos na origem.
+ * Handles the three cases the old parser missed:
+ *  - `<components>`, which build one object out of other objects;
+ *  - `p:path`, which puts the referenced object in ANOTHER part of the ZIP
+ *    (production extension — the OrcaSlicer/BambuStudio project layout);
+ *  - the `<item>` and `<component>` matrices, without which multiple objects
+ *    all pile up at the origin.
  */
 async function collect3mfTriangles(
   uint8: Uint8Array,
   entries: Map<string, ZipEntry>,
   rootPath: string,
+  budget: ZipBudget,
 ): Promise<{ positions: number[]; normals: number[] }> {
-  const parser = new DOMParser();
-  const docs = new Map<string, Document>();
-
-  /** Carrega e memoiza uma parte `.model` do pacote. */
-  const loadDoc = async (path: string): Promise<Document> => {
-    const key = normalizePartName(path);
-    const cached = docs.get(key);
-    if (cached) return cached;
-
-    const entry = entries.get(key);
-    if (!entry) throw new Error(`3MF part not found: ${path}`);
-
-    const doc = parser.parseFromString(
-      await readZipEntryText(uint8, entry),
-      "text/xml",
-    );
-    if (doc.querySelector("parsererror"))
-      throw new Error(`Error parsing 3MF XML in ${path}`);
-    docs.set(key, doc);
-    return doc;
+  const state: GraphWalkState = {
+    uint8,
+    entries,
+    cache: new Map<string, Document>(),
+    budget,
+    positions: [],
+    normals: [],
   };
 
-  const positions: number[] = [];
-  const normals: number[] = [];
-
-  /**
-   * Emite um objeto (e o que ele referenciar) já transformado.
-   * `stack` guarda os pares parte#id do caminho atual para barrar ciclos —
-   * um 3MF malformado poderia se auto-referenciar e travar a aba do navegador.
-   */
-  const emitObject = async (
-    path: string,
-    objectId: string,
-    transform: Mat3mf,
-    stack: Set<string>,
-  ): Promise<void> => {
-    const key = `${normalizePartName(path)}#${objectId}`;
-    if (stack.has(key) || stack.size > 32) return;
-
-    const doc = await loadDoc(path);
-    const obj = Array.from(doc.querySelectorAll("object")).find(
-      (o) => o.getAttribute("id") === objectId,
-    );
-    if (!obj) return;
-
-    stack.add(key);
-    try {
-      const mesh = obj.querySelector("mesh");
-      if (mesh) {
-        appendMesh(mesh, transform, positions, normals);
-      }
-
-      for (const component of Array.from(obj.querySelectorAll("component"))) {
-        const childId = component.getAttribute("objectid");
-        if (!childId) continue;
-        // `p:path` aponta para outra parte; sem ele, o objeto é local.
-        const childPath =
-          component.getAttribute("p:path") ||
-          component.getAttribute("path") ||
-          path;
-        const childTransform = mul3mf(
-          parse3mfTransform(component.getAttribute("transform")),
-          transform,
-        );
-        await emitObject(childPath, childId, childTransform, stack);
-      }
-    } finally {
-      stack.delete(key);
-    }
-  };
-
-  const rootDoc = await loadDoc(rootPath);
+  const rootDoc = await loadModelPart(
+    uint8,
+    entries,
+    state.cache,
+    budget,
+    rootPath,
+  );
   const items = Array.from(rootDoc.querySelectorAll("build > item"));
 
   if (items.length > 0) {
@@ -605,27 +814,29 @@ async function collect3mfTriangles(
       if (!objectId) continue;
       const itemPath =
         item.getAttribute("p:path") || item.getAttribute("path") || rootPath;
-      await emitObject(
+      await walkObjectGraph(
+        state,
         itemPath,
         objectId,
         parse3mfTransform(item.getAttribute("transform")),
         new Set<string>(),
+        0,
       );
     }
   }
 
-  // Recurso final: pacotes sem `<build>` utilizável (ou cujos itens não
-  // resolveram) ainda rendem geometria se houver malha solta em <resources>.
-  if (positions.length === 0) {
+  // Last resort: packages without a usable <build> (or whose items resolved
+  // to nothing) still yield geometry if a loose mesh sits in <resources>.
+  if (state.positions.length === 0) {
     for (const mesh of Array.from(rootDoc.querySelectorAll("object mesh"))) {
-      appendMesh(mesh, IDENTITY_3MF, positions, normals);
+      appendMesh(mesh, IDENTITY_3MF, state.positions, state.normals);
     }
   }
 
-  return { positions, normals };
+  return { positions: state.positions, normals: state.normals };
 }
 
-/** Converte um `<mesh>` do 3MF em triângulos soltos, aplicando a matriz. */
+/** Converts one 3MF `<mesh>` into loose triangles, applying the matrix. */
 function appendMesh(
   mesh: Element,
   m: Mat3mf,
@@ -633,7 +844,7 @@ function appendMesh(
   normals: number[],
 ): void {
   const vertices = mesh.querySelectorAll("vertex");
-  // Coordenadas já transformadas, em array plano: 3 números por vértice.
+  // Already-transformed coordinates, in a flat array: 3 numbers per vertex.
   const coords = new Float64Array(vertices.length * 3);
   let i = 0;
   for (const v of Array.from(vertices)) {
@@ -664,8 +875,8 @@ function appendMesh(
 
     positions.push(x1, y1, z1, x2, y2, z2, x3, y3, z3);
 
-    // Normal da face, calculada depois da transformação — assim espelhamento
-    // e rotação já vêm embutidos, sem precisar transformar normais à parte.
+    // Face normal, computed after the transform — so mirroring and rotation
+    // come baked in, with no need to transform normals separately.
     const ax = x2 - x1,
       ay = y2 - y1,
       az = z2 - z1;
@@ -690,12 +901,14 @@ async function parse3mf(
   const THREE = await import("three");
   const uint8 = new Uint8Array(await file.arrayBuffer());
 
-  const entries = readZipCentralDirectory(uint8);
+  const entries = buildZipMap(uint8);
   const rootPath = pick3mfRootModel(entries);
+  const budget: ZipBudget = { total: 0 };
   const { positions, normals } = await collect3mfTriangles(
     uint8,
     entries,
     rootPath,
+    budget,
   );
 
   if (positions.length === 0) throw new Error("No triangles found in 3MF file");
@@ -722,10 +935,10 @@ function build3mfGeometry(
   }
   geometry.computeBoundingBox();
 
-  // A análise usa o MESMO caminho de STL e OBJ. Antes o 3MF tinha uma cópia
-  // própria dela, que calculava o volume pelo teorema da divergência dividindo
-  // por 6 em vez de 18 — devolvia o TRIPLO do valor real — e ainda declarava
-  // `integrity: { valid: true }` sem verificar malha nenhuma.
+  // Analysis reuses the SAME path as STL and OBJ. The 3MF used to have its
+  // own copy, which computed volume via the divergence theorem dividing by 6
+  // instead of 18 — returning THREE times the real value — while also
+  // reporting `integrity: { valid: true }` without checking any mesh.
   return { geometry, analysis: analyzeGeometry(geometry, options) };
 }
 
