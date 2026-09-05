@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { BufferGeometry } from "three";
 import type { MeshAnalysis } from "@/shared/lib/stlParser";
+import type { FilamentFamily } from "@/shared/lib/filamentProfiles";
 import { estimatePrintTime } from "@/shared/lib/printTimeEstimator";
 
 export interface FileParseResult {
@@ -44,10 +45,13 @@ interface StlPreviewProps {
   layerHeight?: number;
   /** Print speed in mm/s (from store fdmPrintParams). Default 60. */
   speed?: number;
-  /** Number of perimeter walls (from store fdmPrintParams). Default 3. */
+  /** Number of perimeter walls (from store fdmPrintParams). Default 2. */
   wallCount?: number;
-  /** Printer power draw in watts (from store fdmPrintParams / selectedPrinter). */
-  printerPowerWatts?: number;
+  /**
+   * Filament family for the MVS speed clamp (default PLA).
+   * Density still comes from `materialDensity` when provided.
+   */
+  material?: FilamentFamily;
   /** When true, estimates support material volume from overhang triangles. Default false. */
   estimateSupport?: boolean;
   /** Called when the user clears the loaded model from the viewer. */
@@ -211,7 +215,7 @@ export function StlPreview({
   layerHeight,
   speed,
   wallCount,
-  printerPowerWatts,
+  material,
   estimateSupport = false,
   onClear,
 }: StlPreviewProps) {
@@ -348,32 +352,32 @@ export function StlPreview({
           const volumeCm3 = volumeToCm3(analysis.volume);
           const density = materialDensity ?? 1.24;
           const infill = infillPercent ?? 20;
-          // A área de superfície já era calculada e nunca usada. É ela que
-          // permite estimar a casca de verdade, em vez de assumir 20% do volume.
-          const surfaceAreaCm2 = analysis.surfaceArea / 100; // mm² → cm²
-          const weight = estimateWeight(
-            volumeCm3,
-            density,
-            infill,
-            10,
-            surfaceAreaCm2,
-          );
+          // A área de superfície entra em mm² (unidade canônica da malha) —
+          // a conversão para cm² acontece dentro do estimador.
+          const weight = estimateWeight(volumeCm3, {
+            densityGcm3: density,
+            material,
+            infillPercent: infill,
+            purgePercent: 10,
+            surfaceAreaMm2: analysis.surfaceArea,
+            wallCount,
+            supportVolumeCm3: analysis.supportVolumeCm3,
+          });
           // O tempo tem que usar o plástico REALMENTE extrudado, não o volume
           // maciço do modelo — senão peça oca é cobrada como se fosse sólida.
-          const materialVolumeCm3 = estimateMaterialVolumeCm3(
-            volumeCm3,
-            infill,
-            surfaceAreaCm2,
-          );
+          const materialVolumeCm3 = estimateMaterialVolumeCm3(volumeCm3, {
+            infillPercent: infill,
+            surfaceAreaMm2: analysis.surfaceArea,
+            wallCount,
+            supportVolumeCm3: analysis.supportVolumeCm3,
+          });
           const timeEstimate = estimatePrintTime({
             volumeCm3,
             materialVolumeCm3,
             dimensions: analysis.dimensions,
-            layerHeight,
-            speed,
-            infillPercent: infill,
-            wallCount,
-            printerPowerWatts,
+            layerHeightMm: layerHeight,
+            printSpeedMmPerS: speed,
+            material,
           });
           const result: FileParseResult = {
             geometry: parsedGeometry,
@@ -406,7 +410,7 @@ export function StlPreview({
       layerHeight,
       speed,
       wallCount,
-      printerPowerWatts,
+      material,
       supportEnabled,
     ],
   );
