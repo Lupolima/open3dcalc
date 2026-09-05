@@ -1,4 +1,8 @@
 import * as THREE from "three";
+import {
+  resolveFilamentDensity,
+  type FilamentFamily,
+} from "./filamentProfiles";
 
 export interface MeshAnalysis {
   triangleCount: number;
@@ -1004,15 +1008,145 @@ export function volumeToCm3(volumeMm3: number): number {
   return volumeMm3 / 1000;
 }
 
+/**
+ * Opções do estimador de volume de material.
+ *
+ * Todo campo afeta o cálculo — não há params-fantasma. Unidades canônicas
+ * vão no nome (`Mm2`, `Mm`, `Cm3`); percentuais levam o sufixo `Percent`.
+ * Defaults documentados em `docs/estimators-model.md`.
+ */
+export interface MaterialVolumeOptions {
+  /** Porcentagem de infill (0–100, clamped). Padrão 20. */
+  infillPercent?: number;
+  /**
+   * Área de superfície da malha em mm² (unidade canônica do `MeshAnalysis`).
+   * A conversão mm² → cm² acontece AQUI, não no chamador.
+   * Ausente ou ≤ 0 cai no modelo legado (20% fixo de casca).
+   */
+  surfaceAreaMm2?: number;
+  /** Perímetros laterais. Padrão 2. */
+  wallCount?: number;
+  /** Largura da linha extrudada em mm. Padrão 0,42 (bico de 0,4). */
+  lineWidthMm?: number;
+  /** Camadas sólidas de topo. Padrão 4. */
+  topLayers?: number;
+  /** Camadas sólidas de base. Padrão 4. */
+  bottomLayers?: number;
+  /** Altura de camada em mm (só pondera o sólido topo/base). Padrão 0,2. */
+  layerHeightMm?: number;
+  /**
+   * Espessura de casca explícita em mm. Quando omitida, é DERIVADA de
+   * `wallCount × lineWidthMm + topo/base` — nunca um 0,84 fixo.
+   */
+  shellThicknessMm?: number;
+  /**
+   * Volume de suporte em cm³, somado por cima (padrão Meshy/ThisCalc:
+   * `total = casca + núcleo × infill + suporte`). Padrão 0.
+   */
+  supportVolumeCm3?: number;
+}
+
+/** Opções do estimador de peso = volume + material + purga. */
+export interface WeightOptions extends MaterialVolumeOptions {
+  /**
+   * Família do filamento (tabela `filamentProfiles`, default PLA).
+   * Só define a densidade de fallback — `densityGcm3` explícito vence.
+   */
+  material?: FilamentFamily | string;
+  /** Densidade explícita em g/cm³ (ex: vinda da store). Vence a tabela. */
+  densityGcm3?: number;
+  /** Porcentagem de purga/troca sobre o volume efetivo. Padrão 0. */
+  purgePercent?: number;
+}
+
+const VOLUME_DEFAULTS = {
+  infillPercent: 20,
+  wallCount: 2,
+  lineWidthMm: 0.42,
+  topLayers: 4,
+  bottomLayers: 4,
+  layerHeightMm: 0.2,
+} as const;
+
+/**
+ * Volume de plástico realmente extrudado, em cm³.
+ *
+ * Modelo consagrado das calculadoras (Meshy/ThisCalc):
+ * `casca = área × espessura`, limitada ao volume da peça;
+ * `total = casca + max(0, volume − casca) × infill + suporte`.
+ *
+ * A espessura de casca é derivada do perfil: paredes laterais
+ * (`wallCount × lineWidthMm`) + sólido de topo/base
+ * (`(topLayers + bottomLayers) × layerHeightMm / 2`, assumindo que as áreas
+ * projetadas de topo e base somam ~metade da superfície total — premissa
+ * documentada em `docs/estimators-model.md`, com viés de superestimação
+ * como margem de preço).
+ *
+ * `surfaceAreaMm2` ausente ou ≤ 0 cai no modelo legado
+ * (`volume × (0,2 + 0,8 × infill)`), para não quebrar quem estima sem malha.
+ * Volume ≤ 0 ou não-finito retorna 0.
+ */
+export function estimateMaterialVolumeCm3(
+  volumeCm3: number,
+  options: MaterialVolumeOptions = {},
+): number {
+  if (!Number.isFinite(volumeCm3) || volumeCm3 <= 0) return 0;
+
+  const {
+    infillPercent = VOLUME_DEFAULTS.infillPercent,
+    surfaceAreaMm2,
+    wallCount = VOLUME_DEFAULTS.wallCount,
+    lineWidthMm = VOLUME_DEFAULTS.lineWidthMm,
+    topLayers = VOLUME_DEFAULTS.topLayers,
+    bottomLayers = VOLUME_DEFAULTS.bottomLayers,
+    layerHeightMm = VOLUME_DEFAULTS.layerHeightMm,
+    shellThicknessMm,
+    supportVolumeCm3 = 0,
+  } = options;
+
+  // NaN vaza por Math.min/max (Math.max(0, NaN) = NaN) — fallback
+  // para o default antes do clamp.
+  const safeInfillPercent = Number.isFinite(infillPercent)
+    ? infillPercent
+    : VOLUME_DEFAULTS.infillPercent;
+  const infillRatio = Math.min(100, Math.max(0, safeInfillPercent)) / 100;
+  const support =
+    Number.isFinite(supportVolumeCm3) && supportVolumeCm3 > 0
+      ? supportVolumeCm3
+      : 0;
+
+  if (!surfaceAreaMm2 || surfaceAreaMm2 <= 0) {
+    return volumeCm3 * (0.2 + 0.8 * infillRatio) + support;
+  }
+
+  const wallMm = wallCount * lineWidthMm;
+  const topBottomMm = ((topLayers + bottomLayers) * layerHeightMm) / 2;
+  const effectiveShellMm = shellThicknessMm ?? wallMm + topBottomMm;
+  // mm² → cm² (/100); cm² × mm = cm³/10 (1 cm² × 1 mm = 0,1 cm³)
+  const shellCm3 = Math.min(
+    volumeCm3,
+    ((surfaceAreaMm2 / 100) * effectiveShellMm) / 10,
+  );
+  const innerCm3 = Math.max(0, volumeCm3 - shellCm3);
+  return shellCm3 + innerCm3 * infillRatio + support;
+}
+
+/**
+ * Peso do plástico em gramas: `(volume efetivo + purga) × densidade`.
+ * Volume ≤ 0 ou não-finito retorna 0.
+ */
 export function estimateWeight(
   volumeCm3: number,
-  density: number,
-  infill: number,
-  purge: number,
+  options: WeightOptions = {},
 ): number {
-  const infillRatio = infill / 100;
-  const purgeRatio = purge / 100;
-  const effectiveVolume = volumeCm3 * (0.2 + 0.8 * infillRatio);
-  const waste = effectiveVolume * purgeRatio;
-  return (effectiveVolume + waste) * density;
+  if (!Number.isFinite(volumeCm3) || volumeCm3 <= 0) return 0;
+
+  const { material, densityGcm3, purgePercent = 0, ...volumeOptions } = options;
+
+  const density = resolveFilamentDensity(material, densityGcm3);
+  // Mesmo guard anti-NaN do infill: NaN → 0% de purga (default).
+  const safePurgePercent = Number.isFinite(purgePercent) ? purgePercent : 0;
+  const purgeRatio = Math.min(100, Math.max(0, safePurgePercent)) / 100;
+  const effectiveVolume = estimateMaterialVolumeCm3(volumeCm3, volumeOptions);
+  return effectiveVolume * (1 + purgeRatio) * density;
 }
